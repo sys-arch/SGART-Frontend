@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 
 const RegisterForm = () => {
-
-    // Estados de cada campo del formulario
     const [nombre_textbox, setNombre] = useState('');
     const [apellidos_textbox, setApellidos] = useState('');
     const [email_textbox, setEmail] = useState('');
@@ -13,8 +11,10 @@ const RegisterForm = () => {
     const [contrasena_textbox, setContrasena] = useState('');
     const [repetirContrasena_textbox, setRepetirContrasena] = useState('');
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showRepeatPassword, setShowRepeatPassword] = useState(false);
 
-    // Cambios en los campos del formulario
+
     const handleChange = (event) => {
         const { name, value } = event.target;
         switch (name) {
@@ -53,20 +53,27 @@ const RegisterForm = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        // ¿Coinciden las contraseñas?
+        // ¿Contraseñas iguales?
         if (contrasena_textbox !== repetirContrasena_textbox) {
             setError('Las contraseñas no coinciden.');
             return;
         }
 
-        //Verificar email
+        // ¿Contraseña robusta?
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(contrasena_textbox)) {
+            setError('La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial (@, $, !, %, *, ?, &).');
+            return;
+        }
+
+        // Validar email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email_textbox)) {
             setError('El formato del correo electrónico no es válido.');
             return;
         }
 
-        // Validación de fecha (no puede ser una fecha futura)
+        // Validar fecha (no puede ser una fecha futura)
         const fechaSeleccionada = new Date(fechaAlta_box);
         const fechaActual = new Date();
         if (fechaSeleccionada > fechaActual) {
@@ -76,7 +83,15 @@ const RegisterForm = () => {
 
         alert('Registro exitoso');
         setError('');
-        // Enviar datos al backend...
+        // Enviar los datos al backend...
+    };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword((prevShowPassword) => !prevShowPassword);
+    }; 
+    
+    const toggleRepeatPasswordVisibility = () => {
+        setShowRepeatPassword((prevShowRepeatPassword) => !prevShowRepeatPassword);
     };
 
     return (
@@ -85,42 +100,48 @@ const RegisterForm = () => {
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <div>
                 <label>Nombre*</label>
-                <input type="text" name="nombre_textbox" required/>
+                <input type="text" name="nombre_textbox" value={nombre_textbox} onChange={handleChange} required />
             </div>
             <div>
                 <label>Apellidos*</label>
-                <input type="text" name="apellidos_textbox" required/>
+                <input type="text" name="apellidos_textbox" value={apellidos_textbox} onChange={handleChange} required />
             </div>
             <div>
                 <label>Email*</label>
-                <input type="email" name="email_textbox" required/>
+                <input type="email" name="email_textbox" value={email_textbox} onChange={handleChange} required />
             </div>
             <div>
                 <label>Departamento</label>
-                <input type="text" name="departamento_textbox" />
+                <input type="text" name="departamento_textbox" value={departamento_textbox} onChange={handleChange} />
             </div>
             <div>
                 <label>Centro*</label>
-                <input type="text" name="centro_textbox" required />
+                <input type="text" name="centro_textbox" value={centro_textbox} onChange={handleChange} required />
             </div>
             <div>
                 <label>Fecha de Alta*</label>
-                <input type="date" name="fechaAlta_box" required />
+                <input type="date" name="fechaAlta_box" value={fechaAlta_box} onChange={handleChange} required />
             </div>
             <div>
                 <label>Perfil</label>
-                <select name="perfil_desplegable">
+                <select name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange}>
                     <option value="usuario">Usuario</option>
                     <option value="admin">Administrador</option>
                 </select>
             </div>
             <div>
                 <label>Contraseña*</label>
-                <input type="password" name="contrasena_textbox" value={contrasena_textbox} onChange={handleChange} required />
+                <input type={showPassword ? "text" : "password"} name="contrasena_textbox" value={contrasena_textbox} onChange={handleChange} required />
+                <button type="button" onClick={togglePasswordVisibility}>
+                    {showPassword ? "Ocultar" : "Mostrar"}
+                </button>
             </div>
             <div>
                 <label>Repetir Contraseña*</label>
-                <input type="password" name="repetirContrasena_textbox" value={repetirContrasena_textbox} onChange={handleChange} required />
+                <input type={showRepeatPassword ? "text" : "password"} name="repetirContrasena_textbox" value={repetirContrasena_textbox} onChange={handleChange} required />
+                <button type="button" onClick={toggleRepeatPasswordVisibility}>
+                    {showRepeatPassword ? "Ocultar" : "Mostrar"}
+                </button>
             </div>
 
             <button type="submit">Registrarse</button>
