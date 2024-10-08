@@ -7,6 +7,7 @@ const LoginForm = () => {
     const [contrasena_textbox, setContrasena] = useState('');
     const [repetirContrasena_textbox, setRepetirContrasena] = useState('');
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     // Cambios en los campos del formulario
     const handleChange = (event) => {
@@ -47,6 +48,10 @@ const LoginForm = () => {
         // Enviar datos al backend...
     };
 
+    const togglePasswordVisibility = () => {
+        setShowPassword((prevShowPassword) => !prevShowPassword);
+    }; 
+
     return (
         <div class="login-container">
         <div class="login-box">
@@ -57,8 +62,11 @@ const LoginForm = () => {
                     <label for="username">Usuario</label>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="password" required/>
+                    <input type={showPassword ? "text" : "password"} id="password" required/>
                     <label for="password">Contraseña</label>
+                    <button type="button" onClick={togglePasswordVisibility}>
+                        <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')}/>
+                    </button>
                 </div>
                 <button type="submit" class="login-btn">Entrar</button>
                 <div class="login-options">
