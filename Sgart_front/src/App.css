@@ -1,9 +1,18 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto; /* Solo el body tiene scroll */
+}
+
 .App {
-  height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #4A90E2, #1A2980);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #4A90E2, #1A2980);
+  padding: 20px;
 }
 
 .App-logo {
@@ -42,7 +51,6 @@
 }
 
 .input{
-  position: absolute;
   left: 200px;
 }
 
@@ -60,6 +68,26 @@
   text-align: center;
 }
 
+.register-container {
+  width: 100%;
+  max-width: 500px;
+  padding: 20px;
+  margin: 20px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.register-box {
+  width: 100%;
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  overflow: visible;
+}
+
 h2 {
   margin-bottom: 20px;
   color: #333;
@@ -70,6 +98,13 @@ h2 {
   margin-bottom: 30px;
 }
 
+.input-group-register {
+  position: relative;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
 .input-group input {
   width: 100%;
   padding: 10px;
@@ -77,6 +112,15 @@ h2 {
   border: 1px solid #ddd;
   border-radius: 5px;
   background: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+.input-group-register input {
+  width: 100%;
+  padding: 10px 40px 10px 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   outline: none;
   transition: all 0.3s ease;
 }
@@ -91,6 +135,66 @@ h2 {
   transition: all 0.3s ease;
 }
 
+.input-group-register label {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.input-group-register select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: none;
+  outline: none;
+  transition: all 0.3s ease;
+  color: #333;
+  appearance: none;
+  background-color: white;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.password-toggle-btn img {
+  width: 20px; /* Ajusta el tamaño del icono si es necesario */
+  height: 20px;
+  object-fit: contain;
+}
+
+.repeatPassword-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.repeatPassword-toggle-btn img {
+  width: 20px; /* Ajusta el tamaño del icono si es necesario */
+  height: 20px;
+  object-fit: contain;
+}
+
 /* Estilo cuando el input está enfocado */
 .input-group input:focus,
 .input-group input:valid {
@@ -99,6 +203,30 @@ h2 {
 
 .input-group input:focus ~ label,
 .input-group input:valid ~ label {
+  top: -10px;
+  font-size: 12px;
+  color: #4A90E2;
+}
+
+.input-group-register input:focus,
+.input-group-register input:valid {
+  border-color: #4A90E2;
+}
+
+.input-group-register input:focus ~ label,
+.input-group-register input:valid ~ label {
+  top: -10px;
+  font-size: 12px;
+  color: #4A90E2;
+}
+
+.input-group-register select:focus,
+.input-group-register select:valid {
+  border-color: #4A90E2;
+}
+
+.input-group-register select:focus ~ label,
+.input-group-register select:valid ~ label {
   top: -10px;
   font-size: 12px;
   color: #4A90E2;
@@ -118,7 +246,24 @@ h2 {
   transition: background-color 0.3s ease;
 }
 
+.register-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background-color: #4A90E2;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
 .login-btn:hover {
+  background-color: #357ABD;
+}
+
+.register-btn:hover {
   background-color: #357ABD;
 }
 
@@ -140,9 +285,76 @@ h2 {
   color: #357ABD;
 }
 
+.register-options {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.register-options p {
+  margin-bottom: 5px;
+}
+
+.register-options a {
+  color: #4A90E2;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.5s ease;
+}
+
+.register-options a:hover {
+  color: #357ABD;
+}
+
 /* Adaptable para móviles */
 @media (max-width: 768px) {
   .login-box {
       padding: 30px;
   }
+}
+
+.input-group button {
+  position: absolute;
+  top:50%;
+  transform: translateY(-50%);
+  right:-10px;
+  border:none;
+  appearance: none;
+  background-color: inherit;
+}
+
+.input-group img{
+  width: 30px;
+}
+
+.perfil-select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none; 
+  -moz-appearance: none;
+  position: relative;
+}
+
+.select-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.select-toggle-btn img {
+  width: 15px;
+  height: 15px;
 }

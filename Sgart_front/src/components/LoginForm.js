@@ -64,8 +64,8 @@ const LoginForm = () => {
                 <div class="input-group">
                     <input type={showPassword ? "text" : "password"} id="password" required/>
                     <label for="password">Contraseña</label>
-                    <button type="button" onClick={togglePasswordVisibility}>
-                        <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')}/>
+                    <button type="button" onClick={togglePasswordVisibility} className="password-toggle-btn">
+                    <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')}/>
                     </button>
                 </div>
                 <button type="submit" class="login-btn">Entrar</button>
