@@ -380,3 +380,27 @@ h2 {
   width: 15px;
   height: 15px;
 }
+
+.edit-btn {
+  background-color: #ffc107;
+  color: #fff;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.admin-buttons {
+  position: absolute;
+  left: 0px;
+  top:0px;
+}
+
+.admin-btn {
+  background-color: transparent;
+}
