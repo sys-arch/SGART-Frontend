@@ -285,29 +285,6 @@ h2 {
   color: #357ABD;
 }
 
-.register-options {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.register-options p {
-  margin-bottom: 5px;
-}
-
-.register-options a {
-  color: #4A90E2;
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.5s ease;
-}
-
-.register-options a:hover {
-  color: #357ABD;
-}
-
 /* Adaptable para móviles */
 @media (max-width: 768px) {
   .login-box {
