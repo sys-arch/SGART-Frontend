@@ -487,3 +487,98 @@ button:hover {
 .admin-btn {
   background-color: transparent;
 }
+
+.AdminCalendarapp-container {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row; /* Cambiado a fila */
+  gap: 20px; /* Espacio entre los dos contenedores */
+}
+
+.AdminCalendar-left-panel, .AdminCalendar-calendar-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.AdminCalendar-left-panel {
+  width: 300px;
+}
+
+.AdminCalendar-calendar-container {
+  min-width: 600px; /* Tamaño mínimo del calendario */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.AdminCalendar-input-group {
+  margin-bottom: 15px;
+}
+
+.AdminCalendar-input-group {
+  margin-bottom: 15px;
+}
+
+.AdminCalendar-input-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.AdminCalendar-input-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.AdminCalendar-button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.AdminCalendar-button-group button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #1e3a8a;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.AdminCalendar-button-group button:hover {
+  background-color: #3b82f6;
+}
+
+.AdminCalendar-add-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.add-button {
+  background-color: #1e3a8a;
+  border: none;
+  color: white;
+  font-size: 24px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
+}
+
+.AdminCalendar-add-time p {
+  margin-top: 10px;
+  color: #1e3a8a;
+}
+
+.add-button:hover {
+  background-color: #3b82f6;
+}
