@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import UserEditForm from './UserEditForm';
+import VentanaConfirm from './VentanaConfirm';
+
 
 const UserValidationUI = () => {
 
@@ -31,6 +34,56 @@ const UserValidationUI = () => {
         setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
         setDatosUsuarios(datosUsuarios.concat(usuario)); // Actualizamos el estado con los nuevos datos
     }
+    //Modificar usuarios
+    const [editingUser, setEditingUser] = useState(null);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [userToSave, setUserToSave] = useState(null);
+    const [confirmationAction, setConfirmationAction] = useState('');
+    
+    const handleEditUser = (user) => {
+        setEditingUser(user); // Establece el usuario que se está editando
+    };
+    
+    const handleSaveUser = (updatedUser) => {
+        setUserToSave(updatedUser);
+        setConfirmationAction('save'); // Establece la acción como guardar
+        setShowConfirmation(true);
+    };
+
+    const handleConfirmSave = () => {
+        setDatosUsuarios((prevUsuarios) =>
+            prevUsuarios.map((user) =>
+                user.id === userToSave.id ? userToSave : user
+            )
+        );
+        setEditingUser(null);
+        setShowConfirmation(false);
+    };
+
+    const handleCancelSave = () => {
+        setShowConfirmation(false);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingUser(null);
+    }; 
+
+    //Eliminar usuarios
+    const [userToDelete, setUserToDelete] = useState(null);
+
+    const handleDeleteUser = (user) => {
+        setUserToDelete(user);
+        setConfirmationAction('delete'); // Establece la acción como eliminar
+        setShowConfirmation(true);
+    };
+
+    const handleConfirmDelete = () => {
+        setDatosUsuarios((prevUsuarios) =>
+            prevUsuarios.filter((user) => user.id !== userToDelete.id)
+        );
+        setUserToDelete(null);
+        setShowConfirmation(false);
+    };
 
     return (
         <div class="user-validation-container">
@@ -76,7 +129,7 @@ const UserValidationUI = () => {
             </body>
             <body>
                 <h2>Listado de Usuarios</h2>
-                <table class="user-table">
+                <table className="user-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -95,15 +148,27 @@ const UserValidationUI = () => {
                             <td>{fila.Email}</td>
                             <td>
                                 <button class="validate-btn">Habilitar</button>
-                                <button class="edit-btn">Modificar</button>
-                                <button class="delete-btn">Eliminar</button>
+                                <button class="edit-btn" onClick={() => handleEditUser(fila)}>Modificar</button>
+                                <button class="delete-btn" onClick={() => handleDeleteUser(fila)}>Eliminar</button>
                             </td>
                         </tr>
                     ))}
                     </tbody>
                 </table>
             </body>
+            {editingUser && (
+                <div className="user-edit-container">
+                    <UserEditForm user={editingUser} onSave={handleSaveUser} onCancel={handleCancelEdit} />
+                </div>
+            )}
         </div>
+        {showConfirmation && (
+            <VentanaConfirm
+                onConfirm={confirmationAction === 'save' ? handleConfirmSave : handleConfirmDelete}
+                onCancel={handleCancelSave}
+                action={confirmationAction}
+            />
+        )}
         </div>
     );
 };
