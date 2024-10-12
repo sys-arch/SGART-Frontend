@@ -488,40 +488,35 @@ button:hover {
   background-color: transparent;
 }
 
+
 .AdminCalendarapp-container {
   display: flex;
-  height: 100vh;
   justify-content: center;
   align-items: center;
-  flex-direction: row; /* Cambiado a fila */
-  gap: 20px; /* Espacio entre los dos contenedores */
-}
-
-.AdminCalendar-left-panel, .AdminCalendar-calendar-container {
-  background-color: white;
-  border-radius: 8px;
+  height: 100vh;
+  width: 100%;
+  gap: 20px;
   padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .AdminCalendar-left-panel {
-  width: 300px;
-}
-
-.AdminCalendar-calendar-container {
-  min-width: 600px; /* Tamaño mínimo del calendario */
+  width: 275px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  gap: 15px;
 }
 
-
-.AdminCalendar-input-group {
-  margin-bottom: 15px;
+.AdminCalendar-left-panel h2 {
+  font-size: 1.2em;
+  margin-bottom: 10px;
 }
 
 .AdminCalendar-input-group {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .AdminCalendar-input-group label {
@@ -543,7 +538,7 @@ button:hover {
 }
 
 .AdminCalendar-button-group button {
-  padding: 10px 20px;
+  padding: 8px 16px;
   border: none;
   background-color: #1e3a8a;
   color: white;
@@ -574,11 +569,29 @@ button:hover {
   height: 50px;
 }
 
+.add-button:hover {
+  background-color: #3b82f6;
+}
+
 .AdminCalendar-add-time p {
   margin-top: 10px;
   color: #1e3a8a;
 }
 
-.add-button:hover {
-  background-color: #3b82f6;
+.AdminCalendar-calendar-container {
+  flex-grow: 1;
+  max-width: 900px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.calendar-wrapper {
+  flex-grow: 1;           
+  width: 100%;
 }
