@@ -7,7 +7,7 @@ import AdminWorkingHours from './components/AdminWorkingHours';
 function App() {
   return (
       <div className="App">
-          <LoginForm />
+          <AdminWorkingHours />
       </div>
   );
 }
