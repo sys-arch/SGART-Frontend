@@ -89,7 +89,7 @@ body, html {
 }
 
 h2 {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   color: #333;
 }
 
@@ -106,7 +106,7 @@ h2 {
 }
 
 .input-group input {
-  width: 100%;
+  width: calc(100% - 11px);
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ddd;
@@ -464,30 +464,119 @@ button {
   color: #fff;
 }
 
-.edit-btn {
-  background-color: #ffc107;
+.user-edit-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Sombra trasera similar a la ventana de confirmación */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+}
+
+.user-content{
+  width: 120%;
+  max-width: 1400px;
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra alrededor de la ventana */
+  position: relative;
+  transform: translateX(-16%);
+  overflow-y: auto;
+}
+
+.cancelar-btn {
+  background-color: #dc3545;
   color: #fff;
 }
 
-.delete-btn {
+.guardar-btn {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.ventana-confirm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+}
+
+.confirmation-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.confirmation-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.confirm-btn {
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-btn {
   background-color: #dc3545;
   color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 button:hover {
   opacity: 0.9;
 }
 
-.admin-buttons {
-  position: absolute;
-  left: 0px;
-  top:0px;
+/* Estilos para los botones de habilitar/deshabilitar */
+.habilitar-btn {
+  background-color: #28a745; /* Verde para habilitar */
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.deshabilitar-btn {
+  background-color: #4f94cc; /* Rojo oscuro para deshabilitar */
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Estilo para la fila de un usuario deshabilitado */
+.disabled-user {
+  background-color: #f2f2f2; /* Fondo gris para distinguir usuarios deshabilitados */
+  color: #999; /* Texto atenuado */
 }
 
 .admin-btn {
   background-color: transparent;
 }
-
 
 .AdminCalendarapp-container {
   display: flex;
