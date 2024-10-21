@@ -81,6 +81,17 @@ const AdminWorkingHours = () => {
 
     return (
         <div className='AdminCalendarapp-container'>
+            <div class="admin-buttons">
+                <button class="admin-btn">
+                    <img src={require('../media/user_management_btn.png')} width={60}/>
+                </button>
+                <button class="admin-btn">
+                    <img src={require('../media/admin_management_btn.png')} width={60}/>
+                </button>
+                <button class="admin-btn">
+                    <img src={require('../media/calendar_management_btn.png')} width={60}/>
+                </button>
+            </div>
             <div className="AdminCalendar-left-panel">
                 <h2>Horario de Trabajo</h2>
                 <div className="AdminCalendar-input-group">
