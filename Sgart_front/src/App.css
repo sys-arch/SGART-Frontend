@@ -574,6 +574,10 @@ button:hover {
   color: #999; /* Texto atenuado */
 }
 
+.admin-btn {
+  background-color: transparent;
+}
+
 .AdminCalendarapp-container {
   display: flex;
   justify-content: center;
