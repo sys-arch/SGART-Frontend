@@ -11,15 +11,15 @@ const UserValidationUI = () => {
     }
     // Estado que contiene los datos de la tabla
     const [datosUsuarios, setDatosUsuarios] = useState([
-        { id: 1, Nombre: 'Juan', Apellidos: 'Pérez',Email: 'juan.perez@example.com'},
-        { id: 2, Nombre: 'María', Apellidos: 'López', Email: 'maria.lopez@example.com'},
-        { id: 3, Nombre: 'Carlos', Apellidos: 'García', Email: 'carlos.garcia@example.com'},
+        { id: 1, Nombre: 'Juan', Apellidos: 'Pérez',Email: 'juan.perez@example.com', enabled: true},
+        { id: 2, Nombre: 'María', Apellidos: 'López', Email: 'maria.lopez@example.com', enabled: true},
+        { id: 3, Nombre: 'Carlos', Apellidos: 'García', Email: 'carlos.garcia@example.com', enabled: true},
     ]);
 
     var nextUserId=datosUsuarios.length;
 
     const [datosValidar, setDatosValidar] = useState([
-        { id: 1, Nombre: 'Manuel', Apellidos: 'Perales',Email: 'manuel.perales@example.com'},
+        { id: 4, Nombre: 'Manuel', Apellidos: 'Perales',Email: 'manuel.perales@example.com', enabled: false},
     ]);
 
     const invalidarUsuario = (id) => {
@@ -85,6 +85,14 @@ const UserValidationUI = () => {
         setShowConfirmation(false);
     };
 
+    const toggleUserStatus = (userId) => {
+        setDatosUsuarios((prevUsuarios) =>
+            prevUsuarios.map((user) =>
+                user.id === userId ? { ...user, enabled: !user.enabled } : user
+            )
+        );
+    };
+
     return (
         <div class="user-validation-container">
         <div class="admin-buttons">
@@ -141,13 +149,17 @@ const UserValidationUI = () => {
                     </thead>
                     <tbody>
                     {datosUsuarios.map((fila) => (
-                        <tr key={fila.id}>
+                        <tr key={fila.id} className={!fila.enabled ? 'disabled-user' : ''}>
                             <td>{fila.id}</td>
                             <td>{fila.Nombre}</td>
                             <td>{fila.Apellidos}</td>
                             <td>{fila.Email}</td>
                             <td>
-                                <button class="validate-btn">Habilitar</button>
+                                <button className={fila.enabled ? 'deshabilitar-btn' : 'habilitar-btn'}
+                                    onClick={() => toggleUserStatus(fila.id)}>
+                                    {fila.enabled ? 'Deshabilitar' : 'Habilitar'}
+
+                                </button>
                                 <button class="edit-btn" onClick={() => handleEditUser(fila)}>Modificar</button>
                                 <button class="delete-btn" onClick={() => handleDeleteUser(fila)}>Eliminar</button>
                             </td>

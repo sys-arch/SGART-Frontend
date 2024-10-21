@@ -89,7 +89,7 @@ body, html {
 }
 
 h2 {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   color: #333;
 }
 
@@ -106,7 +106,7 @@ h2 {
 }
 
 .input-group input {
-  width: 100%;
+  width: calc(100% - 11px);
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ddd;
@@ -465,18 +465,28 @@ button {
 }
 
 .user-edit-container {
-  width: 50%;
-  max-width: 600px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Sombra trasera similar a la ventana de confirmación */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+}
+
+.user-content{
+  width: 120%;
+  max-width: 1400px;
   background-color: #fff;
-  padding: 20px;
+  padding: 40px;
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Ajuste del box-shadow para un efecto más central */
-  position: fixed; /* Posición fija para que se quede en el centro de la pantalla */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* Centra el elemento tanto horizontal como verticalmente */
-  overflow-y: auto; /* Scroll en caso de contenido extenso */
-  z-index: 1000; /* Asegura que se muestre por encima de otros elementos */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra alrededor de la ventana */
+  position: relative;
+  transform: translateX(-16%);
+  overflow-y: auto;
 }
 
 .cancelar-btn {
@@ -538,4 +548,30 @@ button {
 button:hover {
   opacity: 0.9;
 }
+
+/* Estilos para los botones de habilitar/deshabilitar */
+.habilitar-btn {
+  background-color: #28a745; /* Verde para habilitar */
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.deshabilitar-btn {
+  background-color: #180d58; /* Rojo oscuro para deshabilitar */
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Estilo para la fila de un usuario deshabilitado */
+.disabled-user {
+  background-color: #f2f2f2; /* Fondo gris para distinguir usuarios deshabilitados */
+  color: #999; /* Texto atenuado */
+}
+
 

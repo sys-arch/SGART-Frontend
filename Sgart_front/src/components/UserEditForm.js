@@ -24,6 +24,7 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
 
     return (
         <div className="user-edit-form">
+            <div className="user-content">
             <h2>Modificar Usuario</h2>
             <div className="input-group-register">
                 <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} />
@@ -58,6 +59,7 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
             </div>
             <button className="guardar-btn" onClick={handleSave}>Guardar</button>
             <button className="cancelar-btn"onClick={onCancel}>Cancelar</button>
+            </div>
         </div>
     );
 };
