@@ -3,17 +3,16 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-
 import '../App.css';
 
 const AdminWorkingHours = () => {
-    // Variables de la sección de modificar día laborable
+    // Variables para modificar día laborable
     const [selectedDate, setSelectedDate] = useState('');
     const [startingHour, setStartingHour] = useState('');
     const [endingHour, setEndingHour] = useState('');
     const [eventName, setEventName] = useState('');
 
-    // Variables de la sección del pop-up de creación de un evento
+    // Variables del pop-up de creación de eventos
     const [popupSelectedDate, setPopupSelectedDate] = useState('');
     const [eventFrequency, setEventFrequency] = useState('Una vez');
     const [isAllDay, setIsAllDay] = useState(false);
@@ -21,11 +20,16 @@ const AdminWorkingHours = () => {
     const [popupStartingHour, setPopupStartingHour] = useState('');
     const [popupEndingHour, setPopupEndingHour] = useState('');
 
+    // Nueva variable para abrir el pop-up de personalización
+    const [isCustomPopupOpen, setIsCustomPopupOpen] = useState(false);
+    const [customFrequency, setCustomFrequency] = useState('Diario'); // Frecuencia de repetición personalizada
+    const [repeatCount, setRepeatCount] = useState(''); // Cantidad de repeticiones si es personalizado
+
     // Variables para el pop-up de detalles de los eventos
     const [isEventDetailPopupOpen, setIsEventDetailPopupOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
 
-    /* Los eventos se cargarán de la base de datos de eventos */
+    // Eventos de ejemplo
     const [events, setEvents] = useState([
         { title: 'Evento 1', start: '2024-10-15T10:00:00', end: '2024-10-15T12:00:00', allDay: false, eventFrequency: 'Una vez' },
         { title: 'Evento 2', start: '2024-10-20', allDay: true, eventFrequency: 'Semanal' },
@@ -35,13 +39,15 @@ const AdminWorkingHours = () => {
     const defaultStartTime = '08:00';
     const defaultEndTime = '15:00';
 
+    // Manejar click en fecha del calendario
     const handleDateClick = (arg) => {
         const clickedDate = arg.dateStr;
-        setSelectedDate(clickedDate);  // Se utiliza para modificar el día
+        setSelectedDate(clickedDate);
         setStartingHour(defaultStartTime);
         setEndingHour(defaultEndTime);
     };
 
+    // Añadir un nuevo evento
     const handleAddTimeClick = () => {
         setPopupStartingHour('');
         setPopupEndingHour('');
@@ -52,23 +58,42 @@ const AdminWorkingHours = () => {
         setIsPopupOpen(true);
     };
 
+    // Cerrar pop-up de creación
     const handleClosePopup = () => {
         setIsPopupOpen(false);
     };
 
+    // Cerrar pop-up de personalización
+    const handleCloseCustomPopup = () => {
+        setIsCustomPopupOpen(false);
+    };
+
+    // Guardar el nuevo evento
     const handleSaveEvent = () => {
         const newEvent = {
             title: eventName,
             start: popupSelectedDate + (isAllDay ? '' : 'T' + popupStartingHour),
             end: isAllDay ? null : popupSelectedDate + 'T' + popupEndingHour,
             allDay: isAllDay,
-            eventFrequency,
+            eventFrequency: eventFrequency === 'Personalizado' 
+                ? `Personalizado - ${customFrequency}, ${repeatCount} veces` 
+                : eventFrequency,
         };
         setEvents([...events, newEvent]);
         setIsPopupOpen(false);
     };
 
-    // Maneja el click en un evento del calendario para mostrar el pop-up de detalles
+    // Manejar la selección de repetición personalizada
+    const handleCustomFrequency = () => {
+        setIsCustomPopupOpen(true);
+    };
+
+    // Guardar las opciones de repetición personalizada
+    const handleSaveCustomFrequency = () => {
+        setIsCustomPopupOpen(false); // Cierra el pop-up de personalizado
+    };
+
+    // Manejar el click en un evento del calendario
     const handleEventClick = (clickInfo) => {
         setSelectedEvent(clickInfo.event);
         setIsEventDetailPopupOpen(true);
@@ -129,7 +154,7 @@ const AdminWorkingHours = () => {
                     <p>Añadir nuevo evento</p>
                 </div>
             </div>
-    
+
             <div className="AdminCalendar-calendar-container">
                 <h2>Calendario de Trabajo</h2>
                 <div className="calendar-wrapper">
@@ -148,7 +173,7 @@ const AdminWorkingHours = () => {
                     />
                 </div>
             </div>
-    
+
             {/* Pop-up para añadir nuevo evento */}
             {isPopupOpen && (
                 <div className="popup-overlay">
@@ -205,18 +230,57 @@ const AdminWorkingHours = () => {
                             <label>Frecuencia del Evento:</label>
                             <select
                                 value={eventFrequency}
-                                onChange={(e) => setEventFrequency(e.target.value)}
+                                onChange={(e) => {
+                                    setEventFrequency(e.target.value);
+                                    if (e.target.value === 'Personalizado') handleCustomFrequency();
+                                }}
                             >
                                 <option value="Una vez">Una vez</option>
                                 <option value="Diario">Diario</option>
                                 <option value="Semanal">Semanal</option>
                                 <option value="Mensual">Mensual</option>
                                 <option value="Anual">Anual</option>
+                                <option value="Siempre">Siempre</option>
+                                <option value="Personalizado">Personalizado...</option>
                             </select>
                         </div>
                         <div className="AdminCalendar-button-group">
                             <button className="save-button" onClick={handleSaveEvent}>Guardar</button>
                             <button className="close-button" onClick={handleClosePopup}>Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Pop-up para personalizar la repetición */}
+            {isCustomPopupOpen && (
+                <div className="popup-overlay">
+                    <div className="popup-container small">
+                        <h2>Personalizar repetición</h2>
+                        <div className="AdminCalendar-input-group">
+                            <label>Frecuencia de repetición:</label>
+                            <select
+                                value={customFrequency}
+                                onChange={(e) => setCustomFrequency(e.target.value)}
+                            >
+                                <option value="Diario">Diario</option>
+                                <option value="Semanal">Semanal</option>
+                                <option value="Mensual">Mensual</option>
+                                <option value="Anual">Anual</option>
+                            </select>
+                        </div>
+                        <div className="AdminCalendar-input-group">
+                            <label>Número de repeticiones:</label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={repeatCount}
+                                onChange={(e) => setRepeatCount(e.target.value)}
+                            />
+                        </div>
+                        <div className="AdminCalendar-button-group">
+                            <button className="save-button" onClick={handleSaveCustomFrequency}>Guardar</button>
+                            <button className="close-button" onClick={handleCloseCustomPopup}>Cancelar</button>
                         </div>
                     </div>
                 </div>
