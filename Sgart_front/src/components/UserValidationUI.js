@@ -127,8 +127,12 @@ const UserValidationUI = () => {
                             <td>{fila.Apellidos}</td>
                             <td>{fila.Email}</td>
                             <td>
-                                <button class="validate-btn" onClick={() => validarUsuario(fila.id)}>Validar</button>
-                                <button class="delete-btn" onClick={() => invalidarUsuario(fila.id)}>Invalidar</button>
+                                <button class="validate-btn" onClick={() => validarUsuario(fila.id)}>
+                                    <img src={require('../media/garrapata.png')} width={25}/>
+                                </button>
+                                <button class="delete-btn" onClick={() => invalidarUsuario(fila.id)}>
+                                    <img src={require('../media/cancelar.png')} width={25}/>
+                                </button>
                             </td>
                         </tr>
                     ))}
@@ -157,11 +161,18 @@ const UserValidationUI = () => {
                             <td>
                                 <button className={fila.enabled ? 'deshabilitar-btn' : 'habilitar-btn'}
                                     onClick={() => toggleUserStatus(fila.id)}>
-                                    {fila.enabled ? 'Deshabilitar' : 'Habilitar'}
-
+                                    <img 
+                                        src={fila.enabled ? require('../media/deshabilitar-cursor.png') : require('../media/mano.png')} 
+                                        alt={fila.enabled ? 'Deshabilitar' : 'Habilitar'}
+                                        style={{ width: '25px', height: '25px' }} 
+                                    />
                                 </button>
-                                <button class="edit-btn" onClick={() => handleEditUser(fila)}>Modificar</button>
-                                <button class="delete-btn" onClick={() => handleDeleteUser(fila)}>Eliminar</button>
+                                <button class="edit-btn" onClick={() => handleEditUser(fila)}>
+                                    <img src={require('../media/editar-perfil.png')} width={25}/>
+                                </button>
+                                <button class="delete-btn" onClick={() => handleDeleteUser(fila)}>
+                                <img src={require('../media/bloquear.png')} width={25}/>
+                                </button>
                             </td>
                         </tr>
                     ))}

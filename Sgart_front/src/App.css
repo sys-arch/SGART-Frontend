@@ -560,7 +560,7 @@ button:hover {
 }
 
 .deshabilitar-btn {
-  background-color: #180d58; /* Rojo oscuro para deshabilitar */
+  background-color: #4f94cc; /* Rojo oscuro para deshabilitar */
   color: #fff;
   padding: 8px 12px;
   border: none;
@@ -574,4 +574,149 @@ button:hover {
   color: #999; /* Texto atenuado */
 }
 
+.AdminCalendarapp-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  gap: 20px;
+  padding: 20px;
+}
 
+.AdminCalendar-left-panel {
+  width: 275px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.AdminCalendar-left-panel h2 {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.AdminCalendar-input-group {
+  margin-bottom: 10px;
+}
+
+.AdminCalendar-input-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.AdminCalendar-input-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.AdminCalendar-button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.AdminCalendar-button-group button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #1e3a8a;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.AdminCalendar-button-group button:hover {
+  background-color: #3b82f6;
+}
+
+.AdminCalendar-add-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.add-button {
+  background-color: #1e3a8a;
+  border: none;
+  color: white;
+  font-size: 24px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
+}
+
+.add-button:hover {
+  background-color: #3b82f6;
+}
+
+.AdminCalendar-add-time p {
+  margin-top: 10px;
+  color: #1e3a8a;
+}
+
+.AdminCalendar-calendar-container {
+  flex-grow: 1;
+  max-width: 900px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.calendar-wrapper {
+  flex-grow: 1;           
+  width: 100%;
+}
+/* Estilos del Pop-up */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-container {
+  background-color: white;
+  padding: 20px 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 300px;
+}
+
+.save-button, .close-button {
+  padding: 10px 20px;
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.save-button:hover, .close-button:hover {
+  background-color: #3b82f6;
+}
+
+.close-button {
+  background-color: #555;
+}
