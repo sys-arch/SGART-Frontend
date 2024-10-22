@@ -94,8 +94,8 @@ const UserValidationUI = () => {
     };
 
     return (
-        <div class="user-validation-container">
-        <div class="admin-buttons">
+        <div className="user-validation-container">
+        <div className="admin-buttons">
             <button class="admin-btn">
                 <img src={require('../media/user_management_btn.png')} width={60}/>
             </button>
@@ -106,10 +106,10 @@ const UserValidationUI = () => {
                 <img src={require('../media/calendar_management_btn.png')} width={60}/>
             </button>
         </div>
-        <div class="login-box">
+        <div className="login-box">
         <body>
                 <h2>Pendientes de validación</h2>
-                <table class="user-table">
+                <table className="user-table">
                     <thead>
                         <tr>
                             <th>id</th>
@@ -127,11 +127,11 @@ const UserValidationUI = () => {
                             <td>{fila.Apellidos}</td>
                             <td>{fila.Email}</td>
                             <td>
-                                <button class="validate-btn" onClick={() => validarUsuario(fila.id)}>
-                                    <img src={require('../media/garrapata.png')} width={25}/>
+                                <button className="validate-btn" onClick={() => validarUsuario(fila.id)}>
+                                    <img src={require('../media/garrapata.png')} width={25} alt="Validar Usuario"/>
                                 </button>
-                                <button class="delete-btn" onClick={() => invalidarUsuario(fila.id)}>
-                                    <img src={require('../media/cancelar.png')} width={25}/>
+                                <button className="delete-btn" onClick={() => invalidarUsuario(fila.id)}>
+                                    <img src={require('../media/cancelar.png')} width={25} alt="Invalidar Usuario"/>
                                 </button>
                             </td>
                         </tr>
@@ -167,11 +167,11 @@ const UserValidationUI = () => {
                                         style={{ width: '25px', height: '25px' }} 
                                     />
                                 </button>
-                                <button class="edit-btn" onClick={() => handleEditUser(fila)}>
-                                    <img src={require('../media/editar-perfil.png')} width={25}/>
+                                <button className="edit-btn" onClick={() => handleEditUser(fila)}>
+                                    <img src={require('../media/editar-perfil.png')} width={25} alt="Editar Perfil"/>
                                 </button>
-                                <button class="delete-btn" onClick={() => handleDeleteUser(fila)}>
-                                <img src={require('../media/bloquear.png')} width={25}/>
+                                <button className="delete-btn" onClick={() => handleDeleteUser(fila)}>
+                                <img src={require('../media/bloquear.png')} width={25} alt="Eliminar Perfil"/>
                                 </button>
                             </td>
                         </tr>

@@ -89,7 +89,7 @@ body, html {
 }
 
 h2 {
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   color: #333;
 }
 
@@ -311,7 +311,7 @@ h2 {
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: #888;
+  color: #888;
 }
 
 .input-group button {
@@ -325,7 +325,7 @@ h2 {
 }
 
 .input-group img{
-  width: 30px;
+  width: 30px;
 }
 
 .perfil-select {
@@ -545,7 +545,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button :hover {
   opacity: 0.9;
 }
 
@@ -572,10 +572,6 @@ button:hover {
 .disabled-user {
   background-color: #f2f2f2; /* Fondo gris para distinguir usuarios deshabilitados */
   color: #999; /* Texto atenuado */
-}
-
-.admin-btn {
-  background-color: transparent;
 }
 
 .AdminCalendarapp-container {

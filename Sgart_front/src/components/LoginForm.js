@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
+import RegisterForm from './RegisterForm';
+import RecuperarPwdForm from './RecuperarPwdForm';
 
 const LoginForm = () => {
 
     // Estados de cada campo del formulario
-    const [email_textbox, setEmail] = useState('');
-    const [contrasena_textbox, setContrasena] = useState('');
-    const [repetirContrasena_textbox, setRepetirContrasena] = useState('');
+    const [email, setEmail] = useState('');
+    const [contrasena, setContrasena] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [isNoPwd, setIsNoPwd] = useState(false);
 
     // Cambios en los campos del formulario
     const handleChange = (event) => {
         const { name, value } = event.target;
         switch (name) {
-            case 'email_textbox':
+            case 'email':
                 setEmail(value);
                 break;
-            case 'contrasena_textbox':
+            case 'contrasena':
                 setContrasena(value);
-                break;
-            case 'repetirContrasena_textbox':
-                setRepetirContrasena(value);
                 break;
             default:
                 break;
@@ -30,20 +30,14 @@ const LoginForm = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        // ¿Coinciden las contraseñas?
-        if (contrasena_textbox !== repetirContrasena_textbox) {
-            setError('Las contraseñas no coinciden.');
-            return;
-        }
-
         //Verificar email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email_textbox)) {
+        if (!emailRegex.test(email)) {
             setError('El formato del correo electrónico no es válido.');
             return;
         }
 
-        alert('Registro exitoso');
+        alert('Login correcto');
         setError('');
         // Enviar datos al backend...
     };
@@ -52,26 +46,42 @@ const LoginForm = () => {
         setShowPassword((prevShowPassword) => !prevShowPassword);
     }; 
 
+    const handleToggleForm = () => {
+        setIsRegistering(true);
+    };
+
+    if (isRegistering) {
+        return <RegisterForm />;
+    }
+
+    const handleToggleForm_2 = () => {
+        setIsNoPwd(true);
+    }
+
+    if (isNoPwd) {
+        return <RecuperarPwdForm />;
+    }
+
     return (
-        <div class="login-container">
-        <div class="login-box">
+        <div className="login-container">
+        <div className="login-box">
             <h2>Iniciar Sesión</h2>
-            <form action="#" method="post">
-                <div class="input-group">
-                    <input type="text" id="username" required/>
-                    <label for="username">Usuario</label>
+            <form action="#" method="post" onSubmit={handleSubmit}>
+                <div className="input-group">
+                    <input type="text" id="username" value={email} onChange={handleChange} required/>
+                    <label htmlFor="username">Usuario</label>
                 </div>
-                <div class="input-group">
-                    <input type={showPassword ? "text" : "password"} id="password" required/>
-                    <label for="password">Contraseña</label>
+                <div className="input-group">
+                    <input type={showPassword ? "text" : "password"} id="password" value={contrasena} onChange={handleChange} required/>
+                    <label htmlFor="password">Contraseña</label>
                     <button type="button" onClick={togglePasswordVisibility} className="password-toggle-btn">
-                    <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')}/>
+                    <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')} alt='Mostrar Contraseña'/>
                     </button>
                 </div>
-                <button type="submit" class="login-btn">Entrar</button>
-                <div class="login-options">
-                    <a href="#">¿Olvidaste tu contraseña?</a>
-                    <a href="#">Regístrate</a>
+                <button type="submit" className="login-btn">Entrar</button>
+                <div className="login-options">
+                    <a href="#" onClick={handleToggleForm_2}>¿Olvidaste tu contraseña?</a>
+                    <a href="#" onClick={handleToggleForm}>Regístrate</a>
                 </div>
             </form>
         </div>
