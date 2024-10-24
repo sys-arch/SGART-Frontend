@@ -83,7 +83,43 @@ const RegisterForm = () => {
 
         alert('Registro exitoso');
         setError('');
+
         // Enviar los datos al backend...
+        const usuario = {
+            name: nombre_textbox,
+            lastName: apellidos_textbox,
+            email: email_textbox,
+            department: departamento_textbox,
+            center: centro_textbox,
+            hiringDate: fechaAlta_box,
+            profile: perfil_desplegable,
+            password: contrasena_textbox,
+            passwordConfirm: repetirContrasena_textbox
+        };
+
+        console.log(usuario);
+
+        fetch('http://localhost:9000/users/registro', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(usuario),
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Error en el registro del usuario');
+            }
+            return response.json();
+        })
+        .then((data) => {
+            alert('Registro exitoso'); // Mostrar el mensaje de éxito
+            setError(''); // Limpiar cualquier mensaje de error
+        })
+        .catch((error) => {
+            console.error('Hubo un error:', error);
+            setError('Error al registrar el usuario');
+        });
     };
 
     const togglePasswordVisibility = () => {
