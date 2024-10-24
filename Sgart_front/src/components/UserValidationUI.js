@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UserEditForm from './UserEditForm';
 import VentanaConfirm from './VentanaConfirm';
+import axios, { AxiosHeaders } from 'axios';
 
 
 const UserValidationUI = () => {
@@ -10,27 +11,31 @@ const UserValidationUI = () => {
         
     }
     // Estado que contiene los datos de la tabla
-    const [datosUsuarios, setDatosUsuarios] = useState([
-        { id: 1, Nombre: 'Juan', Apellidos: 'Pérez',Email: 'juan.perez@example.com', enabled: true},
-        { id: 2, Nombre: 'María', Apellidos: 'López', Email: 'maria.lopez@example.com', enabled: true},
-        { id: 3, Nombre: 'Carlos', Apellidos: 'García', Email: 'carlos.garcia@example.com', enabled: true},
-    ]);
-
-    var nextUserId=datosUsuarios.length;
+    const [datosUsuarios, setDatosUsuarios] = useState([]);
 
     const [datosValidar, setDatosValidar] = useState([
-        { id: 4, Nombre: 'Manuel', Apellidos: 'Perales',Email: 'manuel.perales@example.com', enabled: false},
+        { name: 'Carlos', lastName: 'García', email: 'carlos.garcia@example.com', blocked: false},
     ]);
 
-    const invalidarUsuario = (id) => {
-        // Filtramos el array de datos para eliminar el elemento con el id correspondiente
-        const nuevosDatos = datosValidar.filter((item) => item.id !== id);
+    useEffect(() => {
+        fetch('admin/getUsuariosValidados')
+          .then(response => {
+            console.log(response.data); // Guardar los datos en el estado
+          })
+          .catch(error => {
+            console.error('Error fetching data:', error);
+          });
+      }, []);
+
+    const invalidarUsuario = (email) => {
+        // Filtramos el array de datos para eliminar el elemento con el email correspondiente
+        const nuevosDatos = datosValidar.filter((item) => item.email !== email);
         setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
     };
 
-    const validarUsuario = (id) => {
-        var usuario = datosValidar.filter((item) => item.id === id);
-        const nuevosDatos = datosValidar.filter((item) => item.id !== id);
+    const validarUsuario = (email) => {
+        var usuario = datosValidar.filter((item) => item.email === email);
+        const nuevosDatos = datosValidar.filter((item) => item.email !== email);
         setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
         setDatosUsuarios(datosUsuarios.concat(usuario)); // Actualizamos el estado con los nuevos datos
     }
@@ -53,7 +58,7 @@ const UserValidationUI = () => {
     const handleConfirmSave = () => {
         setDatosUsuarios((prevUsuarios) =>
             prevUsuarios.map((user) =>
-                user.id === userToSave.id ? userToSave : user
+                user.email === userToSave.email ? userToSave : user
             )
         );
         setEditingUser(null);
@@ -79,16 +84,16 @@ const UserValidationUI = () => {
 
     const handleConfirmDelete = () => {
         setDatosUsuarios((prevUsuarios) =>
-            prevUsuarios.filter((user) => user.id !== userToDelete.id)
+            prevUsuarios.filter((user) => user.email !== userToDelete.email)
         );
         setUserToDelete(null);
         setShowConfirmation(false);
     };
 
-    const toggleUserStatus = (userId) => {
+    const toggleUserStatus = (email) => {
         setDatosUsuarios((prevUsuarios) =>
             prevUsuarios.map((user) =>
-                user.id === userId ? { ...user, enabled: !user.enabled } : user
+                user.email === email ? { ...user, blocked: !user.blocked } : user
             )
         );
     };
@@ -112,25 +117,23 @@ const UserValidationUI = () => {
                 <table class="user-table">
                     <thead>
                         <tr>
-                            <th>id</th>
+                            <th>Email</th>
                             <th>Nombre</th>
                             <th>Apellidos</th>
-                            <th>Email</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                     {datosValidar.map((fila) => (
-                        <tr key={fila.id}>
-                            <td>{fila.id}</td>
-                            <td>{fila.Nombre}</td>
-                            <td>{fila.Apellidos}</td>
-                            <td>{fila.Email}</td>
+                        <tr key={fila.email}>
+                            <td>{fila.email}</td>
+                            <td>{fila.name}</td>
+                            <td>{fila.lastName}</td>
                             <td>
-                                <button class="validate-btn" onClick={() => validarUsuario(fila.id)}>
+                                <button class="validate-btn" onClick={() => validarUsuario(fila.email)}>
                                     <img src={require('../media/garrapata.png')} width={25}/>
                                 </button>
-                                <button class="delete-btn" onClick={() => invalidarUsuario(fila.id)}>
+                                <button class="delete-btn" onClick={() => invalidarUsuario(fila.email)}>
                                     <img src={require('../media/cancelar.png')} width={25}/>
                                 </button>
                             </td>
@@ -144,26 +147,24 @@ const UserValidationUI = () => {
                 <table className="user-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>Email</th>
                             <th>Nombre</th>
                             <th>Apellidos</th>
-                            <th>Email</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                     {datosUsuarios.map((fila) => (
-                        <tr key={fila.id} className={!fila.enabled ? 'disabled-user' : ''}>
-                            <td>{fila.id}</td>
-                            <td>{fila.Nombre}</td>
-                            <td>{fila.Apellidos}</td>
-                            <td>{fila.Email}</td>
+                        <tr key={fila.email} className={!fila.blocked ? '' : 'disabled-user'}>
+                            <td>{fila.email}</td>
+                            <td>{fila.name}</td>
+                            <td>{fila.last_name}</td>
                             <td>
-                                <button className={fila.enabled ? 'deshabilitar-btn' : 'habilitar-btn'}
-                                    onClick={() => toggleUserStatus(fila.id)}>
+                                <button className={fila.blocked ? 'habilitar-btn':'deshabilitar-btn'}
+                                    onClick={() => toggleUserStatus(fila.email)}>
                                     <img 
-                                        src={fila.enabled ? require('../media/deshabilitar-cursor.png') : require('../media/mano.png')} 
-                                        alt={fila.enabled ? 'Deshabilitar' : 'Habilitar'}
+                                        src={fila.blocked ? require('../media/mano.png'):require('../media/deshabilitar-cursor.png')} 
+                                        alt={fila.blocked ? 'Habilitar':'Deshabilitar'}
                                         style={{ width: '25px', height: '25px' }} 
                                     />
                                 </button>

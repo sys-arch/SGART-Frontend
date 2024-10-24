@@ -5,11 +5,11 @@ import GoogleAuth from './components/GoogleAuth';
 import UserValidationUI from './components/UserValidationUI';
 import AdminWorkingHours from './components/AdminWorkingHours';
 
+
 function App() {
   return (
       <div className="App">
-        <UserValidationUI />
-          <LoginForm />
+        <UserValidationUI/>
       </div>
   );
 }
