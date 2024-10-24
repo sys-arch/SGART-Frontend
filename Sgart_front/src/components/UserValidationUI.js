@@ -19,8 +19,15 @@ const UserValidationUI = () => {
 
     useEffect(() => {
         fetch('admin/getUsuariosValidados')
-          .then(response => {
-            console.log(response.data); // Guardar los datos en el estado
+          .then(async response => {
+            const result=await response.json();
+            const usersTable=result.map(user=>({
+                email: user.email,
+                name:user.name,
+                lastName:user.lastName,
+                blocked:user.blocked,
+            }));
+            setDatosUsuarios(usersTable);
           })
           .catch(error => {
             console.error('Error fetching data:', error);
@@ -91,12 +98,24 @@ const UserValidationUI = () => {
     };
 
     const toggleUserStatus = (email) => {
+        fetch('admin/cambiarHabilitacion/'+email,{
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+          .then(response => {
+            
+          })
+          .catch(error => {
+            console.error('Error updating user: ',error);
+          });
         setDatosUsuarios((prevUsuarios) =>
             prevUsuarios.map((user) =>
                 user.email === email ? { ...user, blocked: !user.blocked } : user
             )
         );
-    };
+    }
 
     return (
         <div class="user-validation-container">
