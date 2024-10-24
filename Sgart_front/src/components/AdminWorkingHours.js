@@ -118,7 +118,7 @@ const AdminWorkingHours = () => {
             event_time_start: isAllDay ? '00:00:00' : startingTime,
             event_time_end: isAllDay ? '23:59:59' : endingTime,
             event_frequency: eventFrequency === 'Personalizado' ? customFrequency : eventFrequency, // Frecuencia
-            event_repetitions_count: eventFrequency === 'Personalizado' ? parseInt(repeatCount, 10) : -1, // Repeticiones o null
+            event_repetitions_count: eventFrequency === 'Personalizado' ? parseInt(repeatCount, 10) : (eventFrequency === 'Una vez' ? 1 : -1),// Repeticiones o null
         };
 
         // Log para comprobar lo que estás enviando
