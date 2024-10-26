@@ -9,10 +9,14 @@ const AdminWorkingHours = () => {
     // Variables para modificar día laborable
     const [selectedDate, setSelectedDate] = useState('');
     const [startingHour, setStartingHour] = useState('');
-    const [startingMinutes, setStartingMinutes] = useState(''); // Nuevos minutos para el inicio
+    const [startingMinutes, setStartingMinutes] = useState('');
     const [endingHour, setEndingHour] = useState('');
-    const [endingMinutes, setEndingMinutes] = useState(''); // Nuevos minutos para el fin
+    const [endingMinutes, setEndingMinutes] = useState('');
     const [eventName, setEventName] = useState('');
+    const [motivo, setMotivo] = useState('');
+
+    // Variables de estado adicionales
+    const [isEditable, setIsEditable] = useState(false);
 
     // Variables del pop-up de creación de eventos
     const [popupSelectedDate, setPopupSelectedDate] = useState('');
@@ -20,67 +24,136 @@ const AdminWorkingHours = () => {
     const [isAllDay, setIsAllDay] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupStartingHour, setPopupStartingHour] = useState('');
-    const [popupStartingMinutes, setPopupStartingMinutes] = useState(''); // Nuevos minutos para el pop-up
+    const [popupStartingMinutes, setPopupStartingMinutes] = useState('');
     const [popupEndingHour, setPopupEndingHour] = useState('');
-    const [popupEndingMinutes, setPopupEndingMinutes] = useState(''); // Nuevos minutos para el pop-up
+    const [popupEndingMinutes, setPopupEndingMinutes] = useState('');
 
     // Nueva variable para abrir el pop-up de personalización
     const [isCustomPopupOpen, setIsCustomPopupOpen] = useState(false);
-    const [customFrequency, setCustomFrequency] = useState('Diario'); // Frecuencia de repetición personalizada
-    const [repeatCount, setRepeatCount] = useState(''); // Cantidad de repeticiones si es personalizado
+    const [customFrequency, setCustomFrequency] = useState('Diario');
+    const [repeatCount, setRepeatCount] = useState('');
 
     // Variables para el pop-up de detalles de los eventos
     const [isEventDetailPopupOpen, setIsEventDetailPopupOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
 
-    //Cargar los eventos de la base de datos
+    // Variables para almacenar eventos regulares y horarios de trabajo modificados
+    const [regularEvents, setRegularEvents] = useState([]);
+    const [modifiedWorkingHours, setModifiedWorkingHours] = useState([]);
+    const [defaultWorkingHours, setDefaultWorkingHours] = useState([]);
+
+    // Variables para el control de errores en campos de hora
+    const [hourError, setHourError] = useState(false);
+    const [minuteError, setMinuteError] = useState(false);
+    const [popupHourError, setPopupHourError] = useState(false);
+    const [popupMinuteError, setPopupMinuteError] = useState(false);
+
+    // Cargar los eventos regulares de la base de datos
     const loadEvents = useCallback(async () => {
         try {
             const response = await fetch('http://localhost:9000/administrador/eventos/loadEvents');
-            if (!response.ok) {
-                throw new Error('Error al cargar los eventos');
-            }
-    
+            if (!response.ok) throw new Error('Error al cargar los eventos');
+
             const backendEvents = await response.json();
-            const transformedEvents = transformEvents(backendEvents);
-            setEvents(transformedEvents);
+            const transformedEvents = backendEvents.map(event => ({
+                title: event.event_title,
+                start: `${event.event_start_date}T${event.event_time_start}`,
+                end: `${event.event_start_date}T${event.event_time_end}`,
+                allDay: event.event_all_day === 1,
+                extendedProps: { frequency: event.event_frequency }
+            }));
+            setRegularEvents(transformedEvents);
         } catch (error) {
             console.error("Error al cargar los eventos: ", error);
         }
     }, []);
 
-    const transformEvents = (backendEvents) => {
-        return backendEvents.map(event => ({
-            title: event.event_title,
-            start: `${event.event_start_date}T${event.event_time_start}`,
-            end: `${event.event_start_date}T${event.event_time_end}`,
-            allDay: event.event_all_day === 1, // convertir el valor del backend en un booleano
-            eventFrequency: event.event_frequency
-        }));
-    };
+    // Cargar los horarios de trabajo modificados de la base de datos
+    const loadModifiedWorkingHours = useCallback(async () => {
+        try {
+            const response = await fetch('http://localhost:9000/administrador/eventos/loadSchedules');
+            if (!response.ok) throw new Error('Error al cargar los horarios modificados');
 
-    const [events, setEvents] = useState([]);
+            const backendWorkingHours = await response.json();
+            const transformedWorkingHours = backendWorkingHours.map(hour => ({
+                title: hour.reason || "Horario Modificado",
+                start: `${hour.selectedDate}T${hour.startingTime}`,
+                end: `${hour.selectedDate}T${hour.endingTime}`,
+                allDay: false,
+            }));
+            setModifiedWorkingHours(transformedWorkingHours);
+        } catch (error) {
+            console.error("Error al cargar los horarios modificados: ", error);
+        }
+    }, []);
 
+    // Cargar los horarios de trabajo por defecto de la base de datos
+    const loadDefaultWorkingHours = useCallback(async () => {
+        try {
+            const response = await fetch('http://localhost:9000/administrador/eventos/loadDefaultSchedule');
+            if (!response.ok) throw new Error('Error al cargar los horarios de trabajo por defecto');
+
+            const backendDefaultHours = await response.json();
+            const transformedDefaultHours = backendDefaultHours.map(hour => ({
+                dayOfWeek: hour.day_of_week,
+                startTime: hour.start_time,
+                endTime: hour.end_time
+            }));
+            setDefaultWorkingHours(transformedDefaultHours);
+        } catch (error) {
+            console.error("Error al cargar los horarios de trabajo por defecto: ", error);
+        }
+    }, []);
+
+    // Cargar los datos al iniciar
     useEffect(() => {
-        // Hacer la solicitud para obtener los eventos guardados en la base de datos
         loadEvents();
-    }, [loadEvents]);
+        loadModifiedWorkingHours();
+        loadDefaultWorkingHours();
+    }, [loadEvents, loadModifiedWorkingHours, loadDefaultWorkingHours]);
 
-    /* Horarios de trabajo por defecto - Debe cargarse de la base de datos de Working Hours */
-    const defaultStartTime = '08:00';
-    const defaultEndTime = '15:00';
-
-    // Manejar click en fecha del calendario
-    const handleDateClick = (arg) => {
-        const clickedDate = arg.dateStr;
-        setSelectedDate(clickedDate);
-        setStartingHour(defaultStartTime.split(":")[0]);
-        setStartingMinutes(defaultStartTime.split(":")[1]);
-        setEndingHour(defaultEndTime.split(":")[0]);
-        setEndingMinutes(defaultEndTime.split(":")[1]);
+    const validateTimeInput = (hour, minute, setHourError, setMinuteError) => {
+        const hourValid = hour >= 0 && hour <= 23;
+        const minuteValid = minute >= 0 && minute <= 59;
+        setHourError(!hourValid);
+        setMinuteError(!minuteValid);
+        return hourValid && minuteValid;
     };
 
-    // Añadir un nuevo evento
+    const handleTimeChange = (e, type) => {
+        const value = e.target.value;
+        if (type === 'startingHour') {
+            setStartingHour(value);
+            validateTimeInput(value, startingMinutes, setHourError, setMinuteError);
+        } else if (type === 'startingMinutes') {
+            setStartingMinutes(value);
+            validateTimeInput(startingHour, value, setHourError, setMinuteError);
+        } else if (type === 'endingHour') {
+            setEndingHour(value);
+            validateTimeInput(value, endingMinutes, setHourError, setMinuteError);
+        } else if (type === 'endingMinutes') {
+            setEndingMinutes(value);
+            validateTimeInput(endingHour, value, setHourError, setMinuteError);
+        }
+    };
+
+    const handlePopupTimeChange = (e, type) => {
+        const value = e.target.value;
+        if (type === 'popupStartingHour') {
+            setPopupStartingHour(value);
+            validateTimeInput(value, popupStartingMinutes, setPopupHourError, setPopupMinuteError);
+        } else if (type === 'popupStartingMinutes') {
+            setPopupStartingMinutes(value);
+            validateTimeInput(popupStartingHour, value, setPopupHourError, setPopupMinuteError);
+        } else if (type === 'popupEndingHour') {
+            setPopupEndingHour(value);
+            validateTimeInput(value, popupEndingMinutes, setPopupHourError, setPopupMinuteError);
+        } else if (type === 'popupEndingMinutes') {
+            setPopupEndingMinutes(value);
+            validateTimeInput(popupEndingHour, value, setPopupHourError, setPopupMinuteError);
+        }
+    };
+
     const handleAddTimeClick = () => {
         setPopupStartingHour('');
         setPopupStartingMinutes('');
@@ -93,39 +166,31 @@ const AdminWorkingHours = () => {
         setIsPopupOpen(true);
     };
 
-    // Cerrar pop-up de creación
     const handleClosePopup = () => {
         setIsPopupOpen(false);
     };
 
-    // Cerrar pop-up de personalización
-    const handleCloseCustomPopup = () => {
-        setIsCustomPopupOpen(false);
-    };
-
-    // Guardar el nuevo evento
-    // Guardar el nuevo evento
     const handleSaveEvent = async () => {
-        // Combina las horas y minutos en el formato HH:mm para la base de datos SQL
+        if (!validateTimeInput(popupStartingHour, popupStartingMinutes, setPopupHourError, setPopupMinuteError) || 
+            !validateTimeInput(popupEndingHour, popupEndingMinutes, setPopupHourError, setPopupMinuteError)) {
+            alert("Por favor, corrige los campos de hora antes de guardar el evento.");
+            return;
+        }
+
         const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
         const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
 
-        // Crear el objeto del evento
         const newEvent = {
             event_title: eventName,
-            event_start_date: popupSelectedDate,  // Solo la fecha, sin la hora
-            event_all_day: isAllDay ? 1 : 0,  // Convertimos el booleano a 0 o 1
+            event_start_date: popupSelectedDate,
+            event_all_day: isAllDay ? 1 : 0,
             event_time_start: isAllDay ? '00:00:00' : startingTime,
             event_time_end: isAllDay ? '23:59:59' : endingTime,
-            event_frequency: eventFrequency === 'Personalizado' ? customFrequency : eventFrequency, // Frecuencia
-            event_repetitions_count: eventFrequency === 'Personalizado' ? parseInt(repeatCount, 10) : (eventFrequency === 'Una vez' ? 1 : -1),// Repeticiones o null
+            event_frequency: eventFrequency === 'Personalizado' ? customFrequency : eventFrequency,
+            event_repetitions_count: eventFrequency === 'Personalizado' ? parseInt(repeatCount, 10) : (eventFrequency === 'Una vez' ? 1 : -1),
         };
 
-        // Log para comprobar lo que estás enviando
-        console.log("Evento que se enviará al backend:", newEvent);
-
         try {
-            // Envía el evento al backend usando fetch
             const response = await fetch('http://localhost:9000/administrador/eventos/saveEvent', {
                 method: 'POST',
                 headers: {
@@ -134,52 +199,65 @@ const AdminWorkingHours = () => {
                 body: JSON.stringify(newEvent),
             });
 
-            if (!response.ok) {
-                throw new Error('Error al guardar el evento');
-            }
+            if (!response.ok) throw new Error('Error al guardar el evento');
 
-            const savedEvent = await response.json();
-            setEvents([...events, savedEvent]);  // Actualiza el estado de los eventos
             await loadEvents();
-            setIsPopupOpen(false);  // Cierra el pop-up
-            alert("[!] Se ha guardado el evento de manera exitosa.")
+            setIsPopupOpen(false);
+            alert("[!] Se ha guardado el evento de manera exitosa.");
         } catch (error) {
             console.error('Error al guardar el evento:', error);
         }
     };
 
-
-    // Manejar la selección de repetición personalizada
-    const handleCustomFrequency = () => {
-        setIsCustomPopupOpen(true);
+    const handleEditDayClick = () => {
+        setIsEditable(true);
     };
 
-    // Guardar las opciones de repetición personalizada
-    const handleSaveCustomFrequency = () => {
-        setIsCustomPopupOpen(false); // Cierra el pop-up de personalizado
-    };
+    const handleSaveDayClick = async () => {
+        if (!validateTimeInput(startingHour, startingMinutes, setHourError, setMinuteError) || 
+            !validateTimeInput(endingHour, endingMinutes, setHourError, setMinuteError)) {
+            alert("Por favor, corrige los campos de hora antes de guardar el horario.");
+            return;
+        }
 
-    // Manejar el click en un evento del calendario
-    const handleEventClick = (clickInfo) => {
-        setSelectedEvent(clickInfo.event);
-        setIsEventDetailPopupOpen(true);
-    };
+        const horarioData = {
+            selectedDate,
+            startingTime: `${startingHour.padStart(2, '0')}:${startingMinutes.padStart(2, '0')}:00`,
+            endingTime: `${endingHour.padStart(2, '0')}:${endingMinutes.padStart(2, '0')}:00`,
+            motivo,
+        };
 
-    const handleCloseEventDetailPopup = () => {
-        setIsEventDetailPopupOpen(false);
-        setSelectedEvent(null);
+        try {
+            const response = await fetch('http://localhost:9000/administrador/eventos/saveDay', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(horarioData),
+            });
+
+            if (!response.ok) throw new Error('Error al guardar el horario');
+
+            alert("[!] El horario se guardó exitosamente");
+            await loadModifiedWorkingHours();
+        } catch (error) {
+            console.error('Error al guardar el horario:', error);
+        } finally {
+            setIsEditable(false);
+            setMotivo('');
+        }
     };
 
     return (
         <div className='AdminCalendarapp-container'>
-            <div class="admin-buttons">
-                <button class="admin-btn">
+            <div className="admin-buttons">
+                <button className="admin-btn">
                     <img src={require('../media/user_management_btn.png')} width={60} />
                 </button>
-                <button class="admin-btn">
+                <button className="admin-btn">
                     <img src={require('../media/admin_management_btn.png')} width={60} />
                 </button>
-                <button class="admin-btn">
+                <button className="admin-btn">
                     <img src={require('../media/calendar_management_btn.png')} width={60} />
                 </button>
             </div>
@@ -191,6 +269,7 @@ const AdminWorkingHours = () => {
                         type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
+                        disabled={!isEditable}
                     />
                 </div>
                 <div className="AdminCalendar-input-group">
@@ -200,18 +279,22 @@ const AdminWorkingHours = () => {
                             type="number"
                             placeholder="HH"
                             value={startingHour}
-                            onChange={(e) => setStartingHour(e.target.value)}
+                            onChange={(e) => handleTimeChange(e, 'startingHour')}
+                            className={hourError ? 'error' : ''}
                             min="0"
                             max="23"
+                            disabled={!isEditable}
                         />
                         :
                         <input
                             type="number"
                             placeholder="MM"
                             value={startingMinutes}
-                            onChange={(e) => setStartingMinutes(e.target.value)}
+                            onChange={(e) => handleTimeChange(e, 'startingMinutes')}
+                            className={minuteError ? 'error' : ''}
                             min="0"
                             max="59"
+                            disabled={!isEditable}
                         />
                     </div>
                 </div>
@@ -222,24 +305,38 @@ const AdminWorkingHours = () => {
                             type="number"
                             placeholder="HH"
                             value={endingHour}
-                            onChange={(e) => setEndingHour(e.target.value)}
+                            onChange={(e) => handleTimeChange(e, 'endingHour')}
+                            className={hourError ? 'error' : ''}
                             min="0"
                             max="23"
+                            disabled={!isEditable}
                         />
                         :
                         <input
                             type="number"
                             placeholder="MM"
                             value={endingMinutes}
-                            onChange={(e) => setEndingMinutes(e.target.value)}
+                            onChange={(e) => handleTimeChange(e, 'endingMinutes')}
+                            className={minuteError ? 'error' : ''}
                             min="0"
                             max="59"
+                            disabled={!isEditable}
                         />
                     </div>
                 </div>
+                <div className="AdminCalendar-input-group">
+                    <label>Motivo:</label>
+                    <input
+                        type="text"
+                        placeholder="Motivo del cambio de horario"
+                        value={motivo}
+                        onChange={(e) => setMotivo(e.target.value)}
+                        disabled={!isEditable}
+                    />
+                </div>
                 <div className="AdminCalendar-button-group">
-                    <button>Editar día</button>
-                    <button>Guardar día</button>
+                    <button onClick={handleEditDayClick}>Editar día</button>
+                    <button onClick={handleSaveDayClick}>Guardar día</button>
                 </div>
                 <div className="AdminCalendar-add-time">
                     <button className="add-button" onClick={handleAddTimeClick}>+</button>
@@ -253,20 +350,38 @@ const AdminWorkingHours = () => {
                     <FullCalendar
                         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                         initialView="dayGridMonth"
-                        events={events}
-                        dateClick={handleDateClick}
-                        eventClick={handleEventClick}
+                        eventSources={[
+                            { events: regularEvents, color: 'blue', textColor: 'white' },
+                            { events: modifiedWorkingHours, color: 'red', textColor: 'white' }
+                        ]}
+                        dateClick={(arg) => {
+                            const selectedDay = new Date(arg.date).getDay();
+                            const defaultSchedule = defaultWorkingHours.find(d => d.dayOfWeek === selectedDay);
+                            const modifiedDay = modifiedWorkingHours.find(event => event.start.includes(arg.dateStr));
+
+                            if (modifiedDay) {
+                                setStartingHour(modifiedDay.start.split("T")[1].split(":")[0]);
+                                setStartingMinutes(modifiedDay.start.split("T")[1].split(":")[1]);
+                                setEndingHour(modifiedDay.end.split("T")[1].split(":")[0]);
+                                setEndingMinutes(modifiedDay.end.split("T")[1].split(":")[1]);
+                            } else if (defaultSchedule) {
+                                setStartingHour(defaultSchedule.startTime.split(":")[0]);
+                                setStartingMinutes(defaultSchedule.startTime.split(":")[1]);
+                                setEndingHour(defaultSchedule.endTime.split(":")[0]);
+                                setEndingMinutes(defaultSchedule.endTime.split(":")[1]);
+                            }
+                        }}
                         selectable={true}
                         businessHours={{
-                            daysOfWeek: [1, 2, 3, 4, 5],
-                            startTime: '08:00',
-                            endTime: '15:00',
+                            daysOfWeek: defaultWorkingHours.map(d => d.dayOfWeek),
+                            startTime: defaultWorkingHours.length > 0 ? defaultWorkingHours[0].startTime : '08:00',
+                            endTime: defaultWorkingHours.length > 0 ? defaultWorkingHours[0].endTime : '15:00',
                         }}
                     />
                 </div>
             </div>
 
-            {/* Pop-up para añadir nuevo evento */}
+            {/* Pop-up para Añadir Nuevo Evento */}
             {isPopupOpen && (
                 <div className="popup-overlay">
                     <div className="popup-container">
@@ -305,7 +420,8 @@ const AdminWorkingHours = () => {
                                             type="number"
                                             placeholder="HH"
                                             value={popupStartingHour}
-                                            onChange={(e) => setPopupStartingHour(e.target.value)}
+                                            onChange={(e) => handlePopupTimeChange(e, 'popupStartingHour')}
+                                            className={popupHourError ? 'error' : ''}
                                             min="0"
                                             max="23"
                                         />
@@ -314,7 +430,8 @@ const AdminWorkingHours = () => {
                                             type="number"
                                             placeholder="MM"
                                             value={popupStartingMinutes}
-                                            onChange={(e) => setPopupStartingMinutes(e.target.value)}
+                                            onChange={(e) => handlePopupTimeChange(e, 'popupStartingMinutes')}
+                                            className={popupMinuteError ? 'error' : ''}
                                             min="0"
                                             max="59"
                                         />
@@ -327,7 +444,8 @@ const AdminWorkingHours = () => {
                                             type="number"
                                             placeholder="HH"
                                             value={popupEndingHour}
-                                            onChange={(e) => setPopupEndingHour(e.target.value)}
+                                            onChange={(e) => handlePopupTimeChange(e, 'popupEndingHour')}
+                                            className={popupHourError ? 'error' : ''}
                                             min="0"
                                             max="23"
                                         />
@@ -336,7 +454,8 @@ const AdminWorkingHours = () => {
                                             type="number"
                                             placeholder="MM"
                                             value={popupEndingMinutes}
-                                            onChange={(e) => setPopupEndingMinutes(e.target.value)}
+                                            onChange={(e) => handlePopupTimeChange(e, 'popupEndingMinutes')}
+                                            className={popupMinuteError ? 'error' : ''}
                                             min="0"
                                             max="59"
                                         />
@@ -350,7 +469,7 @@ const AdminWorkingHours = () => {
                                 value={eventFrequency}
                                 onChange={(e) => {
                                     setEventFrequency(e.target.value);
-                                    if (e.target.value === 'Personalizado') handleCustomFrequency();
+                                    if (e.target.value === 'Personalizado') setIsCustomPopupOpen(true);
                                 }}
                             >
                                 <option value="Una vez">Una vez</option>
@@ -369,7 +488,7 @@ const AdminWorkingHours = () => {
                 </div>
             )}
 
-            {/* Pop-up para personalizar la repetición */}
+            {/* Pop-up para Personalizar Frecuencia */}
             {isCustomPopupOpen && (
                 <div className="popup-overlay">
                     <div className="popup-container small">
@@ -396,14 +515,14 @@ const AdminWorkingHours = () => {
                             />
                         </div>
                         <div className="AdminCalendar-button-group">
-                            <button className="save-button" onClick={handleSaveCustomFrequency}>Guardar</button>
-                            <button className="close-button" onClick={handleCloseCustomPopup}>Cancelar</button>
+                            <button className="save-button" onClick={() => setIsCustomPopupOpen(false)}>Guardar</button>
+                            <button className="close-button" onClick={() => setIsCustomPopupOpen(false)}>Cancelar</button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Pop-up para mostrar detalles del evento */}
+            {/* Pop-up para Detalles del Evento */}
             {isEventDetailPopupOpen && selectedEvent && (
                 <div className="popup-overlay">
                     <div className="popup-container">
@@ -438,9 +557,9 @@ const AdminWorkingHours = () => {
                         )}
                         <div className="AdminCalendar-input-group">
                             <label>Frecuencia del Evento:</label>
-                            <p>{selectedEvent.extendedProps.eventFrequency}</p>
+                            <p>{selectedEvent.extendedProps.frequency}</p>
                         </div>
-                        <button className="close-button" onClick={handleCloseEventDetailPopup}>Cerrar</button>
+                        <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>Cerrar</button>
                     </div>
                 </div>
             )}
