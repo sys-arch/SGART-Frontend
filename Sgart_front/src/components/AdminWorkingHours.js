@@ -4,8 +4,10 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import '../App.css';
+import { useNavigate } from 'react-router-dom';
 
 const AdminWorkingHours = () => {
+    const navigate = useNavigate();
     // Variables para modificar día laborable
     const [selectedDate, setSelectedDate] = useState('');
     const [startingHour, setStartingHour] = useState('');
@@ -106,40 +108,43 @@ const AdminWorkingHours = () => {
 
     return (
         <div className='AdminCalendarapp-container'>
-            <div class="admin-buttons">
-                <button class="admin-btn">
-                    <img src={require('../media/user_management_btn.png')} width={60}/>
+            <div className="admin-buttons">
+                <button className="admin-btn" onClick={() => navigate('/user-options')}>
+                    <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios"/>
                 </button>
-                <button class="admin-btn">
-                    <img src={require('../media/admin_management_btn.png')} width={60}/>
+                <button className="admin-btn">
+                    <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" title="Mant. Administradores"/>
                 </button>
-                <button class="admin-btn">
-                    <img src={require('../media/calendar_management_btn.png')} width={60}/>
+                <button className="admin-btn" onClick={() => navigate('/admin-working-hours')}>
+                    <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario" title="Mant. Calendario"/>
                 </button>
             </div>
             <div className="AdminCalendar-left-panel">
                 <h2>Horario de Trabajo</h2>
                 <div className="AdminCalendar-input-group">
-                    <label>Fecha:</label>
+                    <label htmlFor='fecha'>Fecha:</label>
                     <input
                         type="date"
+                        id='fecha'
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
                     />
                 </div>
                 <div className="AdminCalendar-input-group">
-                    <label>Hora de inicio:</label>
+                    <label htmlFor='horaInicio'>Hora de inicio:</label>
                     <input
                         type="text"
+                        id='horInicio'
                         placeholder="Hora de inicio"
                         value={startingHour}
                         onChange={(e) => setStartingHour(e.target.value)}
                     />
                 </div>
                 <div className="AdminCalendar-input-group">
-                    <label>Hora de fin:</label>
+                    <label htmlFor='horaFin'>Hora de fin:</label>
                     <input
                         type="text"
+                        id='horaFin'
                         placeholder="Hora de fin"
                         value={endingHour}
                         onChange={(e) => setEndingHour(e.target.value)}
@@ -180,26 +185,29 @@ const AdminWorkingHours = () => {
                     <div className="popup-container">
                         <h2>Añadir nuevo evento</h2>
                         <div className="AdminCalendar-input-group">
-                            <label>Nombre del Evento:</label>
+                            <label htmlFor='eventName'>Nombre del Evento:</label>
                             <input
                                 type="text"
+                                id='eventName'
                                 placeholder="Nombre del Evento"
                                 value={eventName}
                                 onChange={(e) => setEventName(e.target.value)}
                             />
                         </div>
                         <div className="AdminCalendar-input-group">
-                            <label>Fecha:</label>
+                            <label htmlFor='fecha'>Fecha:</label>
                             <input
                                 type="date"
+                                id='fecha'
                                 value={popupSelectedDate}
                                 onChange={(e) => setPopupSelectedDate(e.target.value)}
                             />
                         </div>
                         <div className="AdminCalendar-input-group">
-                            <label>¿Es un evento de todo el día?</label>
+                            <label htmlFor='allDay'>¿Es un evento de todo el día?</label>
                             <input
                                 type="checkbox"
+                                id='allDay'
                                 checked={isAllDay}
                                 onChange={(e) => setIsAllDay(e.target.checked)}
                             />
@@ -207,18 +215,20 @@ const AdminWorkingHours = () => {
                         {!isAllDay && (
                             <>
                                 <div className="AdminCalendar-input-group">
-                                    <label>Hora de inicio:</label>
+                                    <label htmlFor='horaInicio'>Hora de inicio:</label>
                                     <input
                                         type="text"
+                                        id='horaInicio'
                                         placeholder="Hora de inicio"
                                         value={popupStartingHour}
                                         onChange={(e) => setPopupStartingHour(e.target.value)}
                                     />
                                 </div>
                                 <div className="AdminCalendar-input-group">
-                                    <label>Hora de fin:</label>
+                                    <label htmlFor='horaFin'>Hora de fin:</label>
                                     <input
                                         type="text"
+                                        id='horaFin'
                                         placeholder="Hora de fin"
                                         value={popupEndingHour}
                                         onChange={(e) => setPopupEndingHour(e.target.value)}
@@ -227,9 +237,10 @@ const AdminWorkingHours = () => {
                             </>
                         )}
                         <div className="AdminCalendar-input-group">
-                            <label>Frecuencia del Evento:</label>
+                            <label htmlFor='eventFrequency'>Frecuencia del Evento:</label>
                             <select
                                 value={eventFrequency}
+                                id='eventFrequency'
                                 onChange={(e) => {
                                     setEventFrequency(e.target.value);
                                     if (e.target.value === 'Personalizado') handleCustomFrequency();
@@ -258,9 +269,10 @@ const AdminWorkingHours = () => {
                     <div className="popup-container small">
                         <h2>Personalizar repetición</h2>
                         <div className="AdminCalendar-input-group">
-                            <label>Frecuencia de repetición:</label>
+                            <label htmlFor='customFrequency'>Frecuencia de repetición:</label>
                             <select
                                 value={customFrequency}
+                                id='customFrequency'
                                 onChange={(e) => setCustomFrequency(e.target.value)}
                             >
                                 <option value="Diario">Diario</option>
@@ -270,9 +282,10 @@ const AdminWorkingHours = () => {
                             </select>
                         </div>
                         <div className="AdminCalendar-input-group">
-                            <label>Número de repeticiones:</label>
+                            <label htmlFor='repeatCount'>Número de repeticiones:</label>
                             <input
                                 type="number"
+                                id='repeatCount'
                                 min="1"
                                 value={repeatCount}
                                 onChange={(e) => setRepeatCount(e.target.value)}
@@ -292,25 +305,25 @@ const AdminWorkingHours = () => {
                     <div className="popup-container">
                         <h2>Detalles del Evento</h2>
                         <div className="AdminCalendar-input-group">
-                            <label>Nombre del Evento:</label>
+                            <label htmlFor='nombreEvento'>Nombre del Evento:</label>
                             <p>{selectedEvent.title}</p>
                         </div>
                         <div className="AdminCalendar-input-group">
-                            <label>Fecha de Inicio:</label>
+                            <label htmlFor='fechaInicio'>Fecha de Inicio:</label>
                             <p>{selectedEvent.start.toLocaleString()}</p>
                         </div>
                         {selectedEvent.allDay ? (
                             <div className="AdminCalendar-input-group">
-                                <label>Este evento es de todo el día</label>
+                                <label htmlFor='allDayEvent'>Este evento es de todo el día</label>
                             </div>
                         ) : (
                             <>
                                 <div className="AdminCalendar-input-group">
-                                    <label>Hora de inicio:</label>
+                                    <label htmlFor='horaInicio'>Hora de inicio:</label>
                                     <p>{selectedEvent.start.toLocaleTimeString()}</p>
                                 </div>
                                 <div className="AdminCalendar-input-group">
-                                    <label>Hora de fin:</label>
+                                    <label htmlFor='horaFin'>Hora de fin:</label>
                                     {selectedEvent.end ? (
                                         <p>{selectedEvent.end.toLocaleTimeString()}</p>
                                     ) : (
@@ -320,7 +333,7 @@ const AdminWorkingHours = () => {
                             </>
                         )}
                         <div className="AdminCalendar-input-group">
-                            <label>Frecuencia del Evento:</label>
+                            <label htmlFor='eventFrequency'>Frecuencia del Evento:</label>
                             <p>{selectedEvent.extendedProps.eventFrequency}</p>
                         </div>
                         <button className="close-button" onClick={handleCloseEventDetailPopup}>Cerrar</button>
