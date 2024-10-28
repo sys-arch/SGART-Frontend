@@ -13,7 +13,7 @@ const AdminWorkingHours = () => {
     const [endingHour, setEndingHour] = useState('');
     const [endingMinutes, setEndingMinutes] = useState('');
     const [eventName, setEventName] = useState('');
-    const [motivo, setMotivo] = useState('');
+    const [reason, setReason] = useState('');
 
     // Variables de estado adicionales
     const [isEditable, setIsEditable] = useState(false);
@@ -111,7 +111,35 @@ const AdminWorkingHours = () => {
         loadModifiedWorkingHours();
         loadDefaultWorkingHours();
     }, [loadEvents, loadModifiedWorkingHours, loadDefaultWorkingHours]);
+    const handleDateClick = (arg) => {
+        const clickedDate = arg.dateStr;
+        setSelectedDate(clickedDate);
+        const dayOfWeek = new Date(arg.date).getDay();
+        const defaultHours = defaultWorkingHours.find(d => d.dayOfWeek === dayOfWeek);
+        const modifiedHours = modifiedWorkingHours.find(event => event.start.includes(clickedDate));
 
+        if (modifiedHours) {
+            setStartingHour(modifiedHours.start.split("T")[1].split(":")[0]);
+            setStartingMinutes(modifiedHours.start.split("T")[1].split(":")[1]);
+            setEndingHour(modifiedHours.end.split("T")[1].split(":")[0]);
+            setEndingMinutes(modifiedHours.end.split("T")[1].split(":")[1]);
+        } else if (defaultHours) {
+            setStartingHour(defaultHours.startTime.split(":")[0]);
+            setStartingMinutes(defaultHours.startTime.split(":")[1]);
+            setEndingHour(defaultHours.endTime.split(":")[0]);
+            setEndingMinutes(defaultHours.endTime.split(":")[1]);
+        } else {
+            setStartingHour('');
+            setStartingMinutes('');
+            setEndingHour('');
+            setEndingMinutes('');
+        }
+    };
+
+    const handleEventClick = (clickInfo) => {
+        setSelectedEvent(clickInfo.event);
+        setIsEventDetailPopupOpen(true);
+    };
     const validateTimeInput = (hour, minute, setHourError, setMinuteError) => {
         const hourValid = hour >= 0 && hour <= 23;
         const minuteValid = minute >= 0 && minute <= 59;
@@ -224,7 +252,7 @@ const AdminWorkingHours = () => {
             selectedDate,
             startingTime: `${startingHour.padStart(2, '0')}:${startingMinutes.padStart(2, '0')}:00`,
             endingTime: `${endingHour.padStart(2, '0')}:${endingMinutes.padStart(2, '0')}:00`,
-            motivo,
+            reason,
         };
 
         try {
@@ -244,7 +272,7 @@ const AdminWorkingHours = () => {
             console.error('Error al guardar el horario:', error);
         } finally {
             setIsEditable(false);
-            setMotivo('');
+            setReason('');
         }
     };
 
@@ -329,8 +357,8 @@ const AdminWorkingHours = () => {
                     <input
                         type="text"
                         placeholder="Motivo del cambio de horario"
-                        value={motivo}
-                        onChange={(e) => setMotivo(e.target.value)}
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
                         disabled={!isEditable}
                     />
                 </div>
@@ -354,23 +382,8 @@ const AdminWorkingHours = () => {
                             { events: regularEvents, color: 'blue', textColor: 'white' },
                             { events: modifiedWorkingHours, color: 'red', textColor: 'white' }
                         ]}
-                        dateClick={(arg) => {
-                            const selectedDay = new Date(arg.date).getDay();
-                            const defaultSchedule = defaultWorkingHours.find(d => d.dayOfWeek === selectedDay);
-                            const modifiedDay = modifiedWorkingHours.find(event => event.start.includes(arg.dateStr));
-
-                            if (modifiedDay) {
-                                setStartingHour(modifiedDay.start.split("T")[1].split(":")[0]);
-                                setStartingMinutes(modifiedDay.start.split("T")[1].split(":")[1]);
-                                setEndingHour(modifiedDay.end.split("T")[1].split(":")[0]);
-                                setEndingMinutes(modifiedDay.end.split("T")[1].split(":")[1]);
-                            } else if (defaultSchedule) {
-                                setStartingHour(defaultSchedule.startTime.split(":")[0]);
-                                setStartingMinutes(defaultSchedule.startTime.split(":")[1]);
-                                setEndingHour(defaultSchedule.endTime.split(":")[0]);
-                                setEndingMinutes(defaultSchedule.endTime.split(":")[1]);
-                            }
-                        }}
+                        dateClick={handleDateClick}
+                        eventClick={handleEventClick}
                         selectable={true}
                         businessHours={{
                             daysOfWeek: defaultWorkingHours.map(d => d.dayOfWeek),
