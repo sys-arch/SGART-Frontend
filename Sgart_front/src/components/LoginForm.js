@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import RegisterForm from './RegisterForm';
 import RecuperarPwdForm from './RecuperarPwdForm';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
+    const navigate = useNavigate();
 
     // Estados de cada campo del formulario
     const [email, setEmail] = useState('');
@@ -38,6 +40,7 @@ const LoginForm = () => {
 
         alert('Login correcto');
         setError('');
+        navigate('/google-auth-login');
         // Enviar datos al backend...
     };
 

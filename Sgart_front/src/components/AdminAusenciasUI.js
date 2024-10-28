@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import VentanaConfirm from './VentanaConfirm';
 import VerAusenciasModal from './VerAusenciasModal';
+import { useNavigate } from 'react-router-dom';
 
 const AdminAusenciasUI = () => {
+    const navigate = useNavigate();
     // Estados
     const [showModal, setShowModal] = useState(false); // Para controlar la visibilidad del modal
     const [empleados] = useState([
@@ -131,14 +133,14 @@ const AdminAusenciasUI = () => {
     return (
         <div className="user-validation-container">
             <div className="admin-buttons">
-                <button className="admin-btn">
-                    <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" />
+                <button className="admin-btn" onClick={() => navigate('/user-options')}>
+                    <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios"/>
                 </button>
                 <button className="admin-btn">
-                    <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" />
+                    <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" title="Mant. Administradores"/>
                 </button>
-                <button className="admin-btn">
-                    <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario" />
+                <button className="admin-btn" onClick={() => navigate('/admin-working-hours')}>
+                    <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario" title="Mant. Calendario"/>
                 </button>
             </div>
             <div className="login-box">
@@ -164,10 +166,10 @@ const AdminAusenciasUI = () => {
                                     <td>{empleado.centro}</td>
                                     <td>{empleado.perfil}</td>
                                     <td>
-                                        <button className="action-button add-button" onClick={() => handleOpenModal(empleado)}>
+                                        <button className="action-button add-button" onClick={() => handleOpenModal(empleado)} title="Añadir Ausencia">
                                             +
                                         </button>
-                                        <button className="action-button details-button" onClick={() => handleOpenAusenciasPopup(empleado)}>
+                                        <button className="action-button details-button" onClick={() => handleOpenAusenciasPopup(empleado)} title="Ver Ausencias">
                                             &#8942;
                                         </button>
                                     </td>

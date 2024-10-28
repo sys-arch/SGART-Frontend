@@ -4,7 +4,7 @@ const VerAusenciasModal = ({ empleado, onClose }) => {
     // Datos de ejemplo para las ausencias
     const ausenciasDeEjemplo = [
         { tipoAusencia: 'Vacaciones', fechaInicio: '2024-11-10', fechaFin: '2024-11-15', horaInicio: null, horaFin: null },
-        { tipoAusencia: 'Baja', fechaInicio: '2024-11-20', fechaFin: '2024-11-22', horaInicio: '09:00', horaFin: '17:00' },
+        { tipoAusencia: 'Baja', fechaInicio: '2024-11-20', fechaFin: '2024-11-20', horaInicio: '11:00', horaFin: '15:00' },
     ];
 
     return (

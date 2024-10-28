@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import UserEditForm from './UserEditForm';
 import VentanaConfirm from './VentanaConfirm';
-
+import { useNavigate } from 'react-router-dom';
 
 const UserValidationUI = () => {
-
+    const navigate = useNavigate();
     // Estado que contiene los datos de la tabla
     const [datosUsuarios, setDatosUsuarios] = useState([
         { id: 1, Nombre: 'Juan', Apellidos: 'Pérez',Email: 'juan.perez@example.com', enabled: true},
@@ -92,14 +92,14 @@ const UserValidationUI = () => {
     return (
         <div className="user-validation-container">
         <div className="admin-buttons">
-            <button className="admin-btn">
-                <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios"/>
+            <button className="admin-btn" onClick={() => navigate('/user-options')}>
+                <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios"/>
             </button>
             <button className="admin-btn">
-                <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores"/>
+                <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" title="Mant. Administradores"/>
             </button>
-            <button className="admin-btn">
-                <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario"/>
+            <button className="admin-btn" onClick={() => navigate('/admin-working-hours')}>
+                <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario" title="Mant. Calendario"/>
             </button>
         </div>
         <div className="login-box">
@@ -124,10 +124,10 @@ const UserValidationUI = () => {
                             <td>{fila.Email}</td>
                             <td>
                                 <button className="validate-btn" onClick={() => validarUsuario(fila.id)}>
-                                    <img src={require('../media/garrapata.png')} width={25} alt="Validar Usuario"/>
+                                    <img src={require('../media/garrapata.png')} width={25} alt="Validar Usuario" title="Validar Usuario"/>
                                 </button>
                                 <button className="delete-btn" onClick={() => invalidarUsuario(fila.id)}>
-                                    <img src={require('../media/cancelar.png')} width={25} alt="Invalidar Usuario"/>
+                                    <img src={require('../media/cancelar.png')} width={25} alt="Invalidar Usuario" title="Invalidar Usuario"/>
                                 </button>
                             </td>
                         </tr>
@@ -160,14 +160,14 @@ const UserValidationUI = () => {
                                     <img 
                                         src={fila.enabled ? require('../media/deshabilitar-cursor.png') : require('../media/mano.png')} 
                                         alt={fila.enabled ? 'Deshabilitar' : 'Habilitar'}
-                                        style={{ width: '25px', height: '25px' }} 
+                                        style={{ width: '25px', height: '25px' }} title={fila.enabled ? 'Deshabilitar' : 'Habilitar'}
                                     />
                                 </button>
                                 <button className="edit-btn" onClick={() => handleEditUser(fila)}>
-                                    <img src={require('../media/editar-perfil.png')} width={25} alt="Editar Perfil"/>
+                                    <img src={require('../media/editar-perfil.png')} width={25} alt="Editar Perfil" title="Editar Perfil"/>
                                 </button>
                                 <button className="delete-btn" onClick={() => handleDeleteUser(fila)}>
-                                <img src={require('../media/bloquear.png')} width={25} alt="Eliminar Perfil"/>
+                                <img src={require('../media/bloquear.png')} width={25} alt="Eliminar Perfil" title="Eliminar Perfil"/>
                                 </button>
                             </td>
                         </tr>
