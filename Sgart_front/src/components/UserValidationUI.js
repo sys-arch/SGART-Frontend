@@ -5,10 +5,6 @@ import VentanaConfirm from './VentanaConfirm';
 
 const UserValidationUI = () => {
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        
-    }
     // Estado que contiene los datos de la tabla
     const [datosUsuarios, setDatosUsuarios] = useState([
         { id: 1, Nombre: 'Juan', Apellidos: 'Pérez',Email: 'juan.perez@example.com', enabled: true},
@@ -16,7 +12,7 @@ const UserValidationUI = () => {
         { id: 3, Nombre: 'Carlos', Apellidos: 'García', Email: 'carlos.garcia@example.com', enabled: true},
     ]);
 
-    var nextUserId=datosUsuarios.length;
+    const nextUserId=datosUsuarios.length;
 
     const [datosValidar, setDatosValidar] = useState([
         { id: 4, Nombre: 'Manuel', Apellidos: 'Perales',Email: 'manuel.perales@example.com', enabled: false},
@@ -29,7 +25,7 @@ const UserValidationUI = () => {
     };
 
     const validarUsuario = (id) => {
-        var usuario = datosValidar.filter((item) => item.id === id);
+        const usuario = datosValidar.filter((item) => item.id === id);
         const nuevosDatos = datosValidar.filter((item) => item.id !== id);
         setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
         setDatosUsuarios(datosUsuarios.concat(usuario)); // Actualizamos el estado con los nuevos datos
@@ -96,14 +92,14 @@ const UserValidationUI = () => {
     return (
         <div className="user-validation-container">
         <div className="admin-buttons">
-            <button class="admin-btn">
-                <img src={require('../media/user_management_btn.png')} width={60}/>
+            <button className="admin-btn">
+                <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios"/>
             </button>
-            <button class="admin-btn">
-                <img src={require('../media/admin_management_btn.png')} width={60}/>
+            <button className="admin-btn">
+                <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores"/>
             </button>
-            <button class="admin-btn">
-                <img src={require('../media/calendar_management_btn.png')} width={60}/>
+            <button className="admin-btn">
+                <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario"/>
             </button>
         </div>
         <div className="login-box">

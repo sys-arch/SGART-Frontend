@@ -720,3 +720,101 @@ button :hover {
 .close-button {
   background-color: #555;
 }
+
+
+/* Botones Ausencias de USUARIO */
+.action-button {
+  width: 40px; /* Ajusta según el tamaño deseado */
+  height: 40px;
+  border: none;
+  border-radius: 4px;
+  font-size: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  vertical-align: middle;
+}
+
+.details-button {
+  background-color: #4f94cc; /* Color para el botón de detalles */
+  color: #fff;
+}
+
+.action-button:hover {
+  opacity: 0.9;
+}
+
+.error-fecha {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/*Mostrar Ausencias*/
+.popup-container-ausencias {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.popup-overlay-ausencias {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.ausencias-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.ausencia-item {
+  background: #f9f9f9;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.ausencia-item:nth-child(odd) {
+  background: #f1f1f1;
+}
+
+.ausencia-item p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.ausencia-item strong {
+  color: #333;
+  font-weight: bold;
+}
+
+.cancel-btn-ausencias {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #4A90E2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-btn-ausencias:hover {
+  background-color: #357ABD;
+}
+

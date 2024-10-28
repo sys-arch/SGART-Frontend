@@ -76,4 +76,5 @@ UserEditForm.propTypes = {
     onSave: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired
 };
+
 export default UserEditForm;

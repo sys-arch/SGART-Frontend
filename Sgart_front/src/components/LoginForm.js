@@ -30,7 +30,6 @@ const LoginForm = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        //Verificar email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError('El formato del correo electrónico no es válido.');
@@ -68,12 +67,12 @@ const LoginForm = () => {
             <h2>Iniciar Sesión</h2>
             <form action="#" method="post" onSubmit={handleSubmit}>
                 <div className="input-group">
-                    <input type="text" id="username" value={email} onChange={handleChange} required/>
-                    <label htmlFor="username">Usuario</label>
+                    <input type="text" id="email" name="email" value={email} onChange={handleChange} required/>
+                    <label htmlFor="email">Usuario</label>
                 </div>
                 <div className="input-group">
-                    <input type={showPassword ? "text" : "password"} id="password" value={contrasena} onChange={handleChange} required/>
-                    <label htmlFor="password">Contraseña</label>
+                    <input type={showPassword ? "text" : "password"} id="contrasena" name="contrasena" value={contrasena} onChange={handleChange} required/>
+                    <label htmlFor="contrasena">Contraseña</label>
                     <button type="button" onClick={togglePasswordVisibility} className="password-toggle-btn">
                     <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')} alt='Mostrar Contraseña'/>
                     </button>
