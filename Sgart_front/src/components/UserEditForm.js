@@ -12,13 +12,28 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
         // Guardar los cambios realizados al usuario
         const updatedUser = {
             ...user,
-            Nombre: nombre,
-            Apellidos: apellidos,
-            Perfil: perfil,
-            Departamento: departamento,
-            FechaAlta: fechaAlta,
-            Centro: centro
+            name: nombre,
+            lastName: apellidos,
+            profile: perfil,
+            department: departamento,
+            hiringDate: fechaAlta,
+            center: centro
         };
+
+        fetch('/users/modificar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedUser),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Usuario editado exitosamente:', data);
+        })
+        .catch(error => {
+            console.error('Error al guardar usuario:', error);
+        });
         onSave(updatedUser);
     };
 

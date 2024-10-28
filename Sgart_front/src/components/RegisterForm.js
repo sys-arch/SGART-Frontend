@@ -80,24 +80,18 @@ const RegisterForm = () => {
             setError('La fecha de alta no puede ser una fecha futura.');
             return;
         }
-
-        alert('Registro exitoso');
-        setError('');
-
         // Enviar los datos al backend...
         const usuario = {
-            name: nombre_textbox,
-            lastName: apellidos_textbox,
-            email: email_textbox,
-            department: departamento_textbox,
-            center: centro_textbox,
-            hiringDate: fechaAlta_box,
+            name: nombre,
+            lastName: apellidos,
+            email: email,
+            department: departamento,
+            center: centro,
+            hiringDate: fechaAlta,
             profile: perfil_desplegable,
-            password: contrasena_textbox,
-            passwordConfirm: repetirContrasena_textbox
+            password: contrasena,
+            passwordConfirm: repetirContrasena
         };
-
-        console.log(usuario);
 
         fetch('http://localhost:9000/users/registro', {
             method: 'POST',
