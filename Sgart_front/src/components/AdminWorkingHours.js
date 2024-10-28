@@ -111,31 +111,34 @@ const AdminWorkingHours = () => {
         loadModifiedWorkingHours();
         loadDefaultWorkingHours();
     }, [loadEvents, loadModifiedWorkingHours, loadDefaultWorkingHours]);
+
     const handleDateClick = (arg) => {
         const clickedDate = arg.dateStr;
         setSelectedDate(clickedDate);
         const dayOfWeek = new Date(arg.date).getDay();
         const defaultHours = defaultWorkingHours.find(d => d.dayOfWeek === dayOfWeek);
         const modifiedHours = modifiedWorkingHours.find(event => event.start.includes(clickedDate));
-
+    
         if (modifiedHours) {
             setStartingHour(modifiedHours.start.split("T")[1].split(":")[0]);
             setStartingMinutes(modifiedHours.start.split("T")[1].split(":")[1]);
             setEndingHour(modifiedHours.end.split("T")[1].split(":")[0]);
             setEndingMinutes(modifiedHours.end.split("T")[1].split(":")[1]);
+            setReason(modifiedHours.title);
         } else if (defaultHours) {
             setStartingHour(defaultHours.startTime.split(":")[0]);
             setStartingMinutes(defaultHours.startTime.split(":")[1]);
             setEndingHour(defaultHours.endTime.split(":")[0]);
             setEndingMinutes(defaultHours.endTime.split(":")[1]);
+            setReason('');
         } else {
             setStartingHour('');
             setStartingMinutes('');
             setEndingHour('');
             setEndingMinutes('');
+            setReason('');
         }
     };
-
     const handleEventClick = (clickInfo) => {
         setSelectedEvent(clickInfo.event);
         setIsEventDetailPopupOpen(true);
