@@ -7,14 +7,28 @@ const UserValidationUI = () => {
     const navigate = useNavigate();
     // Estado que contiene los datos de la tabla
     const [datosUsuarios, setDatosUsuarios] = useState([]);
-
-    const nextUserId=datosUsuarios.length;
-
-    const [datosValidar, setDatosValidar] = useState([
-        { id: 1, name: 'Manuel', lastName: 'Perales',email: 'manuel.perales@example.com', blocked: false},
-    ]);
+    const [datosValidar, setDatosValidar] = useState([]);
 
     useEffect(() => {
+        actualizarUsuarios();
+      }, []);
+
+    const actualizarUsuarios = () =>{
+        fetch('admin/getUsuariosSinValidar')
+          .then(async response => {
+            const result=await response.json();
+            const usersTable=result.map(user=>({
+                id: user.id,
+                email: user.email,
+                name:user.name,
+                lastName:user.lastName,
+                blocked:user.blocked,
+            }));
+            setDatosValidar(usersTable);
+          })
+          .catch(error => {
+            console.error('Error fetching data:', error);
+          });
         fetch('admin/getUsuariosValidados')
           .then(async response => {
             const result=await response.json();
@@ -30,19 +44,43 @@ const UserValidationUI = () => {
           .catch(error => {
             console.error('Error fetching data:', error);
           });
-      }, []);
+    }
 
     const invalidarUsuario = (email) => {
         // Filtramos el array de datos para eliminar el elemento con el id correspondiente
-        const nuevosDatos = datosValidar.filter((item) => item.email !== email);
-        setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
+        fetch('admin/eliminar/email/'+email,{
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+          .then(response => {
+            const nuevosDatos = datosValidar.filter((item) => item.email !== email);
+            setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
+          })
+          .catch(error => {
+            console.error('Error unvalidating user: ',error);
+          });
     };
 
     const validarUsuario = (email) => {
-        const usuario = datosValidar.filter((item) => item.email === email);
-        const nuevosDatos = datosValidar.filter((item) => item.email !== email);
-        setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
-        setDatosUsuarios(datosUsuarios.concat(usuario)); // Actualizamos el estado con los nuevos datos
+        fetch('admin/validar/'+email,{
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+          .then(response => {
+            actualizarUsuarios();
+          })
+          .catch(error => {
+            console.error('Error updating user: ',error);
+          });
+          setDatosUsuarios((prevUsuarios) =>
+            prevUsuarios.map((user) =>
+                user.email === email ? { ...user, blocked: !user.blocked } : user
+            )
+        );
     }
 
     const toggleUserStatus = (email) => {
@@ -63,7 +101,7 @@ const UserValidationUI = () => {
                 user.email === email ? { ...user, blocked: !user.blocked } : user
             )
         );
-        }
+    }
     //Modificar usuarios
     const [editingUser, setEditingUser] = useState(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
