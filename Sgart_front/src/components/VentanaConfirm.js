@@ -1,11 +1,38 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
+    const getTitle = () => {
+        switch (action) {
+            case 'save':
+                return 'Confirmar Cambios';
+            case 'delete':
+                return 'Confirmar Eliminación';
+            case 'add':
+                return 'Confirmar Ausencia';
+            default:
+                return '';
+        }
+    };
+
+    const getMessage = () => {
+        switch (action) {
+            case 'save':
+                return '¿Está seguro de que desea guardar los cambios?';
+            case 'delete':
+                return '¿Está seguro de que desea eliminar este usuario?';
+            case 'add':
+                return '¿Está seguro de que desea añadir esta ausencia?';
+            default:
+                return '';
+        }
+    };
+
     return (
         <div className="ventana-confirm">
             <div className="confirmation-content">
-                <h3>{action === 'save' ? 'Confirmar Cambios' : 'Confirmar Eliminación'}</h3>
-                <p>{action === 'save' ? '¿Está seguro de que desea guardar los cambios?' : '¿Está seguro de que desea eliminar este usuario?'}</p>
+                <h3>{getTitle()}</h3>
+                <p>{getMessage()}</p>
                 <div className="confirmation-buttons">
                     <button className="confirm-btn" onClick={onConfirm}>Confirmar</button>
                     <button className="cancel-btn" onClick={onCancel}>Cancelar</button>
@@ -13,6 +40,12 @@ const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
             </div>
         </div>
     );
+};
+
+VentanaConfirm.propTypes = {
+    onConfirm: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
+    action: PropTypes.string.isRequired,
 };
 
 export default VentanaConfirm;

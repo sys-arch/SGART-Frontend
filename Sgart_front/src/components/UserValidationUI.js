@@ -1,48 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import UserEditForm from './UserEditForm';
 import VentanaConfirm from './VentanaConfirm';
-import axios, { AxiosHeaders } from 'axios';
-
+import { useNavigate } from 'react-router-dom';
 
 const UserValidationUI = () => {
-
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        
-    }
+    const navigate = useNavigate();
     // Estado que contiene los datos de la tabla
-    const [datosUsuarios, setDatosUsuarios] = useState([]);
-
-    const [datosValidar, setDatosValidar] = useState([
-        { name: 'Carlos', lastName: 'García', email: 'carlos.garcia@example.com', blocked: false},
+    const [datosUsuarios, setDatosUsuarios] = useState([
+        { id: 1, Nombre: 'Juan', Apellidos: 'Pérez',Email: 'juan.perez@example.com', enabled: true},
+        { id: 2, Nombre: 'María', Apellidos: 'López', Email: 'maria.lopez@example.com', enabled: true},
+        { id: 3, Nombre: 'Carlos', Apellidos: 'García', Email: 'carlos.garcia@example.com', enabled: true},
     ]);
 
-    useEffect(() => {
-        fetch('admin/getUsuariosValidados')
-          .then(async response => {
-            const result=await response.json();
-            const usersTable=result.map(user=>({
-                email: user.email,
-                name:user.name,
-                lastName:user.lastName,
-                blocked:user.blocked,
-            }));
-            setDatosUsuarios(usersTable);
-          })
-          .catch(error => {
-            console.error('Error fetching data:', error);
-          });
-      }, []);
+    const nextUserId=datosUsuarios.length;
 
-    const invalidarUsuario = (email) => {
-        // Filtramos el array de datos para eliminar el elemento con el email correspondiente
-        const nuevosDatos = datosValidar.filter((item) => item.email !== email);
+    const [datosValidar, setDatosValidar] = useState([
+        { id: 4, Nombre: 'Manuel', Apellidos: 'Perales',Email: 'manuel.perales@example.com', enabled: false},
+    ]);
+
+    const invalidarUsuario = (id) => {
+        // Filtramos el array de datos para eliminar el elemento con el id correspondiente
+        const nuevosDatos = datosValidar.filter((item) => item.id !== id);
         setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
     };
 
-    const validarUsuario = (email) => {
-        var usuario = datosValidar.filter((item) => item.email === email);
-        const nuevosDatos = datosValidar.filter((item) => item.email !== email);
+    const validarUsuario = (id) => {
+        const usuario = datosValidar.filter((item) => item.id === id);
+        const nuevosDatos = datosValidar.filter((item) => item.id !== id);
         setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
         setDatosUsuarios(datosUsuarios.concat(usuario)); // Actualizamos el estado con los nuevos datos
     }
@@ -65,7 +49,7 @@ const UserValidationUI = () => {
     const handleConfirmSave = () => {
         setDatosUsuarios((prevUsuarios) =>
             prevUsuarios.map((user) =>
-                user.email === userToSave.email ? userToSave : user
+                user.id === userToSave.id ? userToSave : user
             )
         );
         setEditingUser(null);
@@ -91,69 +75,59 @@ const UserValidationUI = () => {
 
     const handleConfirmDelete = () => {
         setDatosUsuarios((prevUsuarios) =>
-            prevUsuarios.filter((user) => user.email !== userToDelete.email)
+            prevUsuarios.filter((user) => user.id !== userToDelete.id)
         );
         setUserToDelete(null);
         setShowConfirmation(false);
     };
 
-    const toggleUserStatus = (email) => {
-        fetch('admin/cambiarHabilitacion/'+email,{
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-          .then(response => {
-            
-          })
-          .catch(error => {
-            console.error('Error updating user: ',error);
-          });
+    const toggleUserStatus = (userId) => {
         setDatosUsuarios((prevUsuarios) =>
             prevUsuarios.map((user) =>
-                user.email === email ? { ...user, blocked: !user.blocked } : user
+                user.id === userId ? { ...user, enabled: !user.enabled } : user
             )
         );
-    }
+    };
 
     return (
-        <div class="user-validation-container">
-        <div class="admin-buttons">
-            <button class="admin-btn">
-                <img src={require('../media/user_management_btn.png')} width={60}/>
+        <div className="user-validation-container">
+        <div className="admin-buttons">
+            <button className="admin-btn" onClick={() => navigate('/user-options')}>
+                <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios"/>
             </button>
-            <button class="admin-btn">
-                <img src={require('../media/admin_management_btn.png')} width={60}/>
+            <button className="admin-btn">
+                <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" title="Mant. Administradores"/>
             </button>
-            <button class="admin-btn">
-                <img src={require('../media/calendar_management_btn.png')} width={60}/>
+            <button className="admin-btn" onClick={() => navigate('/admin-working-hours')}>
+                <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario" title="Mant. Calendario"/>
             </button>
         </div>
-        <div class="login-box">
+        <div className="login-box">
         <body>
                 <h2>Pendientes de validación</h2>
-                <table class="user-table">
+                <table className="user-table">
                     <thead>
                         <tr>
-                            <th>Email</th>
+                            <th>id</th>
                             <th>Nombre</th>
                             <th>Apellidos</th>
+                            <th>Email</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                     {datosValidar.map((fila) => (
-                        <tr key={fila.email}>
-                            <td>{fila.email}</td>
-                            <td>{fila.name}</td>
-                            <td>{fila.lastName}</td>
+                        <tr key={fila.id}>
+                            <td>{fila.id}</td>
+                            <td>{fila.Nombre}</td>
+                            <td>{fila.Apellidos}</td>
+                            <td>{fila.Email}</td>
                             <td>
-                                <button class="validate-btn" onClick={() => validarUsuario(fila.email)}>
-                                    <img src={require('../media/garrapata.png')} width={25}/>
+                                <button className="validate-btn" onClick={() => validarUsuario(fila.id)}>
+                                    <img src={require('../media/garrapata.png')} width={25} alt="Validar Usuario" title="Validar Usuario"/>
                                 </button>
-                                <button class="delete-btn" onClick={() => invalidarUsuario(fila.email)}>
-                                    <img src={require('../media/cancelar.png')} width={25}/>
+                                <button className="delete-btn" onClick={() => invalidarUsuario(fila.id)}>
+                                    <img src={require('../media/cancelar.png')} width={25} alt="Invalidar Usuario" title="Invalidar Usuario"/>
                                 </button>
                             </td>
                         </tr>
@@ -166,32 +140,34 @@ const UserValidationUI = () => {
                 <table className="user-table">
                     <thead>
                         <tr>
-                            <th>Email</th>
+                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Apellidos</th>
+                            <th>Email</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                     {datosUsuarios.map((fila) => (
-                        <tr key={fila.email} className={!fila.blocked ? '' : 'disabled-user'}>
-                            <td>{fila.email}</td>
-                            <td>{fila.name}</td>
-                            <td>{fila.last_name}</td>
+                        <tr key={fila.id} className={!fila.enabled ? 'disabled-user' : ''}>
+                            <td>{fila.id}</td>
+                            <td>{fila.Nombre}</td>
+                            <td>{fila.Apellidos}</td>
+                            <td>{fila.Email}</td>
                             <td>
-                                <button className={fila.blocked ? 'habilitar-btn':'deshabilitar-btn'}
-                                    onClick={() => toggleUserStatus(fila.email)}>
+                                <button className={fila.enabled ? 'deshabilitar-btn' : 'habilitar-btn'}
+                                    onClick={() => toggleUserStatus(fila.id)}>
                                     <img 
-                                        src={fila.blocked ? require('../media/mano.png'):require('../media/deshabilitar-cursor.png')} 
-                                        alt={fila.blocked ? 'Habilitar':'Deshabilitar'}
-                                        style={{ width: '25px', height: '25px' }} 
+                                        src={fila.enabled ? require('../media/deshabilitar-cursor.png') : require('../media/mano.png')} 
+                                        alt={fila.enabled ? 'Deshabilitar' : 'Habilitar'}
+                                        style={{ width: '25px', height: '25px' }} title={fila.enabled ? 'Deshabilitar' : 'Habilitar'}
                                     />
                                 </button>
-                                <button class="edit-btn" onClick={() => handleEditUser(fila)}>
-                                    <img src={require('../media/editar-perfil.png')} width={25}/>
+                                <button className="edit-btn" onClick={() => handleEditUser(fila)}>
+                                    <img src={require('../media/editar-perfil.png')} width={25} alt="Editar Perfil" title="Editar Perfil"/>
                                 </button>
-                                <button class="delete-btn" onClick={() => handleDeleteUser(fila)}>
-                                <img src={require('../media/bloquear.png')} width={25}/>
+                                <button className="delete-btn" onClick={() => handleDeleteUser(fila)}>
+                                <img src={require('../media/bloquear.png')} width={25} alt="Eliminar Perfil" title="Eliminar Perfil"/>
                                 </button>
                             </td>
                         </tr>
