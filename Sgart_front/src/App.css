@@ -1,9 +1,18 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto; /* Solo el body tiene scroll */
+}
+
 .App {
-  height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #4A90E2, #1A2980);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #4A90E2, #1A2980);
+  padding: 20px;
 }
 
 .App-logo {
@@ -42,7 +51,6 @@
 }
 
 .input{
-  position: absolute;
   left: 200px;
 }
 
@@ -60,6 +68,26 @@
   text-align: center;
 }
 
+.register-container {
+  width: 100%;
+  max-width: 500px;
+  padding: 20px;
+  margin: 20px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.register-box {
+  width: 100%;
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  overflow: visible;
+}
+
 h2 {
   margin-bottom: 20px;
   color: #333;
@@ -70,13 +98,29 @@ h2 {
   margin-bottom: 30px;
 }
 
+.input-group-register {
+  position: relative;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
 .input-group input {
-  width: 100%;
+  width: calc(100% - 11px);
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 5px;
   background: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+.input-group-register input {
+  width: 100%;
+  padding: 10px 40px 10px 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   outline: none;
   transition: all 0.3s ease;
 }
@@ -91,6 +135,66 @@ h2 {
   transition: all 0.3s ease;
 }
 
+.input-group-register label {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.input-group-register select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: none;
+  outline: none;
+  transition: all 0.3s ease;
+  color: #333;
+  appearance: none;
+  background-color: white;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.password-toggle-btn img {
+  width: 20px; /* Ajusta el tamaño del icono si es necesario */
+  height: 20px;
+  object-fit: contain;
+}
+
+.repeatPassword-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.repeatPassword-toggle-btn img {
+  width: 20px; /* Ajusta el tamaño del icono si es necesario */
+  height: 20px;
+  object-fit: contain;
+}
+
 /* Estilo cuando el input está enfocado */
 .input-group input:focus,
 .input-group input:valid {
@@ -99,6 +203,30 @@ h2 {
 
 .input-group input:focus ~ label,
 .input-group input:valid ~ label {
+  top: -10px;
+  font-size: 12px;
+  color: #4A90E2;
+}
+
+.input-group-register input:focus,
+.input-group-register input:valid {
+  border-color: #4A90E2;
+}
+
+.input-group-register input:focus ~ label,
+.input-group-register input:valid ~ label {
+  top: -10px;
+  font-size: 12px;
+  color: #4A90E2;
+}
+
+.input-group-register select:focus,
+.input-group-register select:valid {
+  border-color: #4A90E2;
+}
+
+.input-group-register select:focus ~ label,
+.input-group-register select:valid ~ label {
   top: -10px;
   font-size: 12px;
   color: #4A90E2;
@@ -118,7 +246,24 @@ h2 {
   transition: background-color 0.3s ease;
 }
 
+.register-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background-color: #4A90E2;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
 .login-btn:hover {
+  background-color: #357ABD;
+}
+
+.register-btn:hover {
   background-color: #357ABD;
 }
 
@@ -138,6 +283,13 @@ h2 {
 
 .login-options a:hover {
   color: #357ABD;
+}
+
+/* Adaptable para móviles */
+@media (max-width: 768px) {
+  .login-box {
+      padding: 30px;
+  }
 }
 
 .qr-container {
@@ -162,11 +314,95 @@ h2 {
   color: #888;
 }
 
-/* Adaptable para móviles */
-@media (max-width: 768px) {
-  .login-box {
-      padding: 30px;
-  }
+.input-group button {
+  position: absolute;
+  top:50%;
+  transform: translateY(-50%);
+  right:-10px;
+  border:none;
+  appearance: none;
+  background-color: inherit;
+}
+
+.input-group img{
+  width: 30px;
+}
+
+.perfil-select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none; 
+  -moz-appearance: none;
+  position: relative;
+}
+
+.select-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.select-toggle-btn img {
+  width: 15px;
+  height: 15px;
+}
+
+.edit-btn {
+  background-color: #ffc107;
+  color: #fff;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.admin-buttons {
+  position: absolute;
+  left: 0px;
+  top:0px;
+}
+
+.admin-btn {
+  background-color: transparent;
+}
+
+.register-options {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.register-options p {
+  margin-bottom: 5px;
+}
+
+.register-options a {
+  color: #4A90E2;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.5s ease;
+}
+
+.register-options a:hover {
+  color: #357ABD;
 }
 .user-validation-container {
   width: 100%;
@@ -228,26 +464,394 @@ button {
   color: #fff;
 }
 
-.edit-btn {
-  background-color: #ffc107;
-  color: #fff;
+.user-edit-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Sombra trasera similar a la ventana de confirmación */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
 }
 
-.delete-btn {
+.user-content{
+  width: 120%;
+  max-width: 1400px;
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra alrededor de la ventana */
+  position: relative;
+  transform: translateX(-16%);
+  overflow-y: auto;
+}
+
+.cancelar-btn {
   background-color: #dc3545;
   color: #fff;
 }
 
-button:hover {
+.guardar-btn {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.ventana-confirm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+}
+
+.confirmation-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.confirmation-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.confirm-btn {
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: #dc3545;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button :hover {
   opacity: 0.9;
 }
 
-.admin-buttons {
-  position: absolute;
-  left: 0px;
-  top:0px;
+/* Estilos para los botones de habilitar/deshabilitar */
+.habilitar-btn {
+  background-color: #28a745; /* Verde para habilitar */
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.admin-btn {
-  background-color: transparent;
+.deshabilitar-btn {
+  background-color: #4f94cc; /* Rojo oscuro para deshabilitar */
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Estilo para la fila de un usuario deshabilitado */
+.disabled-user {
+  background-color: #f2f2f2; /* Fondo gris para distinguir usuarios deshabilitados */
+  color: #999; /* Texto atenuado */
+}
+
+.AdminCalendarapp-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  gap: 20px;
+  padding: 20px;
+}
+
+.AdminCalendar-left-panel {
+  width: 275px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.AdminCalendar-left-panel h2 {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.AdminCalendar-input-group {
+  margin-bottom: 10px;
+}
+
+.AdminCalendar-input-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.AdminCalendar-input-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.AdminCalendar-button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.AdminCalendar-button-group button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #1e3a8a;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.AdminCalendar-button-group button:hover {
+  background-color: #3b82f6;
+}
+
+.AdminCalendar-add-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.add-button {
+  background-color: #1e3a8a;
+  border: none;
+  color: white;
+  font-size: 24px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
+}
+
+.add-button:hover {
+  background-color: #3b82f6;
+}
+
+.AdminCalendar-add-time p {
+  margin-top: 10px;
+  color: #1e3a8a;
+}
+
+.AdminCalendar-calendar-container {
+  flex-grow: 1;
+  max-width: 900px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.calendar-wrapper {
+  flex-grow: 1;           
+  width: 100%;
+}
+/* Estilos del Pop-up */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-container {
+  background-color: white;
+  padding: 20px 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 300px;
+}
+
+.save-button, .close-button {
+  padding: 10px 20px;
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.save-button:hover, .close-button:hover {
+  background-color: #3b82f6;
+}
+
+.close-button {
+  background-color: #555;
+}
+
+
+/* Botones Ausencias de USUARIO */
+.action-button {
+  width: 40px; /* Ajusta según el tamaño deseado */
+  height: 40px;
+  border: none;
+  border-radius: 4px;
+  font-size: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  vertical-align: middle;
+}
+
+.details-button {
+  background-color: #4f94cc; /* Color para el botón de detalles */
+  color: #fff;
+}
+
+.action-button:hover {
+  opacity: 0.9;
+}
+
+.error-fecha {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/*Mostrar Ausencias*/
+.popup-container-ausencias {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.popup-overlay-ausencias {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.ausencias-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.ausencia-item {
+  background: #f9f9f9;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.ausencia-item:nth-child(odd) {
+  background: #f1f1f1;
+}
+
+.ausencia-item p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.ausencia-item strong {
+  color: #333;
+  font-weight: bold;
+}
+
+.cancel-btn-ausencias {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #4A90E2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-btn-ausencias:hover {
+  background-color: #357ABD;
+}
+
+/* Estilos para UserOptions */
+.user-options-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.user-options-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.option-btn {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.option-btn:hover {
+  background-color: #0056b3;
+}
+
+.user-options-container h2 {
+  font-size: 1.5em;
+  color: #333;
+  margin-bottom: 20px;
 }

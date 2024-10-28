@@ -1,48 +1,50 @@
 import React, { useState } from 'react';
+import LoginForm from './LoginForm';
 
 const RegisterForm = () => {
-    const [nombre_textbox, setNombre] = useState('');
-    const [apellidos_textbox, setApellidos] = useState('');
-    const [email_textbox, setEmail] = useState('');
-    const [departamento_textbox, setDepartamento] = useState('');
-    const [centro_textbox, setCentro] = useState('');
-    const [fechaAlta_box, setFechaAlta] = useState('');
-    const [perfil_desplegable, setPerfil] = useState('usuario');
-    const [contrasena_textbox, setContrasena] = useState('');
-    const [repetirContrasena_textbox, setRepetirContrasena] = useState('');
+    const [nombre, setNombre] = useState('');
+    const [apellidos, setApellidos] = useState('');
+    const [email, setEmail] = useState('');
+    const [departamento, setDepartamento] = useState('');
+    const [centro, setCentro] = useState('');
+    const [fechaAlta, setFechaAlta] = useState('');
+    const [perfil_desplegable, setPerfil_desplegable] = useState('');
+    const [contrasena, setContrasena] = useState('');
+    const [repetirContrasena, setRepetirContrasena] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+    const [isLoged, setIsLoged] = useState(false);
 
 
     const handleChange = (event) => {
         const { name, value } = event.target;
         switch (name) {
-            case 'nombre_textbox':
+            case 'nombre':
                 setNombre(value);
                 break;
-            case 'apellidos_textbox':
+            case 'apellidos':
                 setApellidos(value);
                 break;
-            case 'email_textbox':
+            case 'email':
                 setEmail(value);
                 break;
-            case 'departamento_textbox':
+            case 'departamento':
                 setDepartamento(value);
                 break;
-            case 'centro_textbox':
+            case 'centro':
                 setCentro(value);
                 break;
-            case 'fechaAlta_box':
+            case 'fechaAlta':
                 setFechaAlta(value);
                 break;
             case 'perfil_desplegable':
-                setPerfil(value);
+                setPerfil_desplegable(value);
                 break;
-            case 'contrasena_textbox':
+            case 'contrasena':
                 setContrasena(value);
                 break;
-            case 'repetirContrasena_textbox':
+            case 'repetirContrasena':
                 setRepetirContrasena(value);
                 break;
             default:
@@ -54,27 +56,27 @@ const RegisterForm = () => {
         event.preventDefault();
 
         // ¿Contraseñas iguales?
-        if (contrasena_textbox !== repetirContrasena_textbox) {
+        if (contrasena !== repetirContrasena) {
             setError('Las contraseñas no coinciden.');
             return;
         }
 
         // ¿Contraseña robusta?
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        if (!passwordRegex.test(contrasena_textbox)) {
+        if (!passwordRegex.test(contrasena)) {
             setError('La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial (@, $, !, %, *, ?, &).');
             return;
         }
 
         // Validar email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email_textbox)) {
+        if (!emailRegex.test(email)) {
             setError('El formato del correo electrónico no es válido.');
             return;
         }
 
         // Validar fecha (no puede ser una fecha futura)
-        const fechaSeleccionada = new Date(fechaAlta_box);
+        const fechaSeleccionada = new Date(fechaAlta);
         const fechaActual = new Date();
         if (fechaSeleccionada > fechaActual) {
             setError('La fecha de alta no puede ser una fecha futura.');
@@ -83,7 +85,43 @@ const RegisterForm = () => {
 
         alert('Registro exitoso');
         setError('');
+
         // Enviar los datos al backend...
+        const usuario = {
+            name: nombre_textbox,
+            lastName: apellidos_textbox,
+            email: email_textbox,
+            department: departamento_textbox,
+            center: centro_textbox,
+            hiringDate: fechaAlta_box,
+            profile: perfil_desplegable,
+            password: contrasena_textbox,
+            passwordConfirm: repetirContrasena_textbox
+        };
+
+        console.log(usuario);
+
+        fetch('http://localhost:9000/users/registro', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(usuario),
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Error en el registro del usuario');
+            }
+            return response.json();
+        })
+        .then((data) => {
+            alert('Registro exitoso'); // Mostrar el mensaje de éxito
+            setError(''); // Limpiar cualquier mensaje de error
+        })
+        .catch((error) => {
+            console.error('Hubo un error:', error);
+            setError('Error al registrar el usuario');
+        });
     };
 
     const togglePasswordVisibility = () => {
@@ -94,58 +132,83 @@ const RegisterForm = () => {
         setShowRepeatPassword((prevShowRepeatPassword) => !prevShowRepeatPassword);
     };
 
-    return (
-        <form onSubmit={handleSubmit}>
-            <h2>Registro</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <div>
-                <label>Nombre*</label>
-                <input type="text" name="nombre_textbox" value={nombre_textbox} onChange={handleChange} required />
-            </div>
-            <div>
-                <label>Apellidos*</label>
-                <input type="text" name="apellidos_textbox" value={apellidos_textbox} onChange={handleChange} required />
-            </div>
-            <div>
-                <label>Email*</label>
-                <input type="email" name="email_textbox" value={email_textbox} onChange={handleChange} required />
-            </div>
-            <div>
-                <label>Departamento</label>
-                <input type="text" name="departamento_textbox" value={departamento_textbox} onChange={handleChange} />
-            </div>
-            <div>
-                <label>Centro*</label>
-                <input type="text" name="centro_textbox" value={centro_textbox} onChange={handleChange} required />
-            </div>
-            <div>
-                <label>Fecha de Alta*</label>
-                <input type="date" name="fechaAlta_box" value={fechaAlta_box} onChange={handleChange} required />
-            </div>
-            <div>
-                <label>Perfil</label>
-                <select name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange}>
-                    <option value="usuario">Usuario</option>
-                    <option value="admin">Administrador</option>
-                </select>
-            </div>
-            <div>
-                <label>Contraseña*</label>
-                <input type={showPassword ? "text" : "password"} name="contrasena_textbox" value={contrasena_textbox} onChange={handleChange} required />
-                <button type="button" onClick={togglePasswordVisibility}>
-                    {showPassword ? "Ocultar" : "Mostrar"}
-                </button>
-            </div>
-            <div>
-                <label>Repetir Contraseña*</label>
-                <input type={showRepeatPassword ? "text" : "password"} name="repetirContrasena_textbox" value={repetirContrasena_textbox} onChange={handleChange} required />
-                <button type="button" onClick={toggleRepeatPasswordVisibility}>
-                    {showRepeatPassword ? "Ocultar" : "Mostrar"}
-                </button>
-            </div>
+    const handleToggleForm = () => {
+        setIsLoged(true);
+    };
 
-            <button type="submit">Registrarse</button>
-        </form>
+    if (isLoged) {
+        return <LoginForm />;
+    }
+
+    return (
+        <div className="register-container">
+        <div className="register-box">
+            <form action="#" method="post" onSubmit={handleSubmit}>
+                <h2>Registro</h2>
+                <p style={{ marginTop: "10px", fontSize: "12px", color: "#555"}}>
+                    Los campos marcados con (*) son obligatorios.
+                </p>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    <div className="input-group-register">
+                        <input type="text" id="nombre" name="nombre" value={nombre} onChange={handleChange} required/>
+                        <label htmlFor="nombre">Nombre*</label> 
+                    </div>
+                    <div className="input-group-register">
+                        <input type="text" id="apellidos" name="apellidos" value={apellidos} onChange={handleChange} required/>
+                        <label htmlFor="apellidos">Apellidos*</label>
+                    </div>
+                    <div className="input-group-register">
+                        <input type="email" id="email" name="email" value={email} onChange={handleChange} required/>
+                        <label htmlFor="email">Email*</label>
+                    </div>
+                    <div className="input-group-register">
+                        <input type="text" id="departamento" name="departamento" value={departamento} onChange={handleChange} required/>
+                        <label htmlFor="departamento">Departamento</label>
+                    </div>
+                    <div className="input-group-register">
+                        <input type="text" id="centro" name="centro" value={centro} onChange={handleChange} required/>
+                        <label htmlFor="centro">Centro*</label>
+                    </div>
+                    <div className="input-group-register">
+                    <input type="text" id="fechaAlta" name="fechaAlta" value={fechaAlta} onFocus={(e) => (e.target.type = "date")} 
+                        onBlur={(e) => (e.target.type = "text")} onChange={handleChange} placeholder="" required/>
+                        <label htmlFor="fechaAlta">Fecha de Alta*</label>
+                    </div>
+                    <div className="input-group-register">
+                        <select className="perfil-select" id="perfil_desplegable" name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
+                            <option value="" disabled hidden></option>
+                            <option value="usuario">Usuario</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                        <label htmlFor="perfil_desplegable">Perfil</label>
+                        <button type="button" className="select-toggle-btn" value={perfil_desplegable}>
+                            <img src={require('../media/flecha.png')} alt="Desplegable"/>
+                        </button>
+                    </div>
+                    <div className="input-group-register">
+                        <input type={showPassword ? "text" : "password"} id="contrasena" name="contrasena" value={contrasena} onChange={handleChange} required/>
+                        <label htmlFor="contrasena">Contraseña*</label>
+                        <button type="button" onClick={togglePasswordVisibility} className="password-toggle-btn">
+                        <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')} alt="Mostrar Contraseña"/>
+                        </button>
+                    </div>
+                    <div className="input-group-register">
+                        <input type={showRepeatPassword ? "text" : "password"} id="repetirContrasena" name="repetirContrasena" value={repetirContrasena} onChange={handleChange} required/>
+                        <label htmlFor="repetirContrasena">Repetir Contraseña*</label>
+                        <button type="button" onClick={toggleRepeatPasswordVisibility} className="repeatPassword-toggle-btn">
+                        <img src={require(showRepeatPassword?'../media/password_off.png':'../media/password_on.png')} alt="Mostrar Contraseña"/>
+                        </button>
+                    </div>
+                <button type="submit" className="register-btn">Registrarse</button>
+                <div className="register-options">
+                    <p style={{ marginTop: "10px", fontSize: "12px", color: "#555"}}>
+                        ¿Ya estás registrado?
+                    </p>
+                    <a href="#" onClick={handleToggleForm}>Iniciar sesión</a>
+                </div>
+            </form>
+        </div>
+        </div>
     );
 };
 
