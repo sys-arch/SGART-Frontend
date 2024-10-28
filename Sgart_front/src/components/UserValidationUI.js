@@ -83,6 +83,22 @@ const UserValidationUI = () => {
         );
     }
 
+    const eliminarUsuario = (email) =>{
+        fetch('admin/eliminar/email/'+email,{
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+          .then(response => {
+            const nuevosDatos = datosUsuarios.filter((item) => item.email !== email);
+            setDatosUsuarios(nuevosDatos); // Actualizamos el estado con los nuevos datos
+          })
+          .catch(error => {
+            console.error('Error deleting user: ',error);
+          });
+    }
+
     const toggleUserStatus = (email) => {
         fetch('admin/cambiarHabilitacion/'+email,{
             method: 'PUT',
@@ -146,9 +162,7 @@ const UserValidationUI = () => {
     };
 
     const handleConfirmDelete = () => {
-        setDatosUsuarios((prevUsuarios) =>
-            prevUsuarios.filter((user) => user.id !== userToDelete.id)
-        );
+        eliminarUsuario(userToDelete.email);
         setUserToDelete(null);
         setShowConfirmation(false);
     };
