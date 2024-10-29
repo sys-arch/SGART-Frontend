@@ -675,6 +675,18 @@ button :hover {
   justify-content: flex-start;
   overflow: hidden;
 }
+.AdminCalendar-input-group input[type="number"] {
+  width: 50px;
+  padding: 5px;
+  margin-right: 5px;
+  margin-left: 5px;
+  text-align: center;
+}
+
+.AdminCalendar-input-group div {
+  display: inline-flex;
+  align-items: center;
+}
 
 .calendar-wrapper {
   flex-grow: 1;           
@@ -721,6 +733,10 @@ button :hover {
   background-color: #555;
 }
 
+.error {
+  border-color: red;
+}
+=======
 
 /* Botones Ausencias de USUARIO */
 .action-button {
@@ -855,3 +871,4 @@ button :hover {
   color: #333;
   margin-bottom: 20px;
 }
+
