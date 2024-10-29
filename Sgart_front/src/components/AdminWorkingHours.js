@@ -284,14 +284,6 @@ const AdminWorkingHours = () => {
     return (
         <div className='AdminCalendarapp-container'>
             <div className="admin-buttons">
-                <button className="admin-btn">
-                    <img src={require('../media/user_management_btn.png')} width={60} />
-                </button>
-                <button className="admin-btn">
-                    <img src={require('../media/admin_management_btn.png')} width={60} />
-                </button>
-                <button className="admin-btn">
-                    <img src={require('../media/calendar_management_btn.png')} width={60} />
                 <button className="admin-btn" onClick={() => navigate('/user-options')}>
                     <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios"/>
                 </button>
@@ -374,6 +366,7 @@ const AdminWorkingHours = () => {
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
                         disabled={!isEditable}
+                    />
                     <label htmlFor='horaInicio'>Hora de inicio:</label>
                     <input
                         type="text"
