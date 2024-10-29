@@ -106,7 +106,7 @@ h2 {
 }
 
 .input-group input {
-  width: 100%;
+  width: calc(100% - 11px);
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ddd;
@@ -311,7 +311,7 @@ h2 {
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: #888;
+  color: #888;
 }
 
 .input-group button {
@@ -325,7 +325,7 @@ h2 {
 }
 
 .input-group img{
-  width: 30px;
+  width: 30px;
 }
 
 .perfil-select {
@@ -464,30 +464,115 @@ button {
   color: #fff;
 }
 
-.edit-btn {
-  background-color: #ffc107;
-  color: #fff;
+.user-edit-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Sombra trasera similar a la ventana de confirmación */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
 }
 
-.delete-btn {
+.user-content{
+  width: 120%;
+  max-width: 1400px;
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra alrededor de la ventana */
+  position: relative;
+  transform: translateX(-16%);
+  overflow-y: auto;
+}
+
+.cancelar-btn {
   background-color: #dc3545;
   color: #fff;
 }
 
-button:hover {
+.guardar-btn {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.ventana-confirm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+}
+
+.confirmation-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.confirmation-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.confirm-btn {
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: #dc3545;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button :hover {
   opacity: 0.9;
 }
 
-.admin-buttons {
-  position: absolute;
-  left: 0px;
-  top:0px;
+/* Estilos para los botones de habilitar/deshabilitar */
+.habilitar-btn {
+  background-color: #28a745; /* Verde para habilitar */
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.admin-btn {
-  background-color: transparent;
+.deshabilitar-btn {
+  background-color: #4f94cc; /* Rojo oscuro para deshabilitar */
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
+/* Estilo para la fila de un usuario deshabilitado */
+.disabled-user {
+  background-color: #f2f2f2; /* Fondo gris para distinguir usuarios deshabilitados */
+  color: #999; /* Texto atenuado */
+}
 
 .AdminCalendarapp-container {
   display: flex;
@@ -651,3 +736,139 @@ button:hover {
 .error {
   border-color: red;
 }
+=======
+
+/* Botones Ausencias de USUARIO */
+.action-button {
+  width: 40px; /* Ajusta según el tamaño deseado */
+  height: 40px;
+  border: none;
+  border-radius: 4px;
+  font-size: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  vertical-align: middle;
+}
+
+.details-button {
+  background-color: #4f94cc; /* Color para el botón de detalles */
+  color: #fff;
+}
+
+.action-button:hover {
+  opacity: 0.9;
+}
+
+.error-fecha {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/*Mostrar Ausencias*/
+.popup-container-ausencias {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.popup-overlay-ausencias {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.ausencias-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.ausencia-item {
+  background: #f9f9f9;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.ausencia-item:nth-child(odd) {
+  background: #f1f1f1;
+}
+
+.ausencia-item p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.ausencia-item strong {
+  color: #333;
+  font-weight: bold;
+}
+
+.cancel-btn-ausencias {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #4A90E2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-btn-ausencias:hover {
+  background-color: #357ABD;
+}
+
+/* Estilos para UserOptions */
+.user-options-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.user-options-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.option-btn {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.option-btn:hover {
+  background-color: #0056b3;
+}
+
+.user-options-container h2 {
+  font-size: 1.5em;
+  color: #333;
+  margin-bottom: 20px;
+}
+
