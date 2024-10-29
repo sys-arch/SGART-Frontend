@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import LoginForm from './LoginForm';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterForm = () => {
+    const navigate = useNavigate();
     const [nombre, setNombre] = useState('');
     const [apellidos, setApellidos] = useState('');
     const [email, setEmail] = useState('');
@@ -116,6 +118,14 @@ const RegisterForm = () => {
             console.error('Hubo un error:', error);
             setError('Error al registrar el usuario');
         });
+
+        if (perfil_desplegable.toLowerCase() === 'usuario') {
+            navigate('/under-construction');
+          } else if (perfil_desplegable.toLowerCase() === 'administrador') {
+            navigate('/admin-working-hours');
+          } else {
+            alert('Perfil no reconocido.');
+          }
     };
 
     const togglePasswordVisibility = () => {
@@ -172,7 +182,6 @@ const RegisterForm = () => {
                         <select className="perfil-select" id="perfil_desplegable" name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
                             <option value="" disabled hidden></option>
                             <option value="usuario">Usuario</option>
-                            <option value="admin">Administrador</option>
                         </select>
                         <label htmlFor="perfil_desplegable">Perfil</label>
                         <button type="button" className="select-toggle-btn" value={perfil_desplegable}>

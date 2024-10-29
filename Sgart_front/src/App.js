@@ -9,6 +9,7 @@ import AdminAusenciasUI from './components/AdminAusenciasUI';
 import UserValidationUI from './components/UserValidationUI';
 import AdminWorkingHours from './components/AdminWorkingHours';
 import UserOptions from './components/UserOptions';
+import UnderConstruction from './components/UnderConstruction';
 import './App.css';
 
 const App = () => {
@@ -25,14 +26,19 @@ const App = () => {
           <Route path="/google-auth" element={<GoogleAuth />} />
           <Route path="/google-auth-login" element={<GoogleAuthLogin />} />
 
-          {/* Ruta para el Dashboard del administrador */}
+          {/* Ruta para el Dashboard del Administrador */}
           <Route path="/admin-working-hours" element={<AdminWorkingHours />} />
+
+          {/* Ruta para el Usuario -> Under Construction */}
+          <Route path="/under-construction" element={<UnderConstruction />} />
 
           {/* Rutas para gestionar usuarios y ausencias */}
           <Route path="/user-options" element={<UserOptions />} />
           <Route path="/admin-ausencias" element={<AdminAusenciasUI />} />
           <Route path="/user-validation" element={<UserValidationUI />} />
 
+          {/* Redirigir a login si la ruta no existe */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>
     </div>
