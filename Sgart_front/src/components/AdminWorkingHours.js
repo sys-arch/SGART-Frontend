@@ -367,24 +367,6 @@ const AdminWorkingHours = () => {
                         onChange={(e) => setReason(e.target.value)}
                         disabled={!isEditable}
                     />
-                    <label htmlFor='horaInicio'>Hora de inicio:</label>
-                    <input
-                        type="text"
-                        id='horInicio'
-                        placeholder="Hora de inicio"
-                        value={startingHour}
-                        onChange={(e) => setStartingHour(e.target.value)}
-                    />
-                </div>
-                <div className="AdminCalendar-input-group">
-                    <label htmlFor='horaFin'>Hora de fin:</label>
-                    <input
-                        type="text"
-                        id='horaFin'
-                        placeholder="Hora de fin"
-                        value={endingHour}
-                        onChange={(e) => setEndingHour(e.target.value)}
-                    />
                 </div>
                 <div className="AdminCalendar-button-group">
                     <button onClick={handleEditDayClick}>Editar día</button>
@@ -500,24 +482,6 @@ const AdminWorkingHours = () => {
                                             max="59"
                                         />
                                     </div>
-                                    <label htmlFor='horaInicio'>Hora de inicio:</label>
-                                    <input
-                                        type="text"
-                                        id='horaInicio'
-                                        placeholder="Hora de inicio"
-                                        value={popupStartingHour}
-                                        onChange={(e) => setPopupStartingHour(e.target.value)}
-                                    />
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label htmlFor='horaFin'>Hora de fin:</label>
-                                    <input
-                                        type="text"
-                                        id='horaFin'
-                                        placeholder="Hora de fin"
-                                        value={popupEndingHour}
-                                        onChange={(e) => setPopupEndingHour(e.target.value)}
-                                    />
                                 </div>
                             </>
                         )}
