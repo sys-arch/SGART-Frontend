@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import LoginForm from './LoginForm';
 import { useNavigate } from 'react-router-dom';
 
 const RegisterForm = () => {
     const navigate = useNavigate();
+
     const [nombre, setNombre] = useState('');
     const [apellidos, setApellidos] = useState('');
     const [email, setEmail] = useState('');
@@ -16,8 +16,6 @@ const RegisterForm = () => {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showRepeatPassword, setShowRepeatPassword] = useState(false);
-    const [isLoged, setIsLoged] = useState(false);
-
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -54,37 +52,33 @@ const RegisterForm = () => {
         }
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
-        // ¿Contraseñas iguales?
         if (contrasena !== repetirContrasena) {
             setError('Las contraseñas no coinciden.');
             return;
         }
 
-        // ¿Contraseña robusta?
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (!passwordRegex.test(contrasena)) {
             setError('La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial (@, $, !, %, *, ?, &).');
             return;
         }
 
-        // Validar email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError('El formato del correo electrónico no es válido.');
             return;
         }
 
-        // Validar fecha (no puede ser una fecha futura)
         const fechaSeleccionada = new Date(fechaAlta);
         const fechaActual = new Date();
         if (fechaSeleccionada > fechaActual) {
             setError('La fecha de alta no puede ser una fecha futura.');
             return;
         }
-        // Enviar los datos al backend...
+
         const usuario = {
             name: nombre,
             lastName: apellidos,
@@ -94,123 +88,114 @@ const RegisterForm = () => {
             hiringDate: fechaAlta,
             profile: perfil_desplegable,
             password: contrasena,
-            passwordConfirm: repetirContrasena
+            passwordConfirm: repetirContrasena,
+            blocked: false,
+            verified: false,
+            twoFactorAuthCode:'',
         };
+        /*
+        try {
+            // Verificar si el correo electrónico ya existe en la base de datos
+            const emailCheckResponse = await fetch(`http://localhost:9000/users/verificar-email`);
+            if (!emailCheckResponse.ok) {
+                throw new Error('Error al verificar el correo electrónico');
+            }
+            const emailCheckData = await emailCheckResponse.json();
+            if (emailCheckData.exists) {
+                setError('El correo electrónico ya está registrado.');
+                return;
+            }
 
-        fetch('http://localhost:9000/users/registro', {
+            // Navegar a la ventana de autenticación de doble factor
+            alert('Correo verificado. Pasando a la autenticación con doble factor...');
+            navigate('/google-auth', { state: { usuario } });
+        } catch (error) {
+            console.error('Hubo un error:', error);
+            setError('Error en la verificación del correo electrónico');
+        }
+        */
+
+        fetch('http://localhost:9000/users/verificar-email', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(usuario),
         })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error('Error en el registro del usuario');
-            }
-            return response.json();
-        })
+        .then(response => response.text())
         .then((data) => {
-            alert('Registro exitoso'); // Mostrar el mensaje de éxito
-            setError(''); // Limpiar cualquier mensaje de error
+            alert('Correo verificado. Pasando a la autenticación con doble factor...');
+            console.log(JSON.stringify(usuario));
+            navigate('/google-auth', { state: { usuario : usuario} });
         })
-        .catch((error) => {
-            console.error('Hubo un error:', error);
-            setError('Error al registrar el usuario');
+        .catch(error => {
+            console.error('Error al verificar el correo electrónico.', error);
         });
-
-        if (perfil_desplegable.toLowerCase() === 'usuario') {
-            navigate('/under-construction');
-          } else if (perfil_desplegable.toLowerCase() === 'administrador') {
-            navigate('/admin-working-hours');
-          } else {
-            alert('Perfil no reconocido.');
-          }
     };
 
     const togglePasswordVisibility = () => {
         setShowPassword((prevShowPassword) => !prevShowPassword);
-    }; 
-    
+    };
+
     const toggleRepeatPasswordVisibility = () => {
         setShowRepeatPassword((prevShowRepeatPassword) => !prevShowRepeatPassword);
     };
 
-    const handleToggleForm = () => {
-        setIsLoged(true);
-    };
-
-    if (isLoged) {
-        return <LoginForm />;
-    }
-
     return (
         <div className="register-container">
-        <div className="register-box">
-            <form action="#" method="post" onSubmit={handleSubmit}>
+            <div className="register-box">
                 <h2>Registro</h2>
-                <p style={{ marginTop: "10px", fontSize: "12px", color: "#555"}}>
-                    Los campos marcados con (*) son obligatorios.
-                </p>
-                    {error && <p style={{ color: 'red' }}>{error}</p>}
-                    <div className="input-group-register">
-                        <input type="text" id="nombre" name="nombre" value={nombre} onChange={handleChange} required/>
-                        <label htmlFor="nombre">Nombre*</label> 
+                <form onSubmit={handleSubmit}>
+                    <div className="input-group">
+                        <input type="text" name="nombre" value={nombre} onChange={handleChange} required />
+                        <label htmlFor="nombre">Nombre</label>
                     </div>
-                    <div className="input-group-register">
-                        <input type="text" id="apellidos" name="apellidos" value={apellidos} onChange={handleChange} required/>
-                        <label htmlFor="apellidos">Apellidos*</label>
+                    <div className="input-group">
+                        <input type="text" name="apellidos" value={apellidos} onChange={handleChange} required />
+                        <label htmlFor="apellidos">Apellidos</label>
                     </div>
-                    <div className="input-group-register">
-                        <input type="email" id="email" name="email" value={email} onChange={handleChange} required/>
-                        <label htmlFor="email">Email*</label>
+                    <div className="input-group">
+                        <input type="email" name="email" value={email} onChange={handleChange} required />
+                        <label htmlFor="email">Email</label>
                     </div>
-                    <div className="input-group-register">
-                        <input type="text" id="departamento" name="departamento" value={departamento} onChange={handleChange} required/>
+                    <div className="input-group">
+                        <input type="text" name="departamento" value={departamento} onChange={handleChange} required />
                         <label htmlFor="departamento">Departamento</label>
                     </div>
-                    <div className="input-group-register">
-                        <input type="text" id="centro" name="centro" value={centro} onChange={handleChange} required/>
-                        <label htmlFor="centro">Centro*</label>
+                    <div className="input-group">
+                        <input type="text" name="centro" value={centro} onChange={handleChange} required />
+                        <label htmlFor="centro">Centro</label>
                     </div>
-                    <div className="input-group-register">
-                    <input type="text" id="fechaAlta" name="fechaAlta" value={fechaAlta} onFocus={(e) => (e.target.type = "date")} 
-                        onBlur={(e) => (e.target.type = "text")} onChange={handleChange} placeholder="" required/>
-                        <label htmlFor="fechaAlta">Fecha de Alta*</label>
+                    <div className="input-group">
+                        <input type="date" name="fechaAlta" value={fechaAlta} onChange={handleChange} required />
+                        <label htmlFor="fechaAlta">Fecha de Alta</label>
                     </div>
-                    <div className="input-group-register">
-                        <select className="perfil-select" id="perfil_desplegable" name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
-                            <option value="" disabled hidden></option>
-                            <option value="usuario">Usuario</option>
+                    <div className="input-group">
+                        <select name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
+                            <option value="">Selecciona un perfil</option>
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
                         </select>
                         <label htmlFor="perfil_desplegable">Perfil</label>
-                        <button type="button" className="select-toggle-btn" value={perfil_desplegable}>
-                            <img src={require('../media/flecha.png')} alt="Desplegable"/>
-                        </button>
                     </div>
-                    <div className="input-group-register">
-                        <input type={showPassword ? "text" : "password"} id="contrasena" name="contrasena" value={contrasena} onChange={handleChange} required/>
-                        <label htmlFor="contrasena">Contraseña*</label>
+                    <div className="input-group">
+                        <input type={showPassword ? "text" : "password"} name="contrasena" value={contrasena} onChange={handleChange} required />
+                        <label htmlFor="contrasena">Contraseña</label>
                         <button type="button" onClick={togglePasswordVisibility} className="password-toggle-btn">
-                        <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')} alt="Mostrar Contraseña"/>
+                            <img src={require(showPassword ? '../media/password_off.png' : '../media/password_on.png')} alt='Mostrar Contraseña' />
                         </button>
                     </div>
-                    <div className="input-group-register">
-                        <input type={showRepeatPassword ? "text" : "password"} id="repetirContrasena" name="repetirContrasena" value={repetirContrasena} onChange={handleChange} required/>
-                        <label htmlFor="repetirContrasena">Repetir Contraseña*</label>
-                        <button type="button" onClick={toggleRepeatPasswordVisibility} className="repeatPassword-toggle-btn">
-                        <img src={require(showRepeatPassword?'../media/password_off.png':'../media/password_on.png')} alt="Mostrar Contraseña"/>
+                    <div className="input-group">
+                        <input type={showRepeatPassword ? "text" : "password"} name="repetirContrasena" value={repetirContrasena} onChange={handleChange} required />
+                        <label htmlFor="repetirContrasena">Repetir Contraseña</label>
+                        <button type="button" onClick={toggleRepeatPasswordVisibility} className="password-toggle-btn">
+                            <img src={require(showRepeatPassword ? '../media/password_off.png' : '../media/password_on.png')} alt='Mostrar Contraseña' />
                         </button>
                     </div>
-                <button type="submit" className="register-btn">Registrarse</button>
-                <div className="register-options">
-                    <p style={{ marginTop: "10px", fontSize: "12px", color: "#555"}}>
-                        ¿Ya estás registrado?
-                    </p>
-                    <a href="#" onClick={handleToggleForm}>Iniciar sesión</a>
-                </div>
-            </form>
-        </div>
+                    <button type="submit" className="register-btn">Registrar</button>
+                </form>
+                {error && <p>{error}</p>}
+            </div>
         </div>
     );
 };

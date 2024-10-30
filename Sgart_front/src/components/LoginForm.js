@@ -32,21 +32,46 @@ const LoginForm = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
 
+        const user = {
+            email: email,
+            password: contrasena,
+        };
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError('El formato del correo electrónico no es válido.');
             return;
         }
 
-        alert('Login correcto');
-        setError('');
-        navigate('/google-auth-login');
+        fetch('http://localhost:9000/users/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(user),
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Error al loguear');
+            }
+            alert('Login exitoso. Pasando a la autentificación con doble factor...')
+            return response.json();
+        })
+        .then((data) => {
+            // Analiza la respuesta JSON y navega según el tipo
+            console.log(data);
+            navigate('/google-auth-login', { state: { data: data, email:email} }); //Navegamos a la ventana de google auth
+        })
+        .catch((error) => {
+            console.error('Hubo un error:', error);
+            setError('Error en el login');
+        });
         // Enviar datos al backend...
     };
 
     const togglePasswordVisibility = () => {
         setShowPassword((prevShowPassword) => !prevShowPassword);
-    }; 
+    };
 
     const handleToggleForm = () => {
         setIsRegistering(true);
