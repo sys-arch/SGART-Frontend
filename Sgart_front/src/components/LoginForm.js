@@ -32,15 +32,39 @@ const LoginForm = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
 
+        const user = {
+            email: email,
+            password: contrasena,
+        };
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError('El formato del correo electrónico no es válido.');
             return;
         }
 
-        alert('Login correcto');
-        setError('');
-        navigate('/google-auth-login');
+        fetch('http://localhost:9000/users/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(user),
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Error al loguear');
+            }
+            alert('Login exitoso. Pasando a la autetificación con doble factor...')
+            navigate('/google-auth-login', { state: { email: email} }); //Navegamos a la ventana de google auth
+            return response.json();
+        })
+        .then((data) => {
+            setError(''); // Limpiar cualquier mensaje de error
+        })
+        .catch((error) => {
+            console.error('Hubo un error:', error);
+            setError('Error en el login');
+        });
         // Enviar datos al backend...
     };
 

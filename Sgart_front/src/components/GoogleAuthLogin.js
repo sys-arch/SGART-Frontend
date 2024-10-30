@@ -1,12 +1,51 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 
 const GoogleAuthLogin = () => {
+    const navigate = useNavigate();
+
+    const location = useLocation();
+    const email = location.state?.email || '';
 
     const [inputCode, setInputCode] = useState('');
+    const [error, setError] = useState('');
 
     const handleInputChange = (event) => {
         setInputCode(event.target.value); // Actualiza el código ingresado
     };
+
+    const handleButtonClick = () => {
+        const request = {
+            mail: email,
+            code: inputCode,
+        }
+
+        fetch('http://localhost:9000/auth/validate-totp-db', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(request),
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Error al validar el código de doble factor');
+            }
+            return response.json();
+        })
+        .then((data) => {
+            alert('Doble factor autenticado con éxito');
+            setError(''); // Limpiar cualquier mensaje de error
+            navigate('/under-construction')
+        })
+        .catch((error) => {
+            console.error('Hubo un error:', error);
+            setError('Error al validar el código de doble factor');
+        });
+    }
+
     return (
         <div className="login-container">
             <div className="login-box">
@@ -24,7 +63,7 @@ const GoogleAuthLogin = () => {
                 <br></br>
                 <br></br>
                 <div>
-                    <button type='submit' className='login-btn'>Comprobar código</button>
+                    <button type='submit' className='login-btn' onClick={handleButtonClick}>Comprobar código</button>
                 </div>
             </div>
         </div>
