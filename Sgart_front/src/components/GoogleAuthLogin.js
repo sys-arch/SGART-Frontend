@@ -8,6 +8,7 @@ const GoogleAuthLogin = () => {
 
     const location = useLocation();
     const email = location.state?.email || '';
+    const dataLogin = location.state?.data || '';
 
     const [inputCode, setInputCode] = useState('');
     const [error, setError] = useState('');
@@ -36,9 +37,17 @@ const GoogleAuthLogin = () => {
             return response.json();
         })
         .then((data) => {
+            console.log(dataLogin);
             alert('Doble factor autenticado con éxito');
             setError(''); // Limpiar cualquier mensaje de error
-            navigate('/under-construction')
+            switch (dataLogin.type) { // Asumiendo que el tipo está en 'type'
+                case 'admin':
+                    navigate('/admin-working-hours'); // Navegar a la página del administrador
+                    break;
+                case 'user':
+                    navigate('/under-construction'); // Navegar a la página del usuario
+                    break;
+            }
         })
         .catch((error) => {
             console.error('Hubo un error:', error);

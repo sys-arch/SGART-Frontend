@@ -88,9 +88,12 @@ const RegisterForm = () => {
             hiringDate: fechaAlta,
             profile: perfil_desplegable,
             password: contrasena,
-            passwordConfirm: repetirContrasena
+            passwordConfirm: repetirContrasena,
+            blocked: false,
+            verified: false,
+            twoFactorAuthCode:'',
         };
-
+        /*
         try {
             // Verificar si el correo electrónico ya existe en la base de datos
             const emailCheckResponse = await fetch(`http://localhost:9000/users/verificar-email`);
@@ -110,6 +113,24 @@ const RegisterForm = () => {
             console.error('Hubo un error:', error);
             setError('Error en la verificación del correo electrónico');
         }
+        */
+
+        fetch('http://localhost:9000/users/verificar-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(usuario),
+        })
+        .then(response => response.text())
+        .then((data) => {
+            alert('Correo verificado. Pasando a la autenticación con doble factor...');
+            console.log(JSON.stringify(usuario));
+            navigate('/google-auth', { state: { usuario : usuario} });
+        })
+        .catch(error => {
+            console.error('Error al verificar el correo electrónico.', error);
+        });
     };
 
     const togglePasswordVisibility = () => {

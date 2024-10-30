@@ -54,12 +54,13 @@ const LoginForm = () => {
             if (!response.ok) {
                 throw new Error('Error al loguear');
             }
-            alert('Login exitoso. Pasando a la autetificación con doble factor...')
-            navigate('/google-auth-login', { state: { email: email} }); //Navegamos a la ventana de google auth
+            alert('Login exitoso. Pasando a la autentificación con doble factor...')
             return response.json();
         })
         .then((data) => {
-            setError(''); // Limpiar cualquier mensaje de error
+            // Analiza la respuesta JSON y navega según el tipo
+            console.log(data);
+            navigate('/google-auth-login', { state: { data: data, email:email} }); //Navegamos a la ventana de google auth
         })
         .catch((error) => {
             console.error('Hubo un error:', error);
@@ -70,7 +71,7 @@ const LoginForm = () => {
 
     const togglePasswordVisibility = () => {
         setShowPassword((prevShowPassword) => !prevShowPassword);
-    }; 
+    };
 
     const handleToggleForm = () => {
         setIsRegistering(true);
