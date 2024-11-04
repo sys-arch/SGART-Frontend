@@ -1,0 +1,6 @@
+projectKey=2024-g01-SGART-Frontend
+serverUrl=http://seralu4.esi.uclm.es:1521
+serverVersion=10.6.0.92116
+dashboardUrl=http://seralu4.esi.uclm.es:1521/dashboard?id=2024-g01-SGART-Frontend
+ceTaskId=edadd4a6-fdcc-4de5-a948-12525540c9fe
+ceTaskUrl=http://seralu4.esi.uclm.es:1521/api/ce/task?id=edadd4a6-fdcc-4de5-a948-12525540c9fe
