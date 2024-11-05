@@ -1,79 +1,134 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import RegisterForm from './RegisterForm';
+import RecuperarPwdForm from './RecuperarPwdForm';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
+    const navigate = useNavigate();
 
     // Estados de cada campo del formulario
-    const [email_textbox, setEmail] = useState('');
-    const [contrasena_textbox, setContrasena] = useState('');
-    const [repetirContrasena_textbox, setRepetirContrasena] = useState('');
-    const [error, setError] = useState('');
+    const [email, setEmail] = useState('');
+    const [contrasena, setContrasena] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [isNoPwd, setIsNoPwd] = useState(false);
+
+    const [error, setError] =useState(false);
+    const [errorEmail, setErrorEmail] = useState('');
+    const [errorPassword, setErrorPassword] = useState('');
 
     // Cambios en los campos del formulario
     const handleChange = (event) => {
         const { name, value } = event.target;
         switch (name) {
-            case 'email_textbox':
+            case 'email':
                 setEmail(value);
                 break;
-            case 'contrasena_textbox':
+            case 'contrasena':
                 setContrasena(value);
-                break;
-            case 'repetirContrasena_textbox':
-                setRepetirContrasena(value);
                 break;
             default:
                 break;
         }
     };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
+    const toogleError = useCallback(() => {
+        setError(true);
+    });
 
-        // ¿Coinciden las contraseñas?
-        if (contrasena_textbox !== repetirContrasena_textbox) {
-            setError('Las contraseñas no coinciden.');
-            return;
-        }
+    const handleLogin = () => {
+        setError(false);
+        setErrorEmail('');
+        setErrorPassword('');
 
-        //Verificar email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email_textbox)) {
-            setError('El formato del correo electrónico no es válido.');
-            return;
+        if (!emailRegex.test(email)) {
+            setErrorEmail('El formato del correo electrónico no es válido.');
+            toogleError();
         }
 
-        alert('Registro exitoso');
-        setError('');
-        // Enviar datos al backend...
-    };
+        if (email===''){
+            setErrorEmail('Campo vacío');
+            toogleError();
+        }
+        if (contrasena===''){
+            setErrorPassword('Campo vacío');
+            toogleError();
+        }
 
+        if(error){
+            return;
+        }else{
+            const user = {
+                email: email,
+                password: contrasena,
+            };
+
+            fetch('http://localhost:9000/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(user),
+            })
+            .then((response,data) => {
+                if (!response.ok) {
+                    alert('Error al iniciar sesión. Correo y/o contraseña incorrectos')
+                    return;
+                }
+                else{
+                    alert('Login exitoso. Pasando a la autentificación con doble factor...')
+                    navigate('/google-auth-login', { state: { data: data, email:email} }); //Navegamos a la ventana de google auths
+                    return response.json();
+                }
+            })
+            .catch((error) => {
+                alert('Hubo un error:', error);
+            });
+        }
+    };
     const togglePasswordVisibility = () => {
         setShowPassword((prevShowPassword) => !prevShowPassword);
-    }; 
+    };
+
+    const handleToggleForm = () => {
+        setIsRegistering(true);
+    };
+
+    if (isRegistering) {
+        return <RegisterForm />;
+    }
+
+    const handleToggleForm_2 = () => {
+        setIsNoPwd(true);
+    }
+
+    if (isNoPwd) {
+        return <RecuperarPwdForm />;
+    }
 
     return (
-        <div class="login-container">
-        <div class="login-box">
-            <h2>Iniciar Sesión</h2>
-            <form action="#" method="post">
-                <div class="input-group">
-                    <input type="text" id="username" required/>
-                    <label for="username">Usuario</label>
+        <div className="login-container">
+        <div className="login-box">
+            <h2 className="login-title">Iniciar Sesión</h2>
+                <div className={errorEmail===''?"input-group":"input-group-error"}>
+                    <input type="text" id="email" name="email" value={email} onChange={handleChange} required/>
+                    <label htmlFor="email">Usuario</label>
                 </div>
-                <div class="input-group">
-                    <input type={showPassword ? "text" : "password"} id="password" required/>
-                    <label for="password">Contraseña</label>
+                <label className="error">{errorEmail}</label>
+                <div className={errorPassword===''?"input-group":"input-group-error"}>
+                    <input type={showPassword ? "text" : "password"} id="contrasena" name="contrasena" value={contrasena} onChange={handleChange} required/>
+                    <label htmlFor="contrasena">Contraseña</label>
                     <button type="button" onClick={togglePasswordVisibility} className="password-toggle-btn">
-                    <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')}/>
+                    <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')} alt='Mostrar Contraseña'/>
                     </button>
                 </div>
-                <button type="submit" class="login-btn">Entrar</button>
-                <div class="login-options">
-                    <a href="#">¿Olvidaste tu contraseña?</a>
-                    <a href="#">Regístrate</a>
+                <label className="error">{errorPassword}</label>
+                <button onClick={handleLogin} className="login-btn">Entrar</button>
+                <div className="login-options">
+                    <a href="#" onClick={handleToggleForm_2}>¿Olvidaste tu contraseña?</a>
+                    <a href="#" onClick={handleToggleForm}>Regístrate</a>
                 </div>
-            </form>
         </div>
         </div>
     );

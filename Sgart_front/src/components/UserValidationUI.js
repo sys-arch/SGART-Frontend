@@ -1,38 +1,114 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UserEditForm from './UserEditForm';
 import VentanaConfirm from './VentanaConfirm';
-
+import { useNavigate } from 'react-router-dom';
 
 const UserValidationUI = () => {
-
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        
-    }
+    const navigate = useNavigate();
     // Estado que contiene los datos de la tabla
-    const [datosUsuarios, setDatosUsuarios] = useState([
-        { id: 1, Nombre: 'Juan', Apellidos: 'Pérez',Email: 'juan.perez@example.com', enabled: true},
-        { id: 2, Nombre: 'María', Apellidos: 'López', Email: 'maria.lopez@example.com', enabled: true},
-        { id: 3, Nombre: 'Carlos', Apellidos: 'García', Email: 'carlos.garcia@example.com', enabled: true},
-    ]);
+    const [datosUsuarios, setDatosUsuarios] = useState([]);
+    const [datosValidar, setDatosValidar] = useState([]);
 
-    var nextUserId=datosUsuarios.length;
+    useEffect(() => {
+        actualizarUsuarios();
+      }, []);
 
-    const [datosValidar, setDatosValidar] = useState([
-        { id: 4, Nombre: 'Manuel', Apellidos: 'Perales',Email: 'manuel.perales@example.com', enabled: false},
-    ]);
+    const actualizarUsuarios = () =>{
+        fetch('admin/getUsuariosSinValidar')
+          .then(async response => {
+            const result=await response.json();
+            const usersTable=result.map(user=>({
+                id: user.id,
+                name:user.name,
+                lastName:user.lastName,
+                email: user.email,
+                department: user.department,
+                center:user.center,
+                hiringDate:user.hiringDate,
+                profile:user.profile,
+                blocked:user.blocked,
+            }));
+            setDatosValidar(usersTable);
+          })
+          .catch(error => {
+            console.error('Error fetching data:', error);
+          });
+        fetch('admin/getUsuariosValidados')
+          .then(async response => {
+            const result=await response.json();
+            const usersTable=result.map(user=>({
+                id: user.id,
+                name:user.name,
+                lastName:user.lastName,
+                email: user.email,
+                department: user.department,
+                center:user.center,
+                hiringDate:user.hiringDate,
+                profile:user.profile,
+                blocked:user.blocked,
+            }));
+            setDatosUsuarios(usersTable);
+          })
+          .catch(error => {
+            console.error('Error fetching data:', error);
+          });
+    }
 
-    const invalidarUsuario = (id) => {
+    const invalidarUsuario = (email) => {
         // Filtramos el array de datos para eliminar el elemento con el id correspondiente
-        const nuevosDatos = datosValidar.filter((item) => item.id !== id);
-        setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
+        fetch('admin/eliminar/email/'+email,{
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+          .then(response => {
+            const nuevosDatos = datosValidar.filter((item) => item.email !== email);
+            setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
+          })
+          .catch(error => {
+            console.error('Error unvalidating user: ',error);
+          });
     };
 
-    const validarUsuario = (id) => {
-        var usuario = datosValidar.filter((item) => item.id === id);
-        const nuevosDatos = datosValidar.filter((item) => item.id !== id);
-        setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
-        setDatosUsuarios(datosUsuarios.concat(usuario)); // Actualizamos el estado con los nuevos datos
+    const validarUsuario = (email) => {
+        fetch('admin/validar/'+email,{
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+          .then(response => {
+            actualizarUsuarios();
+          })
+          .catch(error => {
+            console.error('Error updating user: ',error);
+          });
+          setDatosUsuarios((prevUsuarios) =>
+            prevUsuarios.map((user) =>
+                user.email === email ? { ...user, blocked: !user.blocked } : user
+            )
+        );
+    }
+
+    const toggleUserStatus = (email) => {
+        fetch('admin/cambiarHabilitacion/'+email,{
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+          .then(response => {
+            
+          })
+          .catch(error => {
+            console.error('Error updating user: ',error);
+          });
+          setDatosUsuarios((prevUsuarios) =>
+            prevUsuarios.map((user) =>
+                user.email === email ? { ...user, blocked: !user.blocked } : user
+            )
+        );
     }
     //Modificar usuarios
     const [editingUser, setEditingUser] = useState(null);
@@ -78,41 +154,47 @@ const UserValidationUI = () => {
     };
 
     const handleConfirmDelete = () => {
-        setDatosUsuarios((prevUsuarios) =>
-            prevUsuarios.filter((user) => user.id !== userToDelete.id)
-        );
+        eliminarUsuario(userToDelete.email);
         setUserToDelete(null);
         setShowConfirmation(false);
     };
 
-    const toggleUserStatus = (userId) => {
-        setDatosUsuarios((prevUsuarios) =>
-            prevUsuarios.map((user) =>
-                user.id === userId ? { ...user, enabled: !user.enabled } : user
-            )
-        );
-    };
+    const eliminarUsuario = (email) =>{
+        fetch('admin/eliminar/email/'+email,{
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+          .then(response => {
+            const nuevosDatos = datosUsuarios.filter((item) => item.email !== email);
+            setDatosUsuarios(nuevosDatos); // Actualizamos el estado con los nuevos datos
+          })
+          .catch(error => {
+            console.error('Error deleting user: ',error);
+          });
+    }
 
     return (
-        <div class="user-validation-container">
-        <div class="admin-buttons">
-            <button class="admin-btn">
-                <img src={require('../media/user_management_btn.png')} width={60}/>
+        <div className="user-validation-container">
+        <div className="admin-buttons">
+            <button className="admin-btn" onClick={() => navigate('/user-options')}>
+                <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios"/>
             </button>
-            <button class="admin-btn">
-                <img src={require('../media/admin_management_btn.png')} width={60}/>
+            <button className="admin-btn">
+                <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" title="Mant. Administradores"/>
             </button>
-            <button class="admin-btn">
-                <img src={require('../media/calendar_management_btn.png')} width={60}/>
+            <button className="admin-btn" onClick={() => navigate('/admin-working-hours')}>
+                <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario" title="Mant. Calendario"/>
             </button>
         </div>
-        <div class="login-box">
+        <div className="login-box">
         <body>
                 <h2>Pendientes de validación</h2>
-                <table class="user-table">
+                <table className="user-table">
                     <thead>
                         <tr>
-                            <th>id</th>
+                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Apellidos</th>
                             <th>Email</th>
@@ -123,15 +205,15 @@ const UserValidationUI = () => {
                     {datosValidar.map((fila) => (
                         <tr key={fila.id}>
                             <td>{fila.id}</td>
-                            <td>{fila.Nombre}</td>
-                            <td>{fila.Apellidos}</td>
-                            <td>{fila.Email}</td>
+                            <td>{fila.name}</td>
+                            <td>{fila.lastName}</td>
+                            <td>{fila.email}</td>
                             <td>
-                                <button class="validate-btn" onClick={() => validarUsuario(fila.id)}>
-                                    <img src={require('../media/garrapata.png')} width={25}/>
+                                <button className="validate-btn" onClick={() => validarUsuario(fila.email)}>
+                                    <img src={require('../media/garrapata.png')} width={25} alt="Validar Usuario" title="Validar Usuario"/>
                                 </button>
-                                <button class="delete-btn" onClick={() => invalidarUsuario(fila.id)}>
-                                    <img src={require('../media/cancelar.png')} width={25}/>
+                                <button className="delete-btn" onClick={() => invalidarUsuario(fila.email)}>
+                                    <img src={require('../media/cancelar.png')} width={25} alt="Invalidar Usuario" title="Invalidar Usuario"/>
                                 </button>
                             </td>
                         </tr>
@@ -153,25 +235,25 @@ const UserValidationUI = () => {
                     </thead>
                     <tbody>
                     {datosUsuarios.map((fila) => (
-                        <tr key={fila.id} className={!fila.enabled ? 'disabled-user' : ''}>
+                        <tr key={fila.id} className={!fila.blocked ? '':'disabled-user'}>
                             <td>{fila.id}</td>
-                            <td>{fila.Nombre}</td>
-                            <td>{fila.Apellidos}</td>
-                            <td>{fila.Email}</td>
+                            <td>{fila.name}</td>
+                            <td>{fila.lastName}</td>
+                            <td>{fila.email}</td>
                             <td>
-                                <button className={fila.enabled ? 'deshabilitar-btn' : 'habilitar-btn'}
-                                    onClick={() => toggleUserStatus(fila.id)}>
+                                <button className={fila.blocked ? 'habilitar-btn' : 'deshabilitar-btn'}
+                                    onClick={() => toggleUserStatus(fila.email)}>
                                     <img 
-                                        src={fila.enabled ? require('../media/deshabilitar-cursor.png') : require('../media/mano.png')} 
-                                        alt={fila.enabled ? 'Deshabilitar' : 'Habilitar'}
-                                        style={{ width: '25px', height: '25px' }} 
+                                        src={fila.blocked ? require('../media/mano.png') : require('../media/deshabilitar-cursor.png')} 
+                                        alt={fila.blocked ? 'Habilitar' : 'Deshabilitar'}
+                                        style={{ width: '25px', height: '25px' }} title={fila.blocked ? 'Habilitar' : 'Deshabilitar'}
                                     />
                                 </button>
-                                <button class="edit-btn" onClick={() => handleEditUser(fila)}>
-                                    <img src={require('../media/editar-perfil.png')} width={25}/>
+                                <button className="edit-btn" onClick={() => handleEditUser(fila)}>
+                                    <img src={require('../media/editar-perfil.png')} width={25} alt="Editar Perfil" title="Editar Perfil"/>
                                 </button>
-                                <button class="delete-btn" onClick={() => handleDeleteUser(fila)}>
-                                <img src={require('../media/bloquear.png')} width={25}/>
+                                <button className="delete-btn" onClick={() => handleDeleteUser(fila)}>
+                                <img src={require('../media/bloquear.png')} width={25} alt="Eliminar Perfil" title="Eliminar Perfil"/>
                                 </button>
                             </td>
                         </tr>
