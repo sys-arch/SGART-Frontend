@@ -19,9 +19,13 @@ const UserValidationUI = () => {
             const result=await response.json();
             const usersTable=result.map(user=>({
                 id: user.id,
-                email: user.email,
                 name:user.name,
                 lastName:user.lastName,
+                email: user.email,
+                department: user.department,
+                center:user.center,
+                hiringDate:user.hiringDate,
+                profile:user.profile,
                 blocked:user.blocked,
             }));
             setDatosValidar(usersTable);
@@ -34,9 +38,13 @@ const UserValidationUI = () => {
             const result=await response.json();
             const usersTable=result.map(user=>({
                 id: user.id,
-                email: user.email,
                 name:user.name,
                 lastName:user.lastName,
+                email: user.email,
+                department: user.department,
+                center:user.center,
+                hiringDate:user.hiringDate,
+                profile:user.profile,
                 blocked:user.blocked,
             }));
             setDatosUsuarios(usersTable);
@@ -81,22 +89,6 @@ const UserValidationUI = () => {
                 user.email === email ? { ...user, blocked: !user.blocked } : user
             )
         );
-    }
-
-    const eliminarUsuario = (email) =>{
-        fetch('admin/eliminar/email/'+email,{
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-          .then(response => {
-            const nuevosDatos = datosUsuarios.filter((item) => item.email !== email);
-            setDatosUsuarios(nuevosDatos); // Actualizamos el estado con los nuevos datos
-          })
-          .catch(error => {
-            console.error('Error deleting user: ',error);
-          });
     }
 
     const toggleUserStatus = (email) => {
@@ -167,6 +159,22 @@ const UserValidationUI = () => {
         setShowConfirmation(false);
     };
 
+    const eliminarUsuario = (email) =>{
+        fetch('admin/eliminar/email/'+email,{
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+          .then(response => {
+            const nuevosDatos = datosUsuarios.filter((item) => item.email !== email);
+            setDatosUsuarios(nuevosDatos); // Actualizamos el estado con los nuevos datos
+          })
+          .catch(error => {
+            console.error('Error deleting user: ',error);
+          });
+    }
+
     return (
         <div className="user-validation-container">
         <div className="admin-buttons">
@@ -186,7 +194,7 @@ const UserValidationUI = () => {
                 <table className="user-table">
                     <thead>
                         <tr>
-                            <th>id</th>
+                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Apellidos</th>
                             <th>Email</th>
