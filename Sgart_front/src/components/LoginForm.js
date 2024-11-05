@@ -32,31 +32,27 @@ const LoginForm = () => {
         }
     };
 
-    const toogleError = useCallback(() => {
-        setError(true);
-    });
-
     const handleLogin = () => {
-        setError(false);
+        var errorBool=false;
         setErrorEmail('');
         setErrorPassword('');
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setErrorEmail('El formato del correo electrónico no es válido.');
-            toogleError();
+            errorBool=true;
         }
 
         if (email===''){
             setErrorEmail('Campo vacío');
-            toogleError();
+            errorBool=true;
         }
         if (contrasena===''){
             setErrorPassword('Campo vacío');
-            toogleError();
+            errorBool=true;
         }
 
-        if(error){
+        if(errorBool){
             return;
         }else{
             const user = {
@@ -110,7 +106,7 @@ const LoginForm = () => {
     return (
         <div className="login-container">
         <div className="login-box">
-            <h2 className="login-title">Iniciar Sesión</h2>
+            <h2 className="title">Iniciar Sesión</h2>
                 <div className={errorEmail===''?"input-group":"input-group-error"}>
                     <input type="text" id="email" name="email" value={email} onChange={handleChange} required/>
                     <label htmlFor="email">Usuario</label>

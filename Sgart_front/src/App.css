@@ -67,7 +67,7 @@ body, html {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.login-title {
+.title {
   text-align: center;
 }
 
@@ -77,7 +77,6 @@ body, html {
   padding: 20px;
   margin: 20px auto;
   display: flex;
-  justify-content: center;
   align-items: center;
 }
 
@@ -87,7 +86,7 @@ body, html {
   padding: 40px;
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  text-align: center;
+
   overflow: visible;
 }
 
@@ -149,32 +148,6 @@ h2 {
   transition: all 0.3s ease;
 }
 
-.input-group-register label {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #aaa;
-  pointer-events: none;
-  transition: all 0.3s ease;
-}
-
-.input-group-register select {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background: none;
-  outline: none;
-  transition: all 0.3s ease;
-  color: #333;
-  appearance: none;
-  background-color: white;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
 .password-toggle-btn {
   position: absolute;
   right: 10px;
@@ -219,30 +192,6 @@ h2 {
 .input-group input:valid ~ label,
 .input-group-error input:focus ~ label,
 .input-group-error input:valid ~ label {
-  top: -10px;
-  font-size: 12px;
-  color: #4A90E2;
-}
-
-.input-group-register input:focus,
-.input-group-register input:valid {
-  border-color: #4A90E2;
-}
-
-.input-group-register input:focus ~ label,
-.input-group-register input:valid ~ label {
-  top: -10px;
-  font-size: 12px;
-  color: #4A90E2;
-}
-
-.input-group-register select:focus,
-.input-group-register select:valid {
-  border-color: #4A90E2;
-}
-
-.input-group-register select:focus ~ label,
-.input-group-register select:valid ~ label {
   top: -10px;
   font-size: 12px;
   color: #4A90E2;
@@ -330,7 +279,7 @@ h2 {
   color: #888;
 }
 
-.input-group button {
+.input-group button, .input-group-error button {
   position: absolute;
   top:50%;
   transform: translateY(-50%);
@@ -340,7 +289,7 @@ h2 {
   background-color: inherit;
 }
 
-.input-group img{
+.input-group img, .input-group-error img{
   width: 30px;
 }
 
