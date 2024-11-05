@@ -73,6 +73,12 @@ const AdminGestionarHorariosDeTrabajo = () => {
         setIsPopupOpen(false);
     };
 
+    // Función para manejar el cierre del pop-up y reiniciar la selección
+    const handleClosePopup = () => {
+        setIsPopupOpen(false);
+        setBlockCount(''); // Reinicia la selección al cerrar el pop-up
+    };
+
     return (
         <div className="container">
             <div className="admin-buttons">
@@ -156,7 +162,7 @@ const AdminGestionarHorariosDeTrabajo = () => {
                             </div>
                         ))}
                         <button className="work-hours-save-button" onClick={handleSave}>Guardar</button>
-                        <button className="work-hours-close-button" onClick={() => setIsPopupOpen(false)}>Cerrar</button>
+                        <button className="work-hours-close-button" onClick={handleClosePopup}>Cerrar</button>
                     </div>
                 </div>
             )}
