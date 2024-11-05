@@ -65,6 +65,9 @@ body, html {
   padding: 40px;
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.login-title {
   text-align: center;
 }
 
@@ -93,9 +96,15 @@ h2 {
   color: #333;
 }
 
-.input-group {
+.input-group, .input-group-error {
   position: relative;
   margin-bottom: 30px;
+}
+
+.error {
+  position: relative;
+  bottom: 25px;
+  color: red;
 }
 
 .input-group-register {
@@ -105,7 +114,7 @@ h2 {
   align-items: center;
 }
 
-.input-group input {
+.input-group input, .input-group-error input {
   width: calc(100% - 11px);
   padding: 10px;
   font-size: 16px;
@@ -115,6 +124,11 @@ h2 {
   outline: none;
   transition: all 0.3s ease;
 }
+
+.input-group-error input {
+  border-color: red;
+}
+
 .input-group-register input {
   width: 100%;
   padding: 10px 40px 10px 10px;
@@ -125,7 +139,7 @@ h2 {
   transition: all 0.3s ease;
 }
 
-.input-group label {
+.input-group label, .input-group-error label {
   position: absolute;
   left: 10px;
   top: 50%;
@@ -196,13 +210,15 @@ h2 {
 }
 
 /* Estilo cuando el input está enfocado */
-.input-group input:focus,
+.input-group input:focus, .input-group-error input:focus
 .input-group input:valid {
   border-color: #4A90E2;
 }
 
 .input-group input:focus ~ label,
-.input-group input:valid ~ label {
+.input-group input:valid ~ label,
+.input-group-error input:focus ~ label,
+.input-group-error input:valid ~ label {
   top: -10px;
   font-size: 12px;
   color: #4A90E2;
@@ -736,7 +752,6 @@ button :hover {
 .error {
   border-color: red;
 }
-=======
 
 /* Botones Ausencias de USUARIO */
 .action-button {
