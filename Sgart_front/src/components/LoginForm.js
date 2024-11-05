@@ -40,6 +40,7 @@ const LoginForm = () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError('El formato del correo electrónico no es válido.');
+            alert(error);
             return;
         }
 
@@ -52,6 +53,7 @@ const LoginForm = () => {
         })
         .then((response) => {
             if (!response.ok) {
+                alert('Error al loguear. Compruebe sus credenciales.');
                 throw new Error('Error al loguear');
             }
             alert('Login exitoso. Pasando a la autentificación con doble factor...')

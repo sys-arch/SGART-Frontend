@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LoginForm from './LoginForm';
 
 const RegisterForm = () => {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ const RegisterForm = () => {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+    const [isLoged, setIsLoged] = useState(false);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -141,61 +143,81 @@ const RegisterForm = () => {
         setShowRepeatPassword((prevShowRepeatPassword) => !prevShowRepeatPassword);
     };
 
+    const handleToggleForm = () => {
+        setIsLoged(true);
+    };
+
+    if (isLoged) {
+        return <LoginForm />;
+    }
+
     return (
         <div className="register-container">
-            <div className="register-box">
+        <div className="register-box">
+            <form action="#" method="post" onSubmit={handleSubmit}>
                 <h2>Registro</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="input-group">
-                        <input type="text" name="nombre" value={nombre} onChange={handleChange} required />
-                        <label htmlFor="nombre">Nombre</label>
+                <p style={{ marginTop: "10px", fontSize: "12px", color: "#555"}}>
+                    Los campos marcados con (*) son obligatorios.
+                </p>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    <div className="input-group-register">
+                        <input type="text" id="nombre" name="nombre" value={nombre} onChange={handleChange} required/>
+                        <label htmlFor="nombre">Nombre*</label>
                     </div>
-                    <div className="input-group">
-                        <input type="text" name="apellidos" value={apellidos} onChange={handleChange} required />
-                        <label htmlFor="apellidos">Apellidos</label>
+                    <div className="input-group-register">
+                        <input type="text" id="apellidos" name="apellidos" value={apellidos} onChange={handleChange} required/>
+                        <label htmlFor="apellidos">Apellidos*</label>
                     </div>
-                    <div className="input-group">
-                        <input type="email" name="email" value={email} onChange={handleChange} required />
-                        <label htmlFor="email">Email</label>
+                    <div className="input-group-register">
+                        <input type="email" id="email" name="email" value={email} onChange={handleChange} required/>
+                        <label htmlFor="email">Email*</label>
                     </div>
-                    <div className="input-group">
-                        <input type="text" name="departamento" value={departamento} onChange={handleChange} required />
+                    <div className="input-group-register">
+                        <input type="text" id="departamento" name="departamento" value={departamento} onChange={handleChange} required/>
                         <label htmlFor="departamento">Departamento</label>
                     </div>
-                    <div className="input-group">
-                        <input type="text" name="centro" value={centro} onChange={handleChange} required />
-                        <label htmlFor="centro">Centro</label>
+                    <div className="input-group-register">
+                        <input type="text" id="centro" name="centro" value={centro} onChange={handleChange} required/>
+                        <label htmlFor="centro">Centro*</label>
                     </div>
-                    <div className="input-group">
-                        <input type="date" name="fechaAlta" value={fechaAlta} onChange={handleChange} required />
-                        <label htmlFor="fechaAlta">Fecha de Alta</label>
+                    <div className="input-group-register">
+                    <input type="text" id="fechaAlta" name="fechaAlta" value={fechaAlta} onFocus={(e) => (e.target.type = "date")} 
+                        onBlur={(e) => (e.target.type = "text")} onChange={handleChange} placeholder="" required/>
+                        <label htmlFor="fechaAlta">Fecha de Alta*</label>
                     </div>
-                    <div className="input-group">
-                        <select name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
-                            <option value="">Selecciona un perfil</option>
-                            <option value="admin">Admin</option>
-                            <option value="user">User</option>
+                    <div className="input-group-register">
+                        <select className="perfil-select" id="perfil_desplegable" name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
+                            <option value="" disabled hidden></option>
+                            <option value="usuario">Usuario</option>
                         </select>
                         <label htmlFor="perfil_desplegable">Perfil</label>
+                        <button type="button" className="select-toggle-btn" value={perfil_desplegable}>
+                            <img src={require('../media/flecha.png')} alt="Desplegable"/>
+                        </button>
                     </div>
-                    <div className="input-group">
-                        <input type={showPassword ? "text" : "password"} name="contrasena" value={contrasena} onChange={handleChange} required />
-                        <label htmlFor="contrasena">Contraseña</label>
+                    <div className="input-group-register">
+                        <input type={showPassword ? "text" : "password"} id="contrasena" name="contrasena" value={contrasena} onChange={handleChange} required/>
+                        <label htmlFor="contrasena">Contraseña*</label>
                         <button type="button" onClick={togglePasswordVisibility} className="password-toggle-btn">
-                            <img src={require(showPassword ? '../media/password_off.png' : '../media/password_on.png')} alt='Mostrar Contraseña' />
+                        <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')} alt="Mostrar Contraseña"/>
                         </button>
                     </div>
-                    <div className="input-group">
-                        <input type={showRepeatPassword ? "text" : "password"} name="repetirContrasena" value={repetirContrasena} onChange={handleChange} required />
-                        <label htmlFor="repetirContrasena">Repetir Contraseña</label>
-                        <button type="button" onClick={toggleRepeatPasswordVisibility} className="password-toggle-btn">
-                            <img src={require(showRepeatPassword ? '../media/password_off.png' : '../media/password_on.png')} alt='Mostrar Contraseña' />
+                    <div className="input-group-register">
+                        <input type={showRepeatPassword ? "text" : "password"} id="repetirContrasena" name="repetirContrasena" value={repetirContrasena} onChange={handleChange} required/>
+                        <label htmlFor="repetirContrasena">Repetir Contraseña*</label>
+                        <button type="button" onClick={toggleRepeatPasswordVisibility} className="repeatPassword-toggle-btn">
+                        <img src={require(showRepeatPassword?'../media/password_off.png':'../media/password_on.png')} alt="Mostrar Contraseña"/>
                         </button>
                     </div>
-                    <button type="submit" className="register-btn">Registrar</button>
-                </form>
-                {error && <p>{error}</p>}
-            </div>
+                <button type="submit" className="register-btn">Registrarse</button>
+                <div className="register-options">
+                    <p style={{ marginTop: "10px", fontSize: "12px", color: "#555"}}>
+                        ¿Ya estás registrado?
+                    </p>
+                    <a href="#" onClick={handleToggleForm}>Iniciar sesión</a>
+                </div>
+            </form>
+        </div>
         </div>
     );
 };
