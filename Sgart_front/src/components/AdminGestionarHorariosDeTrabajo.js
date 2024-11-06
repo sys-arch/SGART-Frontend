@@ -1,16 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../App.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const AdminGestionarHorariosDeTrabajo = () => {
     const navigate = useNavigate();
     const [blockCount, setBlockCount] = useState('');
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [timeBlocks, setTimeBlocks] = useState([
-        { startHour: '', startMinute: '', endHour: '', endMinute: '', startError: false, endError: false },
-        { startHour: '', startMinute: '', endHour: '', endMinute: '', startError: false, endError: false },
-        { startHour: '', startMinute: '', endHour: '', endMinute: '', startError: false, endError: false }
+        { startHour: '', startMinute: '', endHour: '', endMinute: '' },
+        { startHour: '', startMinute: '', endHour: '', endMinute: '' },
+        { startHour: '', startMinute: '', endHour: '', endMinute: '' }
     ]);
+    const [isEditable, setIsEditable] = useState(true); // Estado para manejar la edición
+    const [existingSchedules, setExistingSchedules] = useState([]); // Estado para almacenar horarios existentes
+
+    // Fetch para obtener los horarios de trabajo al cargar el componente
+    useEffect(() => {
+        const fetchWorkingHours = async () => {
+            try {
+                const response = await axios.get("http://localhost:9000/administrador/horarios");
+                if (response.data.length > 0) {
+                    // Si hay datos, desactiva la edición y almacena los horarios recibidos
+                    setIsEditable(false);
+                    setExistingSchedules(response.data.map(item => ({
+                        startHour: item.startingTime.split(':')[0],
+                        startMinute: item.startingTime.split(':')[1],
+                        endHour: item.endingTime.split(':')[0],
+                        endMinute: item.endingTime.split(':')[1]
+                    })));
+                } else {
+                    // Si no hay datos, permite la edición
+                    setIsEditable(true);
+                }
+            } catch (error) {
+                console.error("Error al obtener los horarios de trabajo:", error);
+            }
+        };
+        fetchWorkingHours();
+    }, []);
 
     // Manejador para actualizar el número de bloques
     const handleBlockCountChange = (e) => {
@@ -22,55 +50,28 @@ const AdminGestionarHorariosDeTrabajo = () => {
 
     // Manejador para actualizar los campos de tiempo
     const handleTimeChange = (index, field, value) => {
+        if (!isEditable) return; // No permitir cambios si no es editable
         const updatedBlocks = [...timeBlocks];
         updatedBlocks[index][field] = value;
         setTimeBlocks(updatedBlocks);
     };
 
-    // Método para validar la hora y los minutos
-    const validateTimeInput = (hour, minute) => {
-        const isValidHour = hour >= 0 && hour <= 23;
-        const isValidMinute = minute >= 0 && minute <= 59;
-        return isValidHour && isValidMinute;
-    };
-
-    // Función para guardar los horarios en el formato deseado
-    const handleSave = () => {
-        let isValid = true;
-        const updatedBlocks = timeBlocks.map((block, index) => {
-            const startHour = parseInt(block.startHour, 10);
-            const startMinute = parseInt(block.startMinute, 10);
-            const endHour = parseInt(block.endHour, 10);
-            const endMinute = parseInt(block.endMinute, 10);
-
-            const isStartValid = validateTimeInput(startHour, startMinute);
-            const isEndValid = validateTimeInput(endHour, endMinute);
-
-            if (!isStartValid || !isEndValid) {
-                isValid = false;
-                alert(`Error en el Bloque ${index + 1}: Introduce una hora y minuto válidos.`);
-            }
-
-            return {
-                ...block,
-                startError: !isStartValid,
-                endError: !isEndValid
-            };
-        });
-
-        setTimeBlocks(updatedBlocks);
-
-        if (!isValid) return; // Detiene la ejecución si hay un error
-
-        const formattedTimes = updatedBlocks.slice(0, blockCount).map(block => {
-            const startTime = `${block.startHour.padStart(2, '0')}:${block.startMinute.padStart(2, '0')}`;
-            const endTime = `${block.endHour.padStart(2, '0')}:${block.endMinute.padStart(2, '0')}`;
-            return { startTime, endTime };
-        });
-
-        // Aquí es donde enviarías los datos al backend
-        console.log('Datos a enviar al backend:', formattedTimes);
-        setIsPopupOpen(false);
+    // Función para guardar los horarios en el formato correcto
+    const handleSave = async () => {
+        const workingHoursList = timeBlocks.slice(0, blockCount).map(block => ({
+            startingTime: `${block.startHour.padStart(2, '0')}:${block.startMinute.padStart(2, '0')}:00`,
+            endingTime: `${block.endHour.padStart(2, '0')}:${block.endMinute.padStart(2, '0')}:00`
+        }));
+        
+        try {
+            await axios.post("http://localhost:9000/administrador/horarios", workingHoursList);
+            alert("Horarios de trabajo guardados correctamente.");
+            setIsEditable(false); // Desactiva la edición después de guardar
+            setIsPopupOpen(false);
+            setExistingSchedules(timeBlocks.slice(0, blockCount)); // Actualiza los horarios mostrados
+        } catch (error) {
+            console.error("Error al guardar los horarios de trabajo:", error);
+        }
     };
 
     // Función para manejar el cierre del pop-up y reiniciar la selección
@@ -93,22 +94,44 @@ const AdminGestionarHorariosDeTrabajo = () => {
                 </button>
             </div>
             <h2>Gestión de Horarios de Trabajo</h2>
-            <div className="work-hours-selector-group">
-                <select
-                    id="blockCount"
-                    className="work-hours-selector"
-                    value={blockCount}
-                    onChange={handleBlockCountChange}
-                    required
-                >
-                    <option value="" disabled></option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                </select>
-                <label htmlFor="blockCount" className="work-hours-floating-label">Número de bloques de trabajo</label>
-            </div>
+            
+            {/* Si hay horarios existentes, se muestran en lugar del selector */}
+            {!isEditable ? (
+                <div className="existing-schedules">
+                    <h3>Horarios de Trabajo Actuales</h3>
+                    {existingSchedules.map((schedule, index) => (
+                        <div key={index} className="work-hours-block-container">
+                            <label className="work-hours-block-label">Hora de inicio del bloque {index + 1}:</label>
+                            <div className="work-hours-display-group">
+                                {schedule.startHour}:{schedule.startMinute}
+                            </div>
+                            <label className="work-hours-block-label">Hora de fin del bloque {index + 1}:</label>
+                            <div className="work-hours-display-group">
+                                {schedule.endHour}:{schedule.endMinute}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                // Si no hay horarios, se muestra el selector para agregar nuevos
+                <div className="work-hours-selector-group">
+                    <select
+                        id="blockCount"
+                        className="work-hours-selector"
+                        value={blockCount}
+                        onChange={handleBlockCountChange}
+                        required
+                    >
+                        <option value="" disabled></option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                    <label htmlFor="blockCount" className="work-hours-floating-label">Número de bloques de trabajo</label>
+                </div>
+            )}
 
+            {/* Pop-up para configurar los horarios si es editable */}
             {isPopupOpen && (
                 <div className="popup-overlay">
                     <div className="popup-container">
