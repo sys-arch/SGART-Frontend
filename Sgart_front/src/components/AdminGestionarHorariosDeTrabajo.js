@@ -97,7 +97,7 @@ const AdminGestionarHorariosDeTrabajo = () => {
             
             {/* Si hay horarios existentes, se muestran en lugar del selector */}
             {!isEditable ? (
-                <div className="existing-schedules">
+                <div className="existing-schedules"> 
                     <h3>Horarios de Trabajo Actuales</h3>
                     {existingSchedules.map((schedule, index) => (
                         <div key={index} className="work-hours-block-container">
