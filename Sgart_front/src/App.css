@@ -887,3 +887,114 @@ button :hover {
   margin-bottom: 20px;
 }
 
+
+/* ===== Estilos para AdminGestionarHorariosDeTrabajo ===== */
+
+/* Contenedor general del bloque de selección */
+.work-hours-selector-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* Estilo para el selector */
+.work-hours-selector {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+  background: none;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+/* Estilo para la etiqueta flotante */
+.work-hours-floating-label {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.work-hours-selector:focus ~ .work-hours-floating-label,
+.work-hours-selector:not(:placeholder-shown) ~ .work-hours-floating-label {
+  top: -10px;
+  font-size: 12px;
+  color: #4A90E2;
+}
+
+/* Contenedor de cada bloque de trabajo */
+.work-hours-block-container {
+  margin-bottom: 20px; /* Espacio entre cada bloque */
+}
+
+/* Estilo para las etiquetas de los bloques */
+.work-hours-block-label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  display: block;
+}
+
+/* Grupo de entradas de hora y minuto */
+.work-hours-input-group {
+  display: flex;
+  gap: 5px; /* Espacio entre los campos de hora y minuto */
+}
+
+/* Estilo para las entradas de hora y minuto */
+.work-hours-input {
+  width: 50px;
+  padding: 5px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.3s ease;
+}
+
+/* Estilo para las entradas con error */
+.work-hours-input.error {
+  border-color: red;
+}
+
+/* Botón de guardar */
+.work-hours-save-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #4A90E2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  margin-bottom: 10px; /* Espacio adicional debajo del botón de guardar */
+}
+
+.work-hours-save-button:hover {
+  background-color: #357ABD;
+}
+
+/* Botón de cerrar */
+.work-hours-close-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #555;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.work-hours-close-button:hover {
+  background-color: #333;
+}
+
+/* ===== Fin de Estilos para AdminGestionarHorariosDeTrabajo ===== */
