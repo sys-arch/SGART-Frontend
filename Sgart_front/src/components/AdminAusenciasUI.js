@@ -119,7 +119,6 @@ const AdminAusenciasUI = () => {
         }
     };
     
-
     const resetForm = () => {
         setTipoAusencia('');
         setFechaInicio('');
@@ -196,13 +195,21 @@ const AdminAusenciasUI = () => {
                                 {(tipoAusencia === 'vacaciones' || tipoAusencia === 'baja' || tipoAusencia === 'asuntos_personales') && (
                                 <>
                                 <div className="input-group-register">
-                                    <input type="text" id="fechaInicio" name="fechaInicio" value={fechaInicio} onFocus={(e) => (e.target.type = "date")} 
-                                        onBlur={(e) => (e.target.type = "text")} onChange={handleChange} placeholder="" required/>
+                                    <input  type={fechaInicio ? "date" : "text"} id="fechaInicio" name="fechaInicio" value={fechaInicio} onFocus={(e) => (e.target.type = "date")} 
+                                        onBlur={(e) => {
+                                            if (!fechaInicio) {
+                                                e.target.type = "text";
+                                            }
+                                        }} onChange={handleChange} placeholder="" required/>
                                     <label htmlFor='fechaInicio'>Fecha de Inicio</label>
                                 </div>
                                 <div className="input-group-register">
-                                    <input type="text" id="fechaFin" name="fechaFin" value={fechaFin} onFocus={(e) => (e.target.type = "date")} 
-                                        onBlur={(e) => (e.target.type = "text")} onChange={handleChange} placeholder="" required/>
+                                    <input type={fechaFin ? "date" : "text"} id="fechaFin" name="fechaFin" value={fechaFin} onFocus={(e) => (e.target.type = "date")} 
+                                        onBlur={(e) => {
+                                            if (!fechaFin) {
+                                                e.target.type = "text";
+                                            }
+                                        }} onChange={handleChange} placeholder="" required/>
                                     <label htmlFor='fechaFin'>Fecha de Fin</label>
                                 </div>
                                 </>

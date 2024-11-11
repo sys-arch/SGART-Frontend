@@ -181,14 +181,22 @@ const RegisterForm = () => {
                         <label htmlFor="centro">Centro*</label>
                     </div>
                     <div className="input-group-register">
-                    <input type="text" id="fechaAlta" name="fechaAlta" value={fechaAlta} onFocus={(e) => (e.target.type = "date")} 
-                        onBlur={(e) => (e.target.type = "text")} onChange={handleChange} placeholder="" required/>
+                    <input type={fechaAlta ? "date" : "text"} id="fechaAlta" name="fechaAlta" value={fechaAlta} onFocus={(e) => (e.target.type = "date")} 
+                        onBlur={(e) => {
+                            if (!fechaAlta) {
+                                e.target.type = "text";
+                            }
+                        }} onChange={handleChange} placeholder="" required/>
                         <label htmlFor="fechaAlta">Fecha de Alta*</label>
                     </div>
                     <div className="input-group-register">
                         <select className="perfil-select" id="perfil_desplegable" name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
                             <option value="" disabled hidden></option>
-                            <option value="usuario">Usuario</option>
+                            <option value="usuario">Desarrollador</option>
+                            <option value="usuario">Tester</option>
+                            <option value="usuario">Becario</option>
+                            <option value="usuario">RRHH</option>
+                            <option value="usuario">Contabilidad</option>
                         </select>
                         <label htmlFor="perfil_desplegable">Perfil</label>
                         <button type="button" className="select-toggle-btn" value={perfil_desplegable}>

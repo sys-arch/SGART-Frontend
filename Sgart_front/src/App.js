@@ -11,6 +11,7 @@ import AdminWorkingHours from './components/AdminWorkingHours';
 import UserOptions from './components/UserOptions';
 import UnderConstruction from './components/UnderConstruction';
 import './App.css';
+import UserCalendarUI from './components/UserCalendarUI';
 
 const App = () => {
   return (
@@ -27,7 +28,7 @@ const App = () => {
           <Route path="/google-auth-login" element={<GoogleAuthLogin />} />
 
           {/* Ruta para el Dashboard del Administrador */}
-          <Route path="/admin-working-hours" element={<AdminWorkingHours />} />
+          <Route path="/admin-working-hours" element={<UserCalendarUI />} />
 
           {/* Ruta para el Usuario -> Under Construction */}
           <Route path="/under-construction" element={<UnderConstruction />} />

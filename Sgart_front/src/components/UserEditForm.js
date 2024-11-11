@@ -44,17 +44,20 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
             <h2>Modificar Usuario</h2>
             <div className="input-group-register">
                 <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} />
-                <label htmlFor="name">name:</label>
+                <label htmlFor="name">Nombre:</label>
             </div>
             <div className="input-group-register">
                 <input type="text" id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                <label htmlFor="lastName">lastName:</label>
+                <label htmlFor="lastName">Apellidos:</label>
             </div>
             <div className="input-group-register">
                 <select className="profile-select" id="profile" value={profile} onChange={(e) => setProfile(e.target.value)}>
                     <option value="" disabled hidden></option>
-                    <option value="usuario">Usuario</option>
-                    <option value="admin">Administrador</option>
+                    <option value="usuario">Desarrollador</option>
+                    <option value="usuario">Tester</option>
+                    <option value="usuario">Becario</option>
+                    <option value="usuario">RRHH</option>
+                    <option value="usuario">Contabilidad</option>
                 </select>
                 <label htmlFor="profile">profile:</label>
                 <button type="button" className="select-toggle-btn" value={profile}>
@@ -63,7 +66,7 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
             </div>
             <div className="input-group-register">
                 <input type="text" id="department" value={department} onChange={(e) => setDepartment(e.target.value)} />
-                <label htmlFor="department">department:</label>
+                <label htmlFor="department">Departamento:</label>
             </div>
             <div className="input-group-register">
                 <input type="date" id="fecha" value={hiringDate} onChange={(e) => setHiringDate(e.target.value)} />
@@ -71,7 +74,7 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
             </div>
             <div className="input-group-register">
                 <input type="text" id="center" value={center} onChange={(e) => setCenter(e.target.value)} />
-                <label htmlFor="center">center:</label>
+                <label htmlFor="center">Centro:</label>
             </div>
             <button className="guardar-btn" onClick={handleSave}>Guardar</button>
             <button className="cancelar-btn"onClick={onCancel}>Cancelar</button>
