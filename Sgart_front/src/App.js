@@ -7,7 +7,7 @@ import GoogleAuth from './components/GoogleAuth';
 import GoogleAuthLogin from './components/GoogleAuthLogin';
 import AdminAusenciasUI from './components/AdminAusenciasUI';
 import UserValidationUI from './components/UserValidationUI';
-import AdminWorkingHours from './components/AdminWorkingHours';
+import AdminVisualizarCalendario from './components/AdminVisualizarCalendario';
 import AdminGestionarHorariosDeTrabajo from './components/AdminGestionarHorariosDeTrabajo';
 import UserOptions from './components/UserOptions';
 import UnderConstruction from './components/UnderConstruction';
@@ -29,6 +29,7 @@ const App = () => {
 
           {/* Ruta para el Dashboard del Administrador */}
           <Route path="/admin-working-hours" element={<AdminGestionarHorariosDeTrabajo />} />
+          <Route path="/admin-calendar-view" element={<AdminVisualizarCalendario/>} />
 
           {/* Ruta para el Usuario -> Under Construction */}
           <Route path="/under-construction" element={<UnderConstruction />} />
