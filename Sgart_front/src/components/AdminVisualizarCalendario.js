@@ -8,18 +8,19 @@ import '../App.css';
 const AdminCalendar = () => {
     const [meetings, setMeetings] = useState([]);
     const [selectedMeeting, setSelectedMeeting] = useState(null);
+    const [invitees, setInvitees] = useState([]);
     const [isMeetingDetailPopupOpen, setIsMeetingDetailPopupOpen] = useState(false);
 
     // Función para cargar las reuniones desde el backend con depuración
     const loadMeetings = useCallback(async () => {
         try {
             console.log("Intentando cargar meetings desde el backend...");
-    
+
             const response = await fetch('http://localhost:9000/administrador/calendarios/loadMeetings');
             if (!response.ok) {
                 throw new Error(`Error al cargar los meetings: ${response.statusText}`);
             }
-    
+
             const backendMeetings = await response.json();
             const transformedMeetings = backendMeetings.map(meeting => {
                 const transformed = {
@@ -33,9 +34,39 @@ const AdminCalendar = () => {
                 return transformed;
             });
             setMeetings(transformedMeetings);
-    
+
         } catch (error) {
             console.error("Error al cargar los meetings: ", error);
+        }
+    }, []);
+
+    // Función para cargar la lista de invitados por POST
+    const loadInvitees = useCallback(async (meetingId) => {
+        try {
+            console.log(`Intentando cargar invitados para la reunión con ID: ${meetingId}`);
+
+            const response = await fetch(`http://localhost:9000/administrador/calendarios/invitados`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ meetingId }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error al cargar los invitados: ${response.statusText}`);
+            }
+
+            const backendInvitees = await response.json();
+            console.log("Lista de invitados cargada:", backendInvitees);
+            const transformedInvitees = backendInvitees.map(invitee => ({
+                userName: invitee.userName,
+                invitationStatus: invitee.status,
+            }));
+            setInvitees(transformedInvitees);
+
+        } catch (error) {
+            console.error("Error al cargar los invitados: ", error);
         }
     }, []);
 
@@ -43,9 +74,10 @@ const AdminCalendar = () => {
         loadMeetings();
     }, [loadMeetings]);
 
-    const handleEventClick = (clickInfo) => {
+    const handleEventClick = async (clickInfo) => {
         console.log("Evento seleccionado:", clickInfo.event);
         setSelectedMeeting(clickInfo.event);
+        await loadInvitees(clickInfo.event.id);
         setIsMeetingDetailPopupOpen(true);
     };
 
@@ -85,6 +117,19 @@ const AdminCalendar = () => {
                             <label>Hora de Fin:</label>
                             <p>{new Date(selectedMeeting.end).toLocaleTimeString()}</p>
                         </div>
+
+                        {/* Lista de Invitados */}
+                        <div className="admin-calendar-input-group">
+                            <label>Lista de Invitados:</label>
+                            <ul>
+                                {invitees.map((invitee, index) => (
+                                    <li key={index}>
+                                        {invitee.userName} - {invitee.invitationStatus}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
                         <button className="close-button" onClick={() => setIsMeetingDetailPopupOpen(false)}>Cerrar</button>
                     </div>
                 </div>
