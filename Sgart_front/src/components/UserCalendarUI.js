@@ -6,6 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import '../App.css';
 import { useNavigate } from 'react-router-dom';
 import VentanaConfirm from './VentanaConfirm';
+import NavBar from './NavBar';
 
 const InviteParticipants = ({ participants, filteredParticipants, searchTerm, handleSearchChange, handleSelectParticipant }) => {
     return (
@@ -426,18 +427,9 @@ const UserCalendarUI = () => {
     };    
 
     return (
-        <div className='AdminCalendarapp-container'>
-            <div className="admin-buttons">
-                <button className="admin-btn" onClick={() => navigate('/user-options')}>
-                    <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios" />
-                </button>
-                <button className="admin-btn">
-                    <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" title="Mant. Administradores" />
-                </button>
-                <button className="admin-btn" onClick={() => navigate('/admin-working-hours')}>
-                    <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario" title="Mant. Calendario" />
-                </button>
-            </div>
+        <>
+        <NavBar isAdmin={false} />
+        <div className='AdminCalendarapp-container main-content'>
             <div className="AdminCalendar-left-panel">
                 <h3>Reuniones Pendientes</h3>
                 <div className="meeting-list-pending">
@@ -771,6 +763,7 @@ const UserCalendarUI = () => {
                 />
             )}
         </div>
+    </>
     );
 };
 

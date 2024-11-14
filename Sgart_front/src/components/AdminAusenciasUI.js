@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import VentanaConfirm from './VentanaConfirm';
 import VerAusenciasModal from './VerAusenciasModal';
 import { useNavigate } from 'react-router-dom';
+import NavBar from './NavBar';
 
 const AdminAusenciasUI = () => {
     const navigate = useNavigate();
@@ -130,6 +131,8 @@ const AdminAusenciasUI = () => {
     };    
 
     return (
+        <>
+        <NavBar isAdmin={true} />
         <div className="user-validation-container">
             <div className="admin-buttons">
                 <button className="admin-btn" onClick={() => navigate('/user-options')}>
@@ -266,6 +269,7 @@ const AdminAusenciasUI = () => {
                 )}
             </div>
         </div>
+        </>
     );
 };
 
