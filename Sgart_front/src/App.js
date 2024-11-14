@@ -12,6 +12,7 @@ import AdminGestionarHorariosDeTrabajo from './components/AdminGestionarHorarios
 import UserOptions from './components/UserOptions';
 import UnderConstruction from './components/UnderConstruction';
 import './App.css';
+import AdminPanel from './components/AdminPanel';
 
 const App = () => {
   return (
@@ -33,8 +34,9 @@ const App = () => {
           {/* Ruta para el Usuario -> Under Construction */}
           <Route path="/under-construction" element={<UnderConstruction />} />
 
-          {/* Rutas para gestionar usuarios y ausencias */}
+          {/* Rutas para gestionar usuarios, administradores y ausencias */}
           <Route path="/user-options" element={<UserOptions />} />
+          <Route path="/admin-options" element={<AdminPanel />} />
           <Route path="/admin-ausencias" element={<AdminAusenciasUI />} />
           <Route path="/user-validation" element={<UserValidationUI />} />
 
