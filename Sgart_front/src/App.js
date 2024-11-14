@@ -12,6 +12,8 @@ import AdminGestionarHorariosDeTrabajo from './components/AdminGestionarHorarios
 import UserOptions from './components/UserOptions';
 import UnderConstruction from './components/UnderConstruction';
 import './App.css';
+import UserCalendarUI from './components/UserCalendarUI';
+import UserEdit from './components/UserEdit';
 
 const App = () => {
   return (
@@ -28,11 +30,18 @@ const App = () => {
           <Route path="/google-auth-login" element={<GoogleAuthLogin />} />
 
           {/* Ruta para el Dashboard del Administrador */}
+
+          <Route path="/admin-working-hours" element={<UserCalendarUI />} />
+
           <Route path="/admin-working-hours" element={<AdminGestionarHorariosDeTrabajo />} />
           <Route path="/admin-calendar-view" element={<AdminVisualizarCalendario/>} />
 
+
           {/* Ruta para el Usuario -> Under Construction */}
           <Route path="/under-construction" element={<UnderConstruction />} />
+
+          {/* Ruta para el Usuario -> Visualizar Datos Perfil */}
+          <Route path="/user-profile" element={<UserEdit />} />
 
           {/* Rutas para gestionar usuarios y ausencias */}
           <Route path="/user-options" element={<UserOptions />} />

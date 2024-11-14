@@ -424,6 +424,7 @@ button:hover {
   width: 100%;
   max-width: 1200px;
   padding: 20px;
+  margin-top: 50px;
 }
 
 .container {
@@ -598,17 +599,20 @@ button :hover {
   width: 100%;
   gap: 20px;
   padding: 20px;
+  max-width: 1200px;
 }
 
 .AdminCalendar-left-panel {
   width: 275px;
+  height: auto;
   background-color: white;
   border-radius: 8px;
-  padding: 20px 30px;
+  padding: 5px 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   gap: 15px;
+  margin-top: 100px;
 }
 
 .AdminCalendar-left-panel h2 {
@@ -887,16 +891,105 @@ button :hover {
   margin-bottom: 20px;
 }
 
+/* ===== Estilos Combinados ===== */
 
-/* ===== Estilos para AdminGestionarHorariosDeTrabajo ===== */
+/* Calendario de Usuarios */
+.meeting-list-pending, .meeting-list-accepted {
+  margin-top: 5px;
+  padding: 5px;
+  max-height: 175px;
+  overflow-y: auto;
+}
 
-/* Contenedor general del bloque de selección */
+.meeting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  line-height: 1.2; 
+  background-color: #f9f9f9;
+}
+
+.meeting-item.pending {
+  background-color: #fff8b5; /* Amarillo apagado */
+}
+
+.meeting-item.accepted {
+  background-color: #56b656; /* Verde claro */
+}
+
+.AdminCalendar-left-panel h3 {
+  margin-top: 20px;
+  margin-bottom: 3px;
+}
+
+/* Contenedor general del pop-up para invitar participantes */
+.popup-container-participants {
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-height: 500px;
+  overflow-y: auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Alineación central */
+}
+
+.participant-list-available, .participant-list-selected {
+  margin-top: 10px;
+  padding: 5px;
+  border-radius: 8px;
+  max-height: 125px;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Botones */
+.save-participants-button, .close-participants-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.save-participants-button {
+  background-color: #1e3a8a;
+  color: white;
+}
+
+.save-participants-button:hover {
+  background-color: #3b82f6;
+}
+
+.close-participants-button {
+  background-color: #555;
+  color: white;
+}
+
+.close-participants-button:hover {
+  background-color: #777;
+}
+
+/* Estilos para AdminGestionarHorariosDeTrabajo */
 .work-hours-selector-group {
   position: relative;
   margin-bottom: 20px;
 }
 
-/* Estilo para el selector */
 .work-hours-selector {
   width: 100%;
   padding: 10px;
@@ -906,10 +999,8 @@ button :hover {
   outline: none;
   background: none;
   color: #333;
-  transition: all 0.3s ease;
 }
 
-/* Estilo para la etiqueta flotante */
 .work-hours-floating-label {
   position: absolute;
   left: 10px;
@@ -927,42 +1018,6 @@ button :hover {
   color: #4A90E2;
 }
 
-/* Contenedor de cada bloque de trabajo */
-.work-hours-block-container {
-  margin-bottom: 20px; /* Espacio entre cada bloque */
-}
-
-/* Estilo para las etiquetas de los bloques */
-.work-hours-block-label {
-  margin-bottom: 5px;
-  font-weight: bold;
-  display: block;
-}
-
-/* Grupo de entradas de hora y minuto */
-.work-hours-input-group {
-  display: flex;
-  gap: 5px; /* Espacio entre los campos de hora y minuto */
-}
-
-/* Estilo para las entradas de hora y minuto */
-.work-hours-input {
-  width: 50px;
-  padding: 5px;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  outline: none;
-  text-align: center;
-  transition: border-color 0.3s ease;
-}
-
-/* Estilo para las entradas con error */
-.work-hours-input.error {
-  border-color: red;
-}
-
-/* Botón de guardar */
 .work-hours-save-button {
   width: 100%;
   padding: 10px;
@@ -972,32 +1027,12 @@ button :hover {
   border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
-  transition: background-color 0.3s ease;
-  margin-bottom: 10px; /* Espacio adicional debajo del botón de guardar */
+  margin-bottom: 10px;
 }
 
 .work-hours-save-button:hover {
   background-color: #357ABD;
 }
-
-/* Botón de cerrar */
-.work-hours-close-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #555;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.work-hours-close-button:hover {
-  background-color: #333;
-}
-
-/* ===== Fin de Estilos para AdminGestionarHorariosDeTrabajo ===== */
 
 /* Admin Calendar View Styles */
 .admin-calendar-view {
@@ -1027,5 +1062,4 @@ button :hover {
   height: 100%;
   overflow: hidden;
 }
-/* End Admin Calendar View Styles */
 

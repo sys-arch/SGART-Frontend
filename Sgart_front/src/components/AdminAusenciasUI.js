@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import VentanaConfirm from './VentanaConfirm';
 import VerAusenciasModal from './VerAusenciasModal';
 import { useNavigate } from 'react-router-dom';
+import NavBar from './NavBar';
 
 const AdminAusenciasUI = () => {
     const navigate = useNavigate();
@@ -119,7 +120,6 @@ const AdminAusenciasUI = () => {
         }
     };
     
-
     const resetForm = () => {
         setTipoAusencia('');
         setFechaInicio('');
@@ -131,6 +131,8 @@ const AdminAusenciasUI = () => {
     };    
 
     return (
+        <>
+        <NavBar isAdmin={true} />
         <div className="user-validation-container">
             <div className="admin-buttons">
                 <button className="admin-btn" onClick={() => navigate('/user-options')}>
@@ -196,13 +198,21 @@ const AdminAusenciasUI = () => {
                                 {(tipoAusencia === 'vacaciones' || tipoAusencia === 'baja' || tipoAusencia === 'asuntos_personales') && (
                                 <>
                                 <div className="input-group-register">
-                                    <input type="text" id="fechaInicio" name="fechaInicio" value={fechaInicio} onFocus={(e) => (e.target.type = "date")} 
-                                        onBlur={(e) => (e.target.type = "text")} onChange={handleChange} placeholder="" required/>
+                                    <input  type={fechaInicio ? "date" : "text"} id="fechaInicio" name="fechaInicio" value={fechaInicio} onFocus={(e) => (e.target.type = "date")} 
+                                        onBlur={(e) => {
+                                            if (!fechaInicio) {
+                                                e.target.type = "text";
+                                            }
+                                        }} onChange={handleChange} placeholder="" required/>
                                     <label htmlFor='fechaInicio'>Fecha de Inicio</label>
                                 </div>
                                 <div className="input-group-register">
-                                    <input type="text" id="fechaFin" name="fechaFin" value={fechaFin} onFocus={(e) => (e.target.type = "date")} 
-                                        onBlur={(e) => (e.target.type = "text")} onChange={handleChange} placeholder="" required/>
+                                    <input type={fechaFin ? "date" : "text"} id="fechaFin" name="fechaFin" value={fechaFin} onFocus={(e) => (e.target.type = "date")} 
+                                        onBlur={(e) => {
+                                            if (!fechaFin) {
+                                                e.target.type = "text";
+                                            }
+                                        }} onChange={handleChange} placeholder="" required/>
                                     <label htmlFor='fechaFin'>Fecha de Fin</label>
                                 </div>
                                 </>
@@ -259,6 +269,7 @@ const AdminAusenciasUI = () => {
                 )}
             </div>
         </div>
+        </>
     );
 };
 
