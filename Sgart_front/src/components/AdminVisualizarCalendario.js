@@ -4,6 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import '../App.css';
+import NavBar from './NavBar';
 
 const AdminCalendar = () => {
     const [meetings, setMeetings] = useState([]);
@@ -82,6 +83,8 @@ const AdminCalendar = () => {
     };
 
     return (
+        <>
+        <NavBar isAdmin={true} />
         <div className='admin-calendar-view'>
             <div className="admin-calendar-container">
                 <h2>Calendario de Reuniones de la Empresa</h2>
@@ -135,6 +138,7 @@ const AdminCalendar = () => {
                 </div>
             )}
         </div>
+        </>
     );
 };
 

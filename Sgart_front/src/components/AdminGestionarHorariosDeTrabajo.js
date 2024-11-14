@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../App.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import NavBar from './NavBar';
 
 const AdminGestionarHorariosDeTrabajo = () => {
     const navigate = useNavigate();
@@ -81,18 +82,9 @@ const AdminGestionarHorariosDeTrabajo = () => {
     };
 
     return (
+        <>
+        <NavBar isAdmin={true} />
         <div className="container">
-            <div className="admin-buttons">
-                <button className="admin-btn" onClick={() => navigate('/user-options')}>
-                    <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios" />
-                </button>
-                <button className="admin-btn">
-                    <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" title="Mant. Administradores" />
-                </button>
-                <button className="admin-btn" onClick={() => navigate('/admin-working-hours')}>
-                    <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario" title="Mant. Calendario" />
-                </button>
-            </div>
             <h2>Gestión de Horarios de Trabajo</h2>
             
             {/* Si hay horarios existentes, se muestran en lugar del selector */}
@@ -190,6 +182,7 @@ const AdminGestionarHorariosDeTrabajo = () => {
                 </div>
             )}
         </div>
+        </>
     );
 };
 

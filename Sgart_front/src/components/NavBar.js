@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
 
-const NavBar = ({isAdmin}) => {
+const NavBar = ({ isAdmin }) => {
     const navigate = useNavigate();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const handleProfileClick = () => {
         setIsDropdownOpen((prevState) => !prevState); // Alternar entre abierto/cerrado
     };
-    
+
 
     return (
         <div className="navbar-container">
@@ -24,14 +24,17 @@ const NavBar = ({isAdmin}) => {
                         <button className="user-calendar-btn" onClick={() => navigate('/user-options')}>
                             <img src={require('../media/user_management_btn.png')} width={40} alt="Usuarios" title="Mantenimiento Usuarios" />
                         </button>
-                        <button className="user-calendar-btn" onClick={() => navigate('/admin-options')}>
+                        <button className="user-calendar-btn" onClick={() => navigate('/admin-working-hours')}>
                             <img src={require('../media/admin_management_btn.png')} width={40} alt="Administradores" title="Mantenimiento Administradores" />
+                        </button>
+                        <button className="user-calendar-btn" onClick={() => navigate('/admin-calendar-view')}>
+                            <img src={require('../media/calendar_management_btn.png')} width={40} alt="Calendario" title="Calendario" />
                         </button>
                     </>
                 )}
 
-                {/* Botón para el calendario (se muestra siempre) */}
-                <button className="user-calendar-btn" onClick={() => navigate('/admin-working-hours')}>
+                {isAdmin === false && (
+                <button className="user-calendar-btn" onClick={() => navigate('/user-calendar')}>
                     <img
                         src={require('../media/calendar_management_btn.png')}
                         width={40}
@@ -39,12 +42,13 @@ const NavBar = ({isAdmin}) => {
                         title="Calendario"
                     />
                 </button>
+                )}
             </div>
 
             <div className={`navbar-profile ${isDropdownOpen ? 'active' : ''}`}>
                 {/* Ícono del perfil que despliega el menú */}
                 <div className="profile-icon" title="Perfil" onClick={handleProfileClick}>
-                    <img src={require('../media/user_icon.png')} alt="Perfil" />
+                    <img src={require(isAdmin ? '../media/corona.png' : '../media/hombre.png')} alt="Perfil" />
                 </div>
 
                 {/* Menú desplegable */}
