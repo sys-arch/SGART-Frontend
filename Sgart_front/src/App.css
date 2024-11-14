@@ -65,6 +65,9 @@ body, html {
   padding: 40px;
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.login-title {
   text-align: center;
 }
 
@@ -93,9 +96,15 @@ h2 {
   color: #333;
 }
 
-.input-group {
+.input-group, .input-group-error {
   position: relative;
   margin-bottom: 30px;
+}
+
+.error {
+  position: relative;
+  bottom: 25px;
+  color: red;
 }
 
 .input-group-register {
@@ -105,7 +114,7 @@ h2 {
   align-items: center;
 }
 
-.input-group input {
+.input-group input, .input-group-error input {
   width: calc(100% - 11px);
   padding: 10px;
   font-size: 16px;
@@ -115,6 +124,11 @@ h2 {
   outline: none;
   transition: all 0.3s ease;
 }
+
+.input-group-error input {
+  border-color: red;
+}
+
 .input-group-register input {
   width: 100%;
   padding: 10px 40px 10px 10px;
@@ -125,7 +139,7 @@ h2 {
   transition: all 0.3s ease;
 }
 
-.input-group label {
+.input-group label, .input-group-error label {
   position: absolute;
   left: 10px;
   top: 50%;
@@ -196,13 +210,15 @@ h2 {
 }
 
 /* Estilo cuando el input está enfocado */
-.input-group input:focus,
+.input-group input:focus, .input-group-error input:focus
 .input-group input:valid {
   border-color: #4A90E2;
 }
 
 .input-group input:focus ~ label,
-.input-group input:valid ~ label {
+.input-group input:valid ~ label,
+.input-group-error input:focus ~ label,
+.input-group-error input:valid ~ label {
   top: -10px;
   font-size: 12px;
   color: #4A90E2;
@@ -875,15 +891,10 @@ button :hover {
   margin-bottom: 20px;
 }
 
-/*Calendario de Usuarios*/
-.meeting-list-pending {
-  margin-top: 5px;
-  padding: 5px;
-  max-height: 175px;
-  overflow-y: auto;
-}
+/* ===== Estilos Combinados ===== */
 
-.meeting-list-accepted {
+/* Calendario de Usuarios */
+.meeting-list-pending, .meeting-list-accepted {
   margin-top: 5px;
   padding: 5px;
   max-height: 175px;
@@ -900,26 +911,6 @@ button :hover {
   font-size: 0.9em;
   line-height: 1.2; 
   background-color: #f9f9f9;
-}
-
-.meeting-item-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.meeting-info {
-  flex-grow: 1;
-}
-
-.meeting-buttons {
-  display: flex;
-  margin-left: 30px;
-}
-
-.meeting-actions {
-  display: flex;
-  gap: 10px; /* Espacio entre los botones */
 }
 
 .meeting-item.pending {
@@ -953,366 +944,122 @@ button :hover {
   align-items: center; /* Alineación central */
 }
 
-.participant-list-container {
+.participant-list-available, .participant-list-selected {
+  margin-top: 10px;
+  padding: 5px;
+  border-radius: 8px;
+  max-height: 125px;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Lista de participantes disponibles */
-.participant-list-available {
-  margin-top: 10px;
-  padding: 5px;
-  background-color: #f1f5f9;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  max-height: 125px; /* Ajuste a 125px como máximo */
-  width: 100%; /* Ocupar todo el ancho del contenedor */
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
 }
 
-/* Lista de participantes seleccionados */
-.participant-list-selected {
-  margin-top: 10px;
-  padding: 5px;
-  background-color: #e6fffa;
-  border-radius: 8px;
-  border: 1px solid #81e6d9;
-  max-height: 125px; /* Ajuste a 125px como máximo */
-  width: 100%; /* Ocupar todo el ancho del contenedor */
-  overflow-y: auto;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column; /* Alineación en columna */
-}
-
-/* Estilos para cada elemento de la lista de participantes */
-.available-participant-item, .selected-participant-item {
-  padding: 5px 10px;
-  margin-bottom: 5px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  width: calc(100% - 20px); /* Ajuste de ancho para encajar mejor */
-}
-
-/* Usuarios disponibles */
-.available-participant-item {
-  padding: 5px 10px;
-  margin-bottom: 5px;
-  border-radius: 4px;
-  background-color: #f8fafc;
-  border: 1px solid #cbd5e1;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  font-size: 0.9em;
-  line-height: 1.2;
-  display: flex;
-  align-items: center;
-}
-
-.available-participant-item:hover {
-  background-color: #e2e8f0;
-}
-
-/* Usuarios seleccionados */
-.selected-participant-item {
-  padding: 1px 5px;
-  margin-bottom: 2px;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  font-size: 0.9em;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  background-color: #d1fae5;
-  border: 1px solid #4ade80;
-}
-
-.selected-participant-item:hover {
-  background-color: #bbf7d0;
-}
-
-.no-participants-message {
-  width: 100%; /* Asegurar que el mensaje ocupe el mismo ancho que la lista */
-  height: 100%;
-  text-align: center;
-  padding: 10px;
-  font-size: 0.9em;
-  color: #6b7280; /* Color de texto gris */
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Botón para guardar participantes */
-.save-participants-button {
+/* Botones */
+.save-participants-button, .close-participants-button {
   width: 100%;
   padding: 12px;
-  background-color: #1e3a8a;
-  color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   margin-top: 10px;
+}
+
+.save-participants-button {
+  background-color: #1e3a8a;
+  color: white;
 }
 
 .save-participants-button:hover {
   background-color: #3b82f6;
 }
 
-/* Botón para cancelar la selección de participantes */
 .close-participants-button {
-  width: 100%;
-  padding: 12px;
   background-color: #555;
   color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: 10px;
 }
 
 .close-participants-button:hover {
   background-color: #777;
 }
 
-/* Estilo del contenedor del campo de búsqueda */
-.search-participants-container {
-  margin-bottom: 10px;
-  width: 100%; /* Asegurar que el campo de búsqueda ocupa todo el ancho */
+/* Estilos para AdminGestionarHorariosDeTrabajo */
+.work-hours-selector-group {
+  position: relative;
+  margin-bottom: 20px;
 }
 
-.search-participants-input {
-  width: calc(100% - 20px); /* Ajuste de ancho para encajar mejor */
-  max-width: 350px;
-  padding: 20px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  margin-bottom: 10px;
-  box-sizing: border-box;
-}
-
-/* Botones de acción en reuniones pendientes */
-.action-reunion-button {
-  width: 22px; /* Tamaño adecuado para los botones */
-  height: 22px;
+.work-hours-selector {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  outline: none;
   background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: transform 0.2s ease-in-out;
+  color: #333;
 }
 
-.action-reunion-button img {
-  width: 100%; /* Ajusta la imagen al tamaño del botón */
-  height: 100%;
-  object-fit: contain;
+.work-hours-floating-label {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  pointer-events: none;
+  transition: all 0.3s ease;
 }
 
-.accept-button img {
-  filter: brightness(0.8) saturate(1.5); /* Ajustar colores para aceptar */
+.work-hours-selector:focus ~ .work-hours-floating-label,
+.work-hours-selector:not(:placeholder-shown) ~ .work-hours-floating-label {
+  top: -10px;
+  font-size: 12px;
+  color: #4A90E2;
 }
 
-.reject-button img {
-  filter: brightness(0.8) saturate(1.5) hue-rotate(120deg); /* Ajustar colores para rechazar */
-}
-
-.action-reunion-button:hover {
-  transform: scale(1.1); /* Un pequeño zoom al pasar el cursor */
-  opacity: 0.9;
-}
-
-.info-button {
-  background-color: #007bff; /* Azul */
+.work-hours-save-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #4A90E2;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  width: 34px; /* Ajusta el tamaño según tu preferencia */
-  height: 30px; /* Ajusta el tamaño según tu preferencia */
-  padding: 5px 7px;
-  margin-left: 5px;
-  margin-right: 0.2px;
-  transition: background-color 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.info-button:hover {
-  background-color: #0056b3;
-  transform: scale(1.1);
-}
-
-.info-button img {
-  width: 100%;
-  height: 100%;
-}
-
-/* Botón de aceptar */
-.accept-button {
-  background-color: #28a745; /* Verde */
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  width: 33px; /* Ajusta el tamaño según tu preferencia */
-  height: 30px; /* Ajusta el tamaño según tu preferencia */
-  padding: 5px 7px;
-  margin-left: 0.2px;
-  margin-right: 0.2px;
-  transition: background-color 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.accept-button:hover {
-  background-color: #218838; /* Verde más oscuro al hacer hover */
-}
-
-/* Botón de rechazar */
-.reject-button {
-  background-color: #dc3545; /* Rojo */
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  width: 34px; /* Ajusta el tamaño según tu preferencia */
-  height: 30px; /* Ajusta el tamaño según tu preferencia */
-  padding: 5px 7px;
-  margin-left: 0.5px;
-  margin-right: 1px;
-  transition: background-color 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.reject-button:hover {
-  background-color: #c82333; /* Rojo más oscuro al hacer hover */
-}
-
-/* Barra de Navegación */
-.navbar-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background-color: rgb(237, 243, 245);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 3px 25px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1000; /* Asegura que esté por encima del contenido */
-  box-sizing: border-box;
-}
-
-.navbar-logo img {
-  width: 190px;  /* Ajusta este valor para que el logo sea más estrecho */
-  height: auto;  /* Mantiene la proporción original de la imagen */
-  max-height: 60px;  /* Asegúrate de que el logo no exceda la altura de la barra */
-  object-fit: contain;  /* Asegura que la imagen no se distorsione */
-}
-
-.navbar-profile {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.navbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-left: auto;
-}
-
-.admin-btn, .user-calendar-btn{
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-right: 1px;
-  padding: 0;
-}
-
-.user-calendar-btn img {
-  width: 50px;
-  height: 50px;
-}
-
-.profile-icon {
-  cursor: pointer;
-  width: 50px;
-  height: 50px;
-  margin-left: 10px;
-}
-
-.profile-icon img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: white;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  display: none;
-  flex-direction: column;
-  padding: 10px;
-}
-
-.navbar-profile:hover .dropdown-menu {
-  display: none;
-}
-
-/* Dropdown visible solo cuando tenga la clase 'active' */
-.navbar-profile.active .dropdown-menu {
-  display: flex;
-}
-
-/* Ajustar el espaciado del contenido principal */
-.main-content {
-  margin-top: 120px; /* Ajustar según la altura de la barra */
-}
-
-/* VISUALIZACIÓN DE DATOS DEL USUARIO*/
-.user-profile-view-container {
-  padding: 20px;
-  max-width: 600px;
-  min-width: 400px;
-  margin: 50px auto;
-  background-color: #ffffff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-}
-
-.user-details p {
+  font-weight: bold;
   margin-bottom: 10px;
 }
 
-.edit-profile-button {
-  padding: 10px 20px;
-  background-color: #1e3a8a;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.work-hours-save-button:hover {
+  background-color: #357ABD;
 }
 
-.edit-profile-button:hover {
-  background-color: #3b82f6;
+/* Admin Calendar View Styles */
+.admin-calendar-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  background-color: #f4f4f4;
+  padding: 10px;
 }
+
+.admin-calendar-container {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-wrapper {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
