@@ -228,8 +228,18 @@ const RegisterForm = () => {
                     </div>
                     <label className="error">{errorFechaAlta}</label>
                     <div className={errorPerfil===''?"input-group":"input-group-error"}>
-                        <input type="text" id="perfil_desplegable" name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required/>
-                        <label htmlFor="perfil_desplegable">Perfil*</label>
+                        <select className="perfil-select" id="perfil_desplegable" name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
+                            <option value="" disabled hidden></option>
+                            <option value="usuario">Desarrollador</option>
+                            <option value="usuario">Tester</option>
+                            <option value="usuario">Becario</option>
+                            <option value="usuario">RRHH</option>
+                            <option value="usuario">Contabilidad</option>
+                        </select>
+                        <label htmlFor="perfil_desplegable">Perfil</label>
+                        <button type="button" className="select-toggle-btn" value={perfil_desplegable}>
+                            <img src={require('../media/flecha.png')} alt="Desplegable"/>
+                        </button>
                     </div>
                     <label className="error">{errorPerfil}</label>
                     <div className={errorContrasena===''?"input-group":"input-group-error"}>

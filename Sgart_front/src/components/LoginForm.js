@@ -54,12 +54,12 @@ const LoginForm = () => {
 
         if(errorBool){
             return;
-        }else{
+        } else {
             const user = {
                 email: email,
                 password: contrasena,
             };
-
+        
             fetch('http://localhost:9000/users/login', {
                 method: 'POST',
                 headers: {
@@ -67,19 +67,23 @@ const LoginForm = () => {
                 },
                 body: JSON.stringify(user),
             })
-            .then((response,data) => {
+            .then((response) => {
                 if (!response.ok) {
-                    alert('Error al iniciar sesión. Correo y/o contraseña incorrectos')
+                    return response.json().then((data) => { throw new Error(data.message || 'Error al iniciar sesión. Correo y/o contraseña incorrectos') });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (data.user && data.user.blocked) {
+                    alert('Tu cuenta está bloqueada. Por favor, contacta al soporte.');
                     return;
                 }
-                else{
-                    alert('Login exitoso. Pasando a la autentificación con doble factor...')
-                    navigate('/google-auth-login', { state: { data: data, email:email} }); //Navegamos a la ventana de google auths
-                    return response.json();
-                }
+        
+                alert('Login exitoso. Pasando a la autentificación con doble factor...');
+                navigate('/google-auth-login', { state: { data: data, email: email } });
             })
             .catch((error) => {
-                alert('Hubo un error:', error);
+                alert(error.message);
             });
         }
     };
