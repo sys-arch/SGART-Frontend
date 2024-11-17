@@ -14,6 +14,7 @@ import UnderConstruction from './components/UnderConstruction';
 import './App.css';
 import UserCalendarUI from './components/UserCalendarUI';
 import UserEdit from './components/UserEdit';
+import AdminPanel from './components/AdminPanel';
 
 const App = () => {
   return (
@@ -40,8 +41,9 @@ const App = () => {
           {/* Ruta para el Usuario -> Visualizar Datos Perfil */}
           <Route path="/user-profile" element={<UserEdit />} />
 
-          {/* Rutas para gestionar usuarios y ausencias */}
+          {/* Rutas para gestionar usuarios, administradores y ausencias */}
           <Route path="/user-options" element={<UserOptions />} />
+          <Route path="/admin-options" element={<AdminPanel />} />
           <Route path="/admin-ausencias" element={<AdminAusenciasUI />} />
           <Route path="/user-validation" element={<UserValidationUI />} />
 

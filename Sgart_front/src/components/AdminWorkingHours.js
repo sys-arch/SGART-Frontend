@@ -287,7 +287,7 @@ const AdminWorkingHours = () => {
                 <button className="admin-btn" onClick={() => navigate('/user-options')}>
                     <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios"/>
                 </button>
-                <button className="admin-btn">
+                <button className="admin-btn" onClick={() => navigate('/admin-options')}>
                     <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" title="Mant. Administradores"/>
                 </button>
                 <button className="admin-btn" onClick={() => navigate('/admin-working-hours')}>
