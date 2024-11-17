@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import '../App.css';
+import NavBar from './NavBar';
 
-const UserEditForm = ({ user, onSave, onCancel }) => {
+const UserEdit = ({ user, onSave, onCancel }) => {
     const [name, setName] = useState(user.name);
     const [lastName, setLastName] = useState(user.lastName);
     const [profile, setProfile] = useState(user.profile);
@@ -30,18 +32,20 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Usuario editado exitosamente:', data);
+            console.log('Datos modificados exitosamente:', data);
         })
         .catch(error => {
-            console.error('Error al guardar usuario:', error);
+            console.error('Error al modificar datos:', error);
         });
         onSave(updatedUser);
     };
 
     return (
-        <div className="user-edit-form">
+        <>
+        <NavBar isAdmin={false} />
+        <div className="user-edit-form main-content">
             <div className="user-content">
-            <h2>Modificar Usuario</h2>
+            <h2>Perfil Usuario</h2>
             <div className="input-group-register">
                 <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} />
                 <label htmlFor="name">Nombre:</label>
@@ -76,13 +80,14 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
                 <input type="text" id="center" value={center} onChange={(e) => setCenter(e.target.value)} />
                 <label htmlFor="center">Centro:</label>
             </div>
-            <button className="guardar-btn" onClick={handleSave}>Guardar</button>
-            <button className="cancelar-btn"onClick={onCancel}>Cancelar</button>
+            <button className="guardar-btn" onClick={handleSave}>Modificar</button>
+            <button className="cancelar-btn"onClick={onCancel}>Cerrar</button>
             </div>
         </div>
+        </>
     );
 };
-UserEditForm.propTypes = {
+UserEdit.propTypes = {
     user: PropTypes.shape({
         name: PropTypes.string.isRequired,
         lastName: PropTypes.string.isRequired,
@@ -95,4 +100,4 @@ UserEditForm.propTypes = {
     onCancel: PropTypes.func.isRequired
 };
 
-export default UserEditForm;
+export default UserEdit;
