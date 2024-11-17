@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import UserEditForm from './UserEditForm';
 import VentanaConfirm from './VentanaConfirm';
-import AdminManagementForm from './AdminManagementForm';
+import AdminCreateForm from './AdminCreateForm';
+import AdminEditForm from './AdminEditForm';
 import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
@@ -77,6 +78,8 @@ const AdminPanel = () => {
 
     // Crear administradores
     const [creatingAdmin, setCreatingAdmin] = useState(false);
+    const [adminToSave, setAdminToSave] = useState(null);
+
     const defaultAdmin = {
         id: "1",
         email: "email@email.com",
@@ -88,16 +91,6 @@ const AdminPanel = () => {
         setCreatingAdmin(true);
     }
 
-    // Modificar administradores
-    const [editingAdmin, setEditingAdmin] = useState(null);
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    const [adminToSave, setAdminToSave] = useState(null);
-    const [confirmationAction, setConfirmationAction] = useState('');
-    
-    const handleEditAdmin = (admin) => {
-        setEditingAdmin(admin); // Establece el usuario que se está editando
-    };
-    
     const handleSaveAdmin = (updatedAdmin) => {
         setAdminToSave(updatedAdmin);
         setConfirmationAction('save'); // Establece la acción como guardar
@@ -106,7 +99,7 @@ const AdminPanel = () => {
 
     const handleConfirmSave = () => {
         datosAdmin.push(adminToSave)
-        setEditingAdmin(null);
+        setAdminToSave(null);
         setCreatingAdmin(false);
         setShowConfirmation(false);
     };
@@ -115,10 +108,40 @@ const AdminPanel = () => {
         setShowConfirmation(false);
     };
 
+    // Modificar administradores
+    const [editingAdmin, setEditingAdmin] = useState(null);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [adminToEdit, setAdminToEdit] = useState(null);
+    const [confirmationAction, setConfirmationAction] = useState('');
+
+    const handleEditAdmin = (admin) => {
+        setAdminToEdit(admin); // Establece el usuario que se está editando
+        setEditingAdmin(true);
+    }
+    
+    const handleUpdateAdmin = (admin) => {
+        setAdminToEdit(admin); // Establece el usuario que se está editando
+        setConfirmationAction('edit'); // Establece la acción como guardar
+        setShowConfirmation(true);
+    };
+
+    const handleConfirmUpdate = () => {
+        setDatosAdmin((prevAdmin) =>
+            prevAdmin.map((admin) =>
+                admin.id === adminToEdit.id ? adminToEdit : admin
+            )
+        );
+        setAdminToEdit(null);
+        setEditingAdmin(false);
+        setShowConfirmation(false);
+    };
+
     const handleCancelEdit = () => {
         setEditingAdmin(null);
         setCreatingAdmin(false);
     }; 
+
+
 
     // Eliminar administradores
     const [adminToDelete, setAdminToDelete] = useState(null);
@@ -130,12 +153,28 @@ const AdminPanel = () => {
     };
 
     const handleConfirmDelete = () => {
-        eliminarAdmin(adminToDelete.email);
+        deleteAdmin(adminToDelete.email);
         setAdminToDelete(null);
         setShowConfirmation(false);
     };
 
-    const eliminarAdmin = (email) =>{
+    const handleConfirm = () => {
+        switch(confirmationAction){
+            case 'save':
+                handleConfirmSave();
+                break;
+            case 'edit':
+                handleConfirmUpdate();
+                break;
+            case 'delete':
+                handleConfirmDelete();
+                break;
+            default:
+                break;
+        }
+    }
+
+    const deleteAdmin = (email) =>{
         fetch('admin/eliminar/email/'+email,{
             method: 'DELETE',
             headers: {
@@ -153,17 +192,6 @@ const AdminPanel = () => {
 
     return (
         <div className="user-validation-container">
-        <div className="admin-buttons">
-            <button className="admin-btn" onClick={() => navigate('/user-options')}>
-                <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios"/>
-            </button>
-            <button className="admin-btn" onClick={() => navigate('/admin-options')}>
-                <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" title="Mant. Administradores"/>
-            </button>
-            <button className="admin-btn" onClick={() => navigate('/admin-working-hours')}>
-                <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario" title="Mant. Calendario"/>
-            </button>
-        </div>
         <div className="login-box">
             <body>
                 <h2>Listado de Administradores</h2>
@@ -211,17 +239,17 @@ const AdminPanel = () => {
         </button>
         {editingAdmin && (
                 <div className="user-edit-container">
-                    <AdminManagementForm admin={editingAdmin} creating={false} onSave={handleSaveAdmin} onCancel={handleCancelEdit} />
+                    <AdminEditForm admin={adminToEdit} onSave={handleUpdateAdmin} onCancel={handleCancelEdit} />
                 </div>
             )}
         {creatingAdmin && (
                 <div className="user-edit-container">
-                    <AdminManagementForm admin={defaultAdmin} creating={true} onSave={handleSaveAdmin} onCancel={handleCancelEdit} />
+                    <AdminCreateForm admin={defaultAdmin} onSave={handleSaveAdmin} onCancel={handleCancelEdit} />
                 </div>
             )}
         {showConfirmation && (
             <VentanaConfirm
-                onConfirm={confirmationAction === 'save' ? handleConfirmSave : handleConfirmDelete}
+                onConfirm={handleConfirm}
                 onCancel={handleCancelSave}
                 action={confirmationAction}
             />
