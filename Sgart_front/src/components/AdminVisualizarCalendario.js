@@ -30,6 +30,8 @@ const AdminCalendar = () => {
                     start: `${meeting.meetingDate}T${meeting.startTime}`,
                     end: `${meeting.meetingDate}T${meeting.endTime}`,
                     allDay: meeting.allDay,
+                    location: meeting.location,
+                    description: meeting.description,
                 };
                 console.log("Meeting transformado:", transformed);
                 return transformed;
@@ -119,6 +121,14 @@ const AdminCalendar = () => {
                         <div className="admin-calendar-input-group">
                             <label>Hora de Fin:</label>
                             <p>{new Date(selectedMeeting.end).toLocaleTimeString()}</p>
+                        </div>
+                        <div className="admin-calendar-input-group">
+                            <label>Ubicación:</label>
+                            <p>{selectedMeeting.location}</p>
+                        </div>
+                        <div className="admin-calendar-input-group">
+                            <label>Hora de Fin:</label>
+                            <p>{selectedMeeting.description}</p>
                         </div>
 
                         {/* Lista de Invitados */}

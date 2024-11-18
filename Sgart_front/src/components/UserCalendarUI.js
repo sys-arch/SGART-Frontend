@@ -64,6 +64,8 @@ const UserCalendarUI = () => {
     const [popupStartingMinutes, setPopupStartingMinutes] = useState('');
     const [popupEndingHour, setPopupEndingHour] = useState('');
     const [popupEndingMinutes, setPopupEndingMinutes] = useState('');
+    const [eventLocation, setEventLocation] = useState('');
+    const [popupDescription, setPopupDescription] = useState('');
     const [currentStep, setCurrentStep] = useState(1); // 1: Crear evento, 2: Invitar participantes
 
     // Nueva variable para abrir el pop-up de personalización
@@ -123,10 +125,14 @@ const UserCalendarUI = () => {
 
     const handleSelectParticipant = (participant) => {
         if (!selectedUsers.includes(participant)) {
-            setSelectedUsers([...selectedUsers, participant]);
-            setAvailableUsers(availableUsers.filter(user => user.id !== participant.id));
+            const enAusencia = checkUserAbsence(participant);
+    
+            setSelectedUsers([...selectedUsers, { ...participant, enAusencia }]);
+    
+            setAvailableUsers(availableUsers.filter((user) => user.id !== participant.id));
         }
-    };
+    };    
+    
 
     // Cargar los eventos regulares de la base de datos
     const loadEvents = useCallback(async () => {
@@ -386,6 +392,13 @@ const UserCalendarUI = () => {
         { id: 9, nombre: 'Presentación cliente', fecha: '2024-11-15' },
     ]);
 
+    // Ejemplo de ausencias de los usuarios (deberían cargarse de un API o base de datos)
+    const [ausencias, setAusencias] = useState([
+        { userId: 1, fecha: '2024-11-20'}, // Ejemplo de ausencia para Juan Pérez
+        { userId: 3, fecha: '2024-11-15'} // Ejemplo de ausencia para otro usuario
+    ]);
+
+
     // Funciones para manejar la confirmación
     const handleAcceptMeeting = (reunion) => {
         setSelectedEvent(reunion);
@@ -421,6 +434,18 @@ const UserCalendarUI = () => {
         }
         setShowConfirmation(false); // Cerrar la ventana de confirmación después de realizar la acción
     };
+
+    const checkUserAbsence = (participant) => {
+        return ausencias.some((ausencia) => {
+            const ausenciaFecha = new Date(ausencia.fecha);
+            const selectedFecha = new Date(popupSelectedDate);
+            return (
+                ausencia.userId === participant.id &&
+                ausenciaFecha.getTime() === selectedFecha.getTime()
+            );
+        });
+    };       
+
 
     return (
         <>
@@ -511,9 +536,9 @@ const UserCalendarUI = () => {
                 {isPopupOpen && currentStep === 1 && (
                     <div className="popup-overlay">
                         <div className="popup-container">
-                            <h2>Crear nuevo evento</h2>
+                            <h2>Crear nueva Reunión</h2>
                             <div className="AdminCalendar-input-group">
-                                <label htmlFor='eventName'>Nombre del Evento:</label>
+                                <label htmlFor='eventName'>Nombre de la Reunión:</label>
                                 <input
                                     type="text"
                                     id='eventName'
@@ -532,7 +557,7 @@ const UserCalendarUI = () => {
                                 />
                             </div>
                             <div className="AdminCalendar-input-group">
-                                <label htmlFor='allDay'>¿Es un evento de todo el día?</label>
+                                <label htmlFor='allDay'>¿Es una reunión de todo el día?</label>
                                 <input
                                     type="checkbox"
                                     id='allDay'
@@ -593,22 +618,24 @@ const UserCalendarUI = () => {
                                 </>
                             )}
                             <div className="AdminCalendar-input-group">
-                                <label htmlFor='eventFrequency'>Frecuencia del Evento:</label>
+                                <label htmlFor='eventLocation'>Ubicación:</label>
                                 <select
-                                    value={eventFrequency}
-                                    id='eventFrequency'
+                                    value={eventLocation}
+                                    id='eventLocation'
                                     onChange={(e) => {
-                                        setEventFrequency(e.target.value);
-                                        if (e.target.value === 'Personalizado') setIsCustomPopupOpen(true);
+                                        setEventLocation(e.target.value)
                                     }}
                                 >
-                                    <option value="Una vez">Una vez</option>
-                                    <option value="Diario">Diario</option>
-                                    <option value="Semanal">Semanal</option>
-                                    <option value="Mensual">Mensual</option>
-                                    <option value="Anual">Anual</option>
-                                    <option value="Personalizado">Personalizado...</option>
+                                    <option value="Ciudad Real">Ciudad Real</option>
+                                    <option value="Toledo">Toledo</option>
+                                    <option value="Madrid">Madrid</option>
+                                    <option value="Málaga">Málaga</option>
+                                    <option value="Barcelona">Barcelona</option>
                                 </select>
+                            </div>
+                            <div className='AdminCalendar-input-group'>
+                                <label htmlFor='popupDescription'>Descripción:</label>
+                                <textarea className='areaTexto' id='popupDescription' value={popupDescription} onChange={(e) => setPopupDescription(e.target.value)} />
                             </div>
                             <div className="AdminCalendar-button-group">
                                 <button className="save-button" onClick={() => setCurrentStep(2)}>Siguiente</button>
@@ -654,7 +681,7 @@ const UserCalendarUI = () => {
                                 <label>Usuarios Seleccionados:</label>
                                 <div className="participant-list-selected">
                                     {selectedUsers.map((user) => (
-                                        <div key={user.id} className="selected-participant-item">
+                                        <div key={user.id} className={`selected-participant-item ${user.enAusencia ? 'en-ausencia' : 'disponible'}`}>
                                             <p>{user.nombre}</p>
                                             <button onClick={() => handleRemoveUser(user)}>
                                                 <img className='papelera-btn' src={require('../media/papelera.png')} alt="Eliminar" />
@@ -662,6 +689,7 @@ const UserCalendarUI = () => {
                                         </div>
                                     ))}
                                 </div>
+
                             </div>
                             <div className="AdminCalendar-button-group">
                                 <button className="save-participants-button" onClick={handleSaveEvent}>Guardar</button>

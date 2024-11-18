@@ -586,6 +586,13 @@ button :hover {
   border-radius: 4px;
 }
 
+.AdminCalendar-input-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 .AdminCalendar-button-group {
   display: flex;
   justify-content: space-between;
@@ -682,6 +689,13 @@ button :hover {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 300px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.areaTexto {
+  width: 300px;
+  height: 75px;
 }
 
 .save-button, .close-button {
@@ -1151,14 +1165,19 @@ button :hover {
   line-height: 1;
   display: flex;
   align-items: center;
-  background-color: transparent;
-  border: 1px solid #4ade80;
-  box-shadow: none;
   justify-content: space-between;
 }
 
 .selected-participant-item:hover {
   background-color: #bbf7d0;
+}
+
+.selected-participant-item.disponible {
+  background-color: #d1f5d3; /* Verde claro */
+}
+
+.selected-participant-item.en-ausencia {
+  background-color: #ffe08a; /* Ámbar */
 }
 
 .no-participants-message {
