@@ -3,6 +3,7 @@ import UserEditForm from './UserEditForm';
 import VentanaConfirm from './VentanaConfirm';
 import AdminCreateForm from './AdminCreateForm';
 import AdminEditForm from './AdminEditForm';
+import NavBar from './NavBar';
 import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
@@ -15,61 +16,38 @@ const AdminPanel = () => {
       }, []);
 
     const actualizarAdministradores = () =>{
-        
+        fetch('admin/getAdmins')
+            .then(async response => {
+                const result = await response.json();
+                const adminsTable = result.map(admin => ({
+                    id: admin.id,
+                    name: admin.name,
+                    lastName: admin.lastName,
+                    email: admin.email,
+                    center: admin.center,
+                    blocked: admin.blocked
+            }));
+                setDatosAdmin(adminsTable);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
     }
-
-    const validarAdmin = (email) => {
-        /*
-        fetch('admin/validar/'+email,{
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-          .then(response => {
-            actualizarUsuarios();
-          })
-          .catch(error => {
-            console.error('Error updating user: ',error);
-          });
-          setDatosUsuarios((prevUsuarios) =>
-            prevUsuarios.map((user) =>
-                user.email === email ? { ...user, blocked: !user.blocked } : user
-            )
-        );*/
-    }
-
-    const invalidarAdmin = (email) => {
-        // Filtramos el array de datos para eliminar el elemento con el id correspondiente
-        /*fetch('admin/eliminar/email/'+email,{
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-          .then(response => {
-            const nuevosDatos = datosValidar.filter((item) => item.email !== email);
-            setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
-          })
-          .catch(error => {
-            console.error('Error unvalidating user: ',error);
-          });*/
-    };
 
     const toggleUserStatus = (email) => {
-        fetch('admin/cambiarHabilitacion/'+email,{
+        fetch('admin/cambiarHabilitacion/' + email, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
         })
-          .then(response => {
-            
-          })
-          .catch(error => {
-            console.error('Error updating user: ',error);
-          });
-          setDatosAdmin((prevAdmin) =>
+            .then(response => {
+
+            })
+            .catch(error => {
+                console.error('Error updating user: ', error);
+            });
+        setDatosAdmin((prevAdmin) =>
             prevAdmin.map((admin) =>
                 admin.email === email ? { ...admin, blocked: !admin.blocked } : admin
             )
@@ -191,6 +169,8 @@ const AdminPanel = () => {
     }
 
     return (
+    <>
+        <NavBar isAdmin={true} />
         <div className="user-validation-container">
         <div className="login-box">
             <body>
@@ -255,6 +235,7 @@ const AdminPanel = () => {
             />
         )}
         </div>
+        </>
     );
 };
 
