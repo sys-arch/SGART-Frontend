@@ -127,7 +127,7 @@ const AdminCalendar = () => {
                             <p>{selectedMeeting.location}</p>
                         </div>
                         <div className="admin-calendar-input-group">
-                            <label>Hora de Fin:</label>
+                            <label>Observaciones:</label>
                             <p>{selectedMeeting.description}</p>
                         </div>
 
