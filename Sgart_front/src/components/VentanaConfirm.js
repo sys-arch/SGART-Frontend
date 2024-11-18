@@ -23,6 +23,10 @@ const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
                 return '¿Está seguro de que desea eliminar este usuario?';
             case 'add':
                 return '¿Está seguro de que desea añadir esta ausencia?';
+            case 'accept':
+                return '¿Está seguro de que desea asistir?';
+            case 'reject':
+                return '¿Está seguro de que desea rechazar esta reunión?';
             default:
                 return '';
         }

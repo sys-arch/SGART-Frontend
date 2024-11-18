@@ -600,6 +600,7 @@ button :hover {
   gap: 20px;
   padding: 20px;
   max-width: 1200px;
+  margin-bottom: 70px;
 }
 
 .AdminCalendar-left-panel {
@@ -1118,6 +1119,7 @@ button :hover {
 /* Lista de participantes disponibles */
 .participant-list-available {
   margin-top: 10px;
+  margin-bottom: 20px;
   padding: 5px;
   background-color: #f1f5f9;
   border-radius: 8px;
@@ -1179,15 +1181,17 @@ button :hover {
 .selected-participant-item {
   padding: 1px 5px;
   margin-bottom: 2px;
-  border-radius: 2px;
+  border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
   font-size: 0.9em;
   line-height: 1;
   display: flex;
   align-items: center;
-  background-color: #d1fae5;
+  background-color: transparent;
   border: 1px solid #4ade80;
+  box-shadow: none;
+  justify-content: space-between;
 }
 
 .selected-participant-item:hover {
@@ -1242,12 +1246,11 @@ button :hover {
 /* Estilo del contenedor del campo de búsqueda */
 .search-participants-container {
   margin-bottom: 10px;
-  width: 100%; /* Asegurar que el campo de búsqueda ocupa todo el ancho */
+  width: 400px; /* Asegurar que el campo de búsqueda ocupa todo el ancho */
 }
 
 .search-participants-input {
-  width: calc(100% - 20px); /* Ajuste de ancho para encajar mejor */
-  max-width: 350px;
+  width: 400px;
   padding: 20px;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
@@ -1310,6 +1313,27 @@ button :hover {
 .info-button img {
   width: 100%;
   height: 100%;
+}
+
+.papelera-btn {
+  background-color: transparent;
+  border: none !important;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 20px; /* Ajusta el tamaño según tu preferencia */
+  height: 20px; /* Ajusta el tamaño según tu preferencia */
+  padding: 4px;
+  margin-left: auto;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+
+.papelera-btn:hover {
+  background-color: #da5454;
+  transform: scale(1.1);
 }
 
 /* Botón de aceptar */
