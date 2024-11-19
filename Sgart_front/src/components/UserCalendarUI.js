@@ -7,38 +7,7 @@ import '../App.css';
 import { useNavigate } from 'react-router-dom';
 import VentanaConfirm from './VentanaConfirm';
 import NavBar from './NavBar';
-
-const InviteParticipants = ({ participants, filteredParticipants, searchTerm, handleSearchChange, handleSelectParticipant }) => {
-    return (
-        <div className="participant-list-container">
-            <h2>Invitar Participantes</h2>
-            <div className="search-participants-container">
-                <input
-                    type="text"
-                    className="search-participants-input"
-                    placeholder="Buscar participantes..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                />
-            </div>
-            <div className="participant-list-available">
-                {filteredParticipants.length > 0 ? (
-                    filteredParticipants.map((participant) => (
-                        <div
-                            key={participant.id}
-                            className="available-participant-item"
-                            onClick={() => handleSelectParticipant(participant)}
-                        >
-                            {participant.nombre}
-                        </div>
-                    ))
-                ) : (
-                    <p className="no-participants-message">No se encontraron participantes.</p>
-                )}
-            </div>
-        </div>
-    );
-};
+import LoadingSpinner from './LoadingSpinner';
 
 const UserCalendarUI = () => {
     const navigate = useNavigate();
@@ -54,6 +23,7 @@ const UserCalendarUI = () => {
 
     // Variables de estado adicionales
     const [isEditable, setIsEditable] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Variables del pop-up de creación de eventos
     const [popupSelectedDate, setPopupSelectedDate] = useState('');
@@ -95,6 +65,8 @@ const UserCalendarUI = () => {
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [confirmationAction, setConfirmationAction] = useState('');
 
+    const [invitees, setInvitees] = useState([]);
+
     // Estado para controlar los usuarios disponibles y los seleccionados
     const [availableUsers, setAvailableUsers] = useState([
         { id: 1, nombre: 'Juan Pérez' },
@@ -126,31 +98,40 @@ const UserCalendarUI = () => {
     const handleSelectParticipant = (participant) => {
         if (!selectedUsers.includes(participant)) {
             const enAusencia = checkUserAbsence(participant);
-    
+
             setSelectedUsers([...selectedUsers, { ...participant, enAusencia }]);
-    
+
             setAvailableUsers(availableUsers.filter((user) => user.id !== participant.id));
         }
-    };    
-    
+    };
+
 
     // Cargar los eventos regulares de la base de datos
     const loadEvents = useCallback(async () => {
         try {
+            setIsLoading(true);
             const response = await fetch('http://localhost:9000/administrador/eventos/loadEvents');
             if (!response.ok) throw new Error('Error al cargar los eventos');
 
             const backendEvents = await response.json();
             const transformedEvents = backendEvents.map(event => ({
+                id: event.id,
                 title: event.event_title,
                 start: `${event.event_start_date}T${event.event_time_start}`,
                 end: `${event.event_start_date}T${event.event_time_end}`,
                 allDay: event.event_all_day === 1,
-                extendedProps: { frequency: event.event_frequency }
-            }));
+                extendedProps: {
+                    frequency: event.event_frequency,
+                    organizerId: event.organizer_id,
+                    locationName: event.location_name,
+                    observations: event.observations
+                }
+                }));
             setRegularEvents(transformedEvents);
         } catch (error) {
             console.error("Error al cargar los eventos: ", error);
+        } finally {
+            setIsLoading(false);
         }
     }, []);
 
@@ -376,28 +357,29 @@ const UserCalendarUI = () => {
         setSelectedUsers(selectedUsers.filter((selectedUser) => selectedUser.id !== user.id));
     };
 
-
     // PRUEBAS
     const [reunionesPendientes, setReunionesPendientes] = useState([
-        { id: 1, nombre: 'Reunión con equipo', fecha: '2024-11-10' },
-        { id: 2, nombre: 'Revisión de proyecto', fecha: '2024-11-12' },
-        { id: 35, nombre: 'Revisión de proyecto', fecha: '2024-11-15' },
-        { id: 4, nombre: 'Revisión de proyecto', fecha: '2024-12-20' },
+        {
+            meetingId: "0be87f14-8fc5-44bc-8e92-114976629f2b", title: "Reunión con Cliente", allDay: 'false', meetingDate: '2024-11-25', startTime: "09:00:00",
+            endTime: "11:00:00", organizerId: "61bc14cd-0c94-43cc-ab5a-8c59501b6470", observations: "Llevar preparado producto mínimo viable", locationName: "ESI"
+        }
     ]);
 
     const [reunionesAceptadas, setReunionesAceptadas] = useState([
-        { id: 3, nombre: 'Presentación cliente', fecha: '2024-11-15' },
-        { id: 7, nombre: 'Presentación cliente', fecha: '2024-11-15' },
-        { id: 8, nombre: 'Presentación cliente', fecha: '2024-11-15' },
-        { id: 9, nombre: 'Presentación cliente', fecha: '2024-11-15' },
+        {
+            meetingId: "0be83f14-8fc5-44bc-8e92-114976629f2b", title: "Reunión de Estrategia", allDay: 'false', meetingDate: '2024-11-21', startTime: "10:00:00",
+            endTime: "12:00:00", organizerId: "61bc15cd-0c94-43cc-ab5a-8c59501b6470", observations: "No hay observaciones", locationName: "Online"
+        },
+        {
+            meetingId: "0be83f14-8fc5-44bc-8e92-119976629f2b", title: "Reunión de Planificación", allDay: 'false', meetingDate: '2024-11-20', startTime: "11:00:00",
+            endTime: "14:00:00", organizerId: "61bc15cd-0c94-43cc-ab5a-8c59501b6470", observations: "No hay observaciones", locationName: "Ciudad Real"
+        }
     ]);
-
     // Ejemplo de ausencias de los usuarios (deberían cargarse de un API o base de datos)
     const [ausencias, setAusencias] = useState([
-        { userId: 1, fecha: '2024-11-20'}, // Ejemplo de ausencia para Juan Pérez
-        { userId: 3, fecha: '2024-11-15'} // Ejemplo de ausencia para otro usuario
+        { userId: 1, fecha: '2024-11-20' }, // Ejemplo de ausencia para Juan Pérez
+        { userId: 3, fecha: '2024-11-15' } // Ejemplo de ausencia para otro usuario
     ]);
-
 
     // Funciones para manejar la confirmación
     const handleAcceptMeeting = (reunion) => {
@@ -444,12 +426,31 @@ const UserCalendarUI = () => {
                 ausenciaFecha.getTime() === selectedFecha.getTime()
             );
         });
-    };       
+    };
+
+    useEffect(() => {
+        const transformedAcceptedMeetings = reunionesAceptadas.map(reunion => ({
+            title: reunion.title || reunion.nombre,
+            start: `${reunion.meetingDate}T${reunion.startTime}`,
+            end: `${reunion.meetingDate}T${reunion.endTime}`,
+            allDay: reunion.allDay === 'true',
+            extendedProps: {
+                meetingId: reunion.meetingId,
+                organizerId: reunion.organizerId,
+                observations: reunion.observations,
+                locationName: reunion.locationName,
+            }
+        }));
+        setRegularEvents(prevEvents => [...prevEvents, ...transformedAcceptedMeetings]);
+    }, []);
 
 
     return (
         <>
             <NavBar isAdmin={false} />
+            {isLoading ? (
+                <LoadingSpinner />
+            ) : (
             <div className='AdminCalendarapp-container main-content'>
                 <div className="AdminCalendar-left-panel">
                     <h3>Reuniones Pendientes</h3>
@@ -457,9 +458,9 @@ const UserCalendarUI = () => {
                         {reunionesPendientes.length > 0 && (
                             <>
                                 {reunionesPendientes.map((reunion) => (
-                                    <div key={reunion.id} className="meeting-item pending">
+                                    <div key={reunion.meetingId} className="meeting-item pending">
                                         <div className='meeting-info'>
-                                            <p>{reunion.nombre}</p>
+                                            <p>{reunion.title}</p>
                                         </div>
                                         <div className="meeting-actions">
                                             <button className="action-button info-button" onClick={() => handleInfoMeeting(reunion)}>
@@ -492,7 +493,7 @@ const UserCalendarUI = () => {
                                     <div key={reunion.id} className="meeting-item accepted">
                                         <div className="meeting-item-content">
                                             <div className="meeting-info">
-                                                <p>{reunion.nombre}</p>
+                                                <p>{reunion.title}</p>
                                             </div>
                                             <div className="meeting-buttons">
                                                 <button className="info-button" onClick={() => { setSelectedEvent(reunion); setIsEventDetailPopupOpen(true); }}>
@@ -634,7 +635,7 @@ const UserCalendarUI = () => {
                                 </select>
                             </div>
                             <div className='AdminCalendar-input-group'>
-                                <label htmlFor='popupDescription'>Descripción:</label>
+                                <label htmlFor='popupDescription'>Observaciones:</label>
                                 <textarea className='areaTexto' id='popupDescription' value={popupDescription} onChange={(e) => setPopupDescription(e.target.value)} />
                             </div>
                             <div className="AdminCalendar-button-group">
@@ -649,7 +650,6 @@ const UserCalendarUI = () => {
                     <div className="popup-overlay">
                         <div className="popup-container-participants">
                             <h2>Invitar Participantes</h2>
-
                             <div className="AdminCalendar-input-group">
                                 <label>Usuarios Disponibles:</label>
                                 <div className="search-participants-container">
@@ -665,9 +665,7 @@ const UserCalendarUI = () => {
                                 <div className="participant-list-available">
                                     {filteredParticipants.length > 0 ? (
                                         filteredParticipants.map((participant) => (
-                                            <div
-                                                key={participant.id}
-                                                className="available-participant-item"
+                                            <div key={participant.id} className="available-participant-item"
                                                 onClick={() => handleSelectParticipant(participant)}
                                             >
                                                 {participant.nombre}
@@ -689,47 +687,10 @@ const UserCalendarUI = () => {
                                         </div>
                                     ))}
                                 </div>
-
                             </div>
                             <div className="AdminCalendar-button-group">
                                 <button className="save-participants-button" onClick={handleSaveEvent}>Guardar</button>
                                 <button className="close-participants-button" onClick={handleClosePopup}>Cancelar</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Pop-up para Personalizar Frecuencia */}
-                {isCustomPopupOpen && (
-                    <div className="popup-overlay">
-                        <div className="popup-container small">
-                            <h2>Personalizar repetición</h2>
-                            <div className="AdminCalendar-input-group">
-                                <label htmlFor='customFrequency'>Frecuencia de repetición:</label>
-                                <select
-                                    value={customFrequency}
-                                    id='customFrequency'
-                                    onChange={(e) => setCustomFrequency(e.target.value)}
-                                >
-                                    <option value="Diario">Diario</option>
-                                    <option value="Semanal">Semanal</option>
-                                    <option value="Mensual">Mensual</option>
-                                    <option value="Anual">Anual</option>
-                                </select>
-                            </div>
-                            <div className="AdminCalendar-input-group">
-                                <label htmlFor='repeatCount'>Número de repeticiones:</label>
-                                <input
-                                    type="number"
-                                    id='repeatCount'
-                                    min="1"
-                                    value={repeatCount}
-                                    onChange={(e) => setRepeatCount(e.target.value)}
-                                />
-                            </div>
-                            <div className="AdminCalendar-button-group">
-                                <button className="save-button" onClick={() => setIsCustomPopupOpen(false)}>Guardar</button>
-                                <button className="close-button" onClick={() => setIsCustomPopupOpen(false)}>Cancelar</button>
                             </div>
                         </div>
                     </div>
@@ -740,39 +701,60 @@ const UserCalendarUI = () => {
                         <div className="popup-container">
                             <h2>Detalles del Evento</h2>
                             <div className="AdminCalendar-input-group">
-                                <label htmlFor='nombreEvento'>Nombre del Evento:</label>
-                                <p>{selectedEvent.title || selectedEvent.nombre}</p>
+                                <label htmlFor='nombreEvento'>Nombre de la Reunión:</label>
+                                <p>{selectedEvent.title}</p>
                             </div>
                             <div className="AdminCalendar-input-group">
-                                <label htmlFor='fechaInicio'>Fecha de Inicio:</label>
-                                <p>{selectedEvent.start ? selectedEvent.start.toLocaleString() : selectedEvent.fecha}</p>
+                                <label htmlFor='fechaInicio'>Fecha:</label>
+                                <p>{selectedEvent.start ? selectedEvent.start.toISOString().split('T')[0] : selectedEvent.meetingDate}</p>
                             </div>
-                            {selectedEvent.start && !selectedEvent.allDay && (
-                                //<div className="AdminCalendar-input-group">
-                                //    <label htmlFor='allDayEvent'>Este evento es de todo el día</label>
-                                //</div>
-                                /*) : (*/
+                            {selectedEvent.allDay ? (
+                                <div className="AdminCalendar-input-group">
+                                    <label htmlFor='allDayEvent'>Esta reunión es de todo el día</label>
+                                </div>
+                            ) : (
                                 <>
                                     <div className="AdminCalendar-input-group">
                                         <label htmlFor='horaInicio'>Hora de inicio:</label>
-                                        <p>{selectedEvent.start.toLocaleTimeString()}</p>
+                                        <p>{selectedEvent.start ? selectedEvent.start.toTimeString().split(' ')[0] : selectedEvent.startTime}</p>
                                     </div>
                                     <div className="AdminCalendar-input-group">
                                         <label htmlFor='horaFin'>Hora de fin:</label>
                                         {selectedEvent.end ? (
-                                            <p>{selectedEvent.end.toLocaleTimeString()}</p>
+                                            <p>{selectedEvent.end.toTimeString().split(' ')[0]}</p>
                                         ) : (
                                             <p>No definida</p>
                                         )}
                                     </div>
                                 </>
                             )}
-                            {selectedEvent.extendedProps?.eventFrequency && (
-                                <div className="AdminCalendar-input-group">
-                                    <label htmlFor='eventFrequency'>Frecuencia del Evento:</label>
-                                    <p>{selectedEvent.extendedProps.eventFrequency}</p>
-                                </div>
-                            )}
+                            <div className="AdminCalendar-input-group">
+                                <label htmlFor='organizadorEvento'>Organizador:</label>
+                                <p>{selectedEvent.extendedProps?.organizerId || 'No definido'}</p>
+                            </div>
+                            <div className="AdminCalendar-input-group">
+                                <label htmlFor='ubicacionEvento'>Ubicación:</label>
+                                <p>{selectedEvent.extendedProps?.locationName || 'No definida'}</p>
+                            </div>
+                            <div className="AdminCalendar-input-group">
+                                <label htmlFor='descripcionEvento'>Observaciones:</label>
+                                <p>{selectedEvent.extendedProps?.observations || 'No definidas'}</p>
+                            </div>
+                            {/* Lista de Invitados */}
+                            <div className="admin-calendar-input-group">
+                                <label>Lista de Invitados:</label>
+                                <ul>
+                                    {invitees.length > 0 ? (
+                                        invitees.map((invitee, index) => (
+                                            <li key={index}>
+                                                {invitee.userName} - {invitee.invitationStatus}
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li>No hay invitados.</li>
+                                    )}
+                                </ul>
+                            </div>
                             <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>Cerrar</button>
                         </div>
                     </div>
@@ -786,6 +768,7 @@ const UserCalendarUI = () => {
                     />
                 )}
             </div>
+            )}
         </>
     );
 };

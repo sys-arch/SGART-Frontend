@@ -15,6 +15,7 @@ import './App.css';
 import UserCalendarUI from './components/UserCalendarUI';
 import UserEdit from './components/UserEdit';
 import AdminPanel from './components/AdminPanel';
+import AdminManagementForm from './components/AdminManagementForm';
 
 const App = () => {
   return (
@@ -33,7 +34,7 @@ const App = () => {
           {/* Ruta para el Dashboard del Administrador */}
           <Route path="/admin-working-hours" element={<AdminGestionarHorariosDeTrabajo />} />
           <Route path="/admin-calendar-view" element={<AdminVisualizarCalendario/>} />
-
+          <Route path="/admin-management" element={<AdminManagementForm />} />
 
           {/* Ruta para el Usuario -> Calendario */}        
           <Route path="/user-calendar" element={<UserCalendarUI />} />
