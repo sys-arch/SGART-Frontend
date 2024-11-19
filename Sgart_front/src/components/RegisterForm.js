@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from './LoginForm';
+import LoadingSpinner from './LoadingSpinner';
 
 const RegisterForm = () => {
     const navigate = useNavigate();
@@ -27,6 +28,7 @@ const RegisterForm = () => {
     const [errorContrasena, setErrorContrasena] = useState('');
     const [errorRepetirContrasena, setErrorRepetirContrasena] = useState('');
     const [errorEmail, setErrorEmail] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -64,7 +66,7 @@ const RegisterForm = () => {
     };
 
     const handleRegister = async () => {
-        var errorBool=false;
+        var errorBool = false;
         setErrorNombre('');
         setErrorApellidos('');
         setErrorDepartamento('');
@@ -79,64 +81,64 @@ const RegisterForm = () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setErrorEmail('El formato del correo electrónico no es válido.');
-            errorBool=true;
+            errorBool = true;
         }
 
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (!passwordRegex.test(contrasena)) {
             setErrorRepetirContrasena('La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial (@, $, !, %, *, ?, &).');
-            errorBool=true;
+            errorBool = true;
         }
 
-        if (nombre===''){
+        if (nombre === '') {
             setErrorNombre('Campo vacío');
-            errorBool=true;
+            errorBool = true;
         }
-        if (apellidos===''){
+        if (apellidos === '') {
             setErrorApellidos('Campo vacío');
-            errorBool=true;
+            errorBool = true;
         }
-        if (email===''){
+        if (email === '') {
             setErrorEmail('Campo vacío');
-            errorBool=true;
+            errorBool = true;
         }
-        if (departamento===''){
+        if (departamento === '') {
             setErrorDepartamento('Campo vacío');
-            errorBool=true;
+            errorBool = true;
         }
-        if (centro===''){
+        if (centro === '') {
             setErrorCentro('Campo vacío');
-            errorBool=true;
+            errorBool = true;
         }
-        if (perfil_desplegable===''){
+        if (perfil_desplegable === '') {
             setErrorPerfil('Campo vacío');
-            errorBool=true;
+            errorBool = true;
         }
-        if (fechaAlta===''){
+        if (fechaAlta === '') {
             setErrorFechaAlta('Campo vacío');
-            errorBool=true;
+            errorBool = true;
         }
-        if (contrasena===''){
+        if (contrasena === '') {
             setErrorContrasena('Campo vacío');
-            errorBool=true;
+            errorBool = true;
         }
-        if (repetirContrasena===''){
+        if (repetirContrasena === '') {
             setErrorRepetirContrasena('Campo vacío');
-            errorBool=true;
+            errorBool = true;
         }
         if (contrasena !== repetirContrasena) {
             setErrorRepetirContrasena('Las contraseñas no coinciden.');
-            errorBool=true;
+            errorBool = true;
         }
 
         const fechaSeleccionada = new Date(fechaAlta);
         const fechaActual = new Date();
         if (fechaSeleccionada > fechaActual) {
             setErrorFechaAlta('La fecha de alta no puede ser una fecha futura.');
-            errorBool=true;
+            errorBool = true;
         }
 
-        if(errorBool){
+        if (errorBool) {
             return;
         }
 
@@ -152,9 +154,9 @@ const RegisterForm = () => {
             passwordConfirm: repetirContrasena,
             blocked: false,
             verified: false,
-            twoFactorAuthCode:'',
+            twoFactorAuthCode: '',
         };
-
+        setIsLoading(true);
         fetch('http://localhost:9000/users/verificar-email', {
             method: 'POST',
             headers: {
@@ -162,15 +164,18 @@ const RegisterForm = () => {
             },
             body: JSON.stringify(usuario),
         })
-        .then(response => response.text())
-        .then((data) => {
-            alert('Correo verificado. Pasando a la autenticación con doble factor...');
-            console.log(JSON.stringify(usuario));
-            navigate('/google-auth', { state: { usuario : usuario} });
-        })
-        .catch(error => {
-            alert('Hubo un error:', error);
-        });
+            .then(response => response.text())
+            .then((data) => {
+                alert('Correo verificado. Pasando a la autenticación con doble factor...');
+                console.log(JSON.stringify(usuario));
+                navigate('/google-auth', { state: { usuario: usuario } });
+            })
+            .catch(error => {
+                alert('Hubo un error:', error);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
     };
 
     const togglePasswordVisibility = () => {
@@ -190,83 +195,89 @@ const RegisterForm = () => {
     }
 
     return (
-        <div className="register-container">
-        <div className="register-box">
-                <h2 className='title'>Registro</h2>
-                <p className='title' style={{ marginTop: "10px", fontSize: "12px", color: "#555"}}>
-                    Los campos marcados con (*) son obligatorios.
-                </p>
-                    <div className={errorNombre===''?"input-group":"input-group-error"}>
-                        <input type="text" id="nombre" name="nombre" value={nombre} onChange={handleChange} required/>
-                        <label htmlFor="nombre">Nombre*</label>
+        <>
+            {isLoading ? (
+                <LoadingSpinner />
+            ) : (
+                <div className="register-container">
+                    <div className="register-box">
+                        <h2 className='title'>Registro</h2>
+                        <p className='title' style={{ marginTop: "10px", fontSize: "12px", color: "#555" }}>
+                            Los campos marcados con (*) son obligatorios.
+                        </p>
+                        <div className={errorNombre === '' ? "input-group" : "input-group-error"}>
+                            <input type="text" id="nombre" name="nombre" value={nombre} onChange={handleChange} required />
+                            <label htmlFor="nombre">Nombre*</label>
+                        </div>
+                        <label className="error">{errorNombre}</label>
+                        <div className={errorApellidos === '' ? "input-group" : "input-group-error"}>
+                            <input type="text" id="apellidos" name="apellidos" value={apellidos} onChange={handleChange} required />
+                            <label htmlFor="apellidos">Apellidos*</label>
+                        </div>
+                        <label className="error">{errorApellidos}</label>
+                        <div className={errorEmail === '' ? "input-group" : "input-group-error"}>
+                            <input type="text" id="email" name="email" value={email} onChange={handleChange} required />
+                            <label htmlFor="email">Email*</label>
+                        </div>
+                        <label className="error">{errorEmail}</label>
+                        <div className={errorDepartamento === '' ? "input-group" : "input-group-error"}>
+                            <input type="text" id="departamento" name="departamento" value={departamento} onChange={handleChange} required />
+                            <label htmlFor="departamento">Departamento</label>
+                        </div>
+                        <label className="error">{errorDepartamento}</label>
+                        <div className={errorCentro === '' ? "input-group" : "input-group-error"}>
+                            <input type="text" id="centro" name="centro" value={centro} onChange={handleChange} required />
+                            <label htmlFor="centro">Centro*</label>
+                        </div>
+                        <label className="error">{errorCentro}</label>
+                        <div className={errorFechaAlta === '' ? "input-group" : "input-group-error"}>
+                            <input type="text" id="fechaAlta" name="fechaAlta" value={fechaAlta} onFocus={(e) => (e.target.type = "date")}
+                                onBlur={(e) => (e.target.type = "text")} onChange={handleChange} placeholder="" required />
+                            <label htmlFor="fechaAlta">Fecha de Alta*</label>
+                        </div>
+                        <label className="error">{errorFechaAlta}</label>
+                        <div className={errorPerfil === '' ? "input-group" : "input-group-error"}>
+                            <select className="perfil-select" id="perfil_desplegable" name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
+                                <option value="" disabled hidden></option>
+                                <option value="usuario">Desarrollador</option>
+                                <option value="usuario">Tester</option>
+                                <option value="usuario">Becario</option>
+                                <option value="usuario">RRHH</option>
+                                <option value="usuario">Contabilidad</option>
+                            </select>
+                            <label htmlFor="perfil_desplegable">Perfil</label>
+                            <button type="button" className="select-toggle-btn" value={perfil_desplegable}>
+                                <img src={require('../media/flecha.png')} alt="Desplegable" />
+                            </button>
+                        </div>
+                        <label className="error">{errorPerfil}</label>
+                        <div className={errorContrasena === '' ? "input-group" : "input-group-error"}>
+                            <input type={showPassword ? "text" : "password"} id="contrasena" name="contrasena" value={contrasena} onChange={handleChange} required />
+                            <label htmlFor="contrasena">Contraseña*</label>
+                            <button type="button" onClick={togglePasswordVisibility} className="password-toggle-btn">
+                                <img src={require(showPassword ? '../media/password_off.png' : '../media/password_on.png')} alt="Mostrar Contraseña" />
+                            </button>
+                        </div>
+                        <label className="error">{errorContrasena}</label>
+                        <div className={errorRepetirContrasena === '' ? "input-group" : "input-group-error"}>
+                            <input type={showRepeatPassword ? "text" : "password"} id="repetirContrasena" name="repetirContrasena" value={repetirContrasena} onChange={handleChange} required />
+                            <label htmlFor="repetirContrasena">Repetir Contraseña*</label>
+                            <button type="button" onClick={toggleRepeatPasswordVisibility} className="repeatPassword-toggle-btn">
+                                <img src={require(showRepeatPassword ? '../media/password_off.png' : '../media/password_on.png')} alt="Mostrar Contraseña" />
+                            </button>
+                        </div>
+                        <label className="error">{errorRepetirContrasena}</label>
+                        <button type="submit" className="register-btn" onClick={handleRegister}>Registrarse</button>
+                        <div className="register-options">
+                            <p style={{ marginTop: "10px", fontSize: "12px", color: "#555" }}>
+                                ¿Ya estás registrado?
+                            </p>
+                            <a href="#" onClick={handleToggleForm}>Iniciar sesión</a>
+                        </div>
                     </div>
-                    <label className="error">{errorNombre}</label>
-                    <div className={errorApellidos===''?"input-group":"input-group-error"}>
-                        <input type="text" id="apellidos" name="apellidos" value={apellidos} onChange={handleChange} required/>
-                        <label htmlFor="apellidos">Apellidos*</label>
-                    </div>
-                    <label className="error">{errorApellidos}</label>
-                    <div className={errorEmail===''?"input-group":"input-group-error"}>
-                        <input type="text" id="email" name="email" value={email} onChange={handleChange} required/>
-                        <label htmlFor="email">Email*</label>
-                    </div>
-                    <label className="error">{errorEmail}</label>
-                    <div className={errorDepartamento===''?"input-group":"input-group-error"}>
-                        <input type="text" id="departamento" name="departamento" value={departamento} onChange={handleChange} required/>
-                        <label htmlFor="departamento">Departamento</label>
-                    </div>
-                    <label className="error">{errorDepartamento}</label>
-                    <div className={errorCentro===''?"input-group":"input-group-error"}>
-                        <input type="text" id="centro" name="centro" value={centro} onChange={handleChange} required/>
-                        <label htmlFor="centro">Centro*</label>
-                    </div>
-                    <label className="error">{errorCentro}</label>
-                    <div className={errorFechaAlta===''?"input-group":"input-group-error"}>
-                    <input type="text" id="fechaAlta" name="fechaAlta" value={fechaAlta} onFocus={(e) => (e.target.type = "date")} 
-                        onBlur={(e) => (e.target.type = "text")} onChange={handleChange} placeholder="" required/>
-                        <label htmlFor="fechaAlta">Fecha de Alta*</label>
-                    </div>
-                    <label className="error">{errorFechaAlta}</label>
-                    <div className={errorPerfil===''?"input-group":"input-group-error"}>
-                        <select className="perfil-select" id="perfil_desplegable" name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
-                            <option value="" disabled hidden></option>
-                            <option value="usuario">Desarrollador</option>
-                            <option value="usuario">Tester</option>
-                            <option value="usuario">Becario</option>
-                            <option value="usuario">RRHH</option>
-                            <option value="usuario">Contabilidad</option>
-                        </select>
-                        <label htmlFor="perfil_desplegable">Perfil</label>
-                        <button type="button" className="select-toggle-btn" value={perfil_desplegable}>
-                            <img src={require('../media/flecha.png')} alt="Desplegable"/>
-                        </button>
-                    </div>
-                    <label className="error">{errorPerfil}</label>
-                    <div className={errorContrasena===''?"input-group":"input-group-error"}>
-                        <input type={showPassword ? "text" : "password"} id="contrasena" name="contrasena" value={contrasena} onChange={handleChange} required/>
-                        <label htmlFor="contrasena">Contraseña*</label>
-                        <button type="button" onClick={togglePasswordVisibility} className="password-toggle-btn">
-                        <img src={require(showPassword?'../media/password_off.png':'../media/password_on.png')} alt="Mostrar Contraseña"/>
-                        </button>
-                    </div>
-                    <label className="error">{errorContrasena}</label>
-                    <div className={errorRepetirContrasena===''?"input-group":"input-group-error"}>
-                        <input type={showRepeatPassword ? "text" : "password"} id="repetirContrasena" name="repetirContrasena" value={repetirContrasena} onChange={handleChange} required/>
-                        <label htmlFor="repetirContrasena">Repetir Contraseña*</label>
-                        <button type="button" onClick={toggleRepeatPasswordVisibility} className="repeatPassword-toggle-btn">
-                        <img src={require(showRepeatPassword?'../media/password_off.png':'../media/password_on.png')} alt="Mostrar Contraseña"/>
-                        </button>
-                    </div>
-                    <label className="error">{errorRepetirContrasena}</label>
-                <button type="submit" className="register-btn" onClick={handleRegister}>Registrarse</button>
-                <div className="register-options">
-                    <p style={{ marginTop: "10px", fontSize: "12px", color: "#555"}}>
-                        ¿Ya estás registrado?
-                    </p>
-                    <a href="#" onClick={handleToggleForm}>Iniciar sesión</a>
                 </div>
-        </div>
-        </div>
+            )}
+        </>
     );
 };
 

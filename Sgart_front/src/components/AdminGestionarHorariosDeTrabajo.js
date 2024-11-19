@@ -3,6 +3,7 @@ import '../App.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NavBar from './NavBar';
+import LoadingSpinner from './LoadingSpinner';
 
 const AdminGestionarHorariosDeTrabajo = () => {
     const navigate = useNavigate();
@@ -15,11 +16,13 @@ const AdminGestionarHorariosDeTrabajo = () => {
     ]);
     const [isEditable, setIsEditable] = useState(true); // Estado para manejar la edición
     const [existingSchedules, setExistingSchedules] = useState([]); // Estado para almacenar horarios existentes
+    const [isLoading, setIsLoading] = useState(false);
 
     // Fetch para obtener los horarios de trabajo al cargar el componente
     useEffect(() => {
         const fetchWorkingHours = async () => {
             try {
+                setIsLoading(true);
                 const response = await axios.get("http://localhost:9000/administrador/horarios");
                 if (response.data.length > 0) {
                     // Si hay datos, desactiva la edición y almacena los horarios recibidos
@@ -36,6 +39,8 @@ const AdminGestionarHorariosDeTrabajo = () => {
                 }
             } catch (error) {
                 console.error("Error al obtener los horarios de trabajo:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchWorkingHours();
@@ -65,6 +70,7 @@ const AdminGestionarHorariosDeTrabajo = () => {
         }));
         
         try {
+            setIsLoading(true);
             await axios.post("http://localhost:9000/administrador/horarios", workingHoursList);
             alert("Horarios de trabajo guardados correctamente.");
             setIsEditable(false); // Desactiva la edición después de guardar
@@ -72,6 +78,8 @@ const AdminGestionarHorariosDeTrabajo = () => {
             setExistingSchedules(timeBlocks.slice(0, blockCount)); // Actualiza los horarios mostrados
         } catch (error) {
             console.error("Error al guardar los horarios de trabajo:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -84,6 +92,9 @@ const AdminGestionarHorariosDeTrabajo = () => {
     return (
         <>
         <NavBar isAdmin={true} />
+        {isLoading ? (
+            <LoadingSpinner />
+        ) : (
         <div className="container">
             <h2>Gestión de Horarios de Trabajo</h2>
             
@@ -182,6 +193,7 @@ const AdminGestionarHorariosDeTrabajo = () => {
                 </div>
             )}
         </div>
+        )}
         </>
     );
 };
