@@ -10,6 +10,8 @@ const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
                 return 'Confirmar Eliminación';
             case 'add':
                 return 'Confirmar Ausencia';
+            case 'logout':
+                return 'Cerrar Sesión';
             default:
                 return '';
         }
@@ -27,6 +29,8 @@ const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
                 return '¿Está seguro de que desea asistir?';
             case 'reject':
                 return '¿Está seguro de que desea rechazar esta reunión?';
+            case 'logout':
+                return '¿Está seguro de que desea cerrar sesión?';
             default:
                 return '';
         }

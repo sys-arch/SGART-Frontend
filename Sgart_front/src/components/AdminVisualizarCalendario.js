@@ -5,12 +5,15 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import '../App.css';
 import NavBar from './NavBar';
+import LoadingSpinner from './LoadingSpinner';
 
 const AdminCalendar = () => {
     const [meetings, setMeetings] = useState([]);
     const [selectedMeeting, setSelectedMeeting] = useState(null);
     const [invitees, setInvitees] = useState([]);
     const [isMeetingDetailPopupOpen, setIsMeetingDetailPopupOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
 
     // Función para cargar las reuniones desde el backend con depuración
     const loadMeetings = useCallback(async () => {
@@ -46,6 +49,7 @@ const AdminCalendar = () => {
     // Función para cargar la lista de invitados por POST
     const loadInvitees = useCallback(async (meetingId) => {
         try {
+            setIsLoading(true);
             console.log(`Intentando cargar invitados para la reunión con ID: ${meetingId}`);
 
             const response = await fetch(`http://localhost:9000/administrador/calendarios/invitados`, {
@@ -70,6 +74,8 @@ const AdminCalendar = () => {
 
         } catch (error) {
             console.error("Error al cargar los invitados: ", error);
+        } finally {
+            setIsLoading(false);
         }
     }, []);
 
@@ -87,6 +93,9 @@ const AdminCalendar = () => {
     return (
         <>
         <NavBar isAdmin={true} />
+        {isLoading ? (
+            <LoadingSpinner />
+        ) : (
         <div className='admin-calendar-view'>
             <div className="admin-calendar-container">
                 <h2>Calendario de Reuniones de la Empresa</h2>
@@ -127,7 +136,7 @@ const AdminCalendar = () => {
                             <p>{selectedMeeting.location}</p>
                         </div>
                         <div className="admin-calendar-input-group">
-                            <label>Hora de Fin:</label>
+                            <label>Observaciones:</label>
                             <p>{selectedMeeting.description}</p>
                         </div>
 
@@ -148,6 +157,7 @@ const AdminCalendar = () => {
                 </div>
             )}
         </div>
+        )}
         </>
     );
 };
