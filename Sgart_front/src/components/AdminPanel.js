@@ -5,6 +5,8 @@ import AdminCreateForm from './AdminCreateForm';
 import AdminEditForm from './AdminEditForm';
 import NavBar from './NavBar';
 import { useNavigate } from 'react-router-dom';
+import NavBar from './NavBar';
+import LoadingSpinner from './LoadingSpinner';
 
 const AdminPanel = () => {
     const navigate = useNavigate();
@@ -13,7 +15,9 @@ const AdminPanel = () => {
 
     useEffect(() => {
         actualizarAdministradores();
-      }, []);
+    }, []);
+
+    const actualizarAdministradores = () => {
 
     const actualizarAdministradores = () =>{
         fetch('admin/getAdmins')
@@ -63,7 +67,7 @@ const AdminPanel = () => {
         name: "name",
         lastName: "lastName",
         center: "center"
-    }; 
+    };
     const handleCreateAdmin = () => {
         setCreatingAdmin(true);
     }
@@ -124,7 +128,7 @@ const AdminPanel = () => {
     const handleCancelEdit = () => {
         setEditingAdmin(null);
         setCreatingAdmin(false);
-    }; 
+    };
 
 
 
@@ -167,14 +171,16 @@ const AdminPanel = () => {
                 'Content-Type': 'application/json',
             },
         })
-          .then(response => {
-            const nuevosDatos = datosAdmin.filter((item) => item.email !== email);
-            setDatosAdmin(nuevosDatos); // Actualizamos el estado con los nuevos datos
-          })
-          .catch(error => {
-            console.error('Error deleting user: ',error);
-          });
+            .then(response => {
+                const nuevosDatos = datosAdmin.filter((item) => item.email !== email);
+                setDatosAdmin(nuevosDatos); // Actualizamos el estado con los nuevos datos
+            })
+            .catch(error => {
+                console.error('Error deleting user: ', error);
+            });
     }
+
+    const [isLoading, setIsLoading] = useState(false);
 
     return (
     <>

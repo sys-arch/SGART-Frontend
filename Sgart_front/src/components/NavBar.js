@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
+import VentanaConfirm from './VentanaConfirm';
 
 const NavBar = ({ isAdmin }) => {
     const navigate = useNavigate();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleProfileClick = () => {
         setIsDropdownOpen((prevState) => !prevState); // Alternar entre abierto/cerrado
     };
 
+    const handleLogout = () => {
+        setShowConfirmation(true);
+    }
+
+    const confirmLogout = () => {
+        sessionStorage.removeItem('token');
+        navigate('/');
+        setShowConfirmation(false);
+    }
 
     return (
         <div className="navbar-container">
@@ -24,8 +35,11 @@ const NavBar = ({ isAdmin }) => {
                         <button className="user-calendar-btn" onClick={() => navigate('/user-options')}>
                             <img src={require('../media/user_management_btn.png')} width={40} alt="Usuarios" title="Mantenimiento Usuarios" />
                         </button>
-                        <button className="user-calendar-btn" onClick={() => navigate('/admin-working-hours')}>
+                        <button className="user-calendar-btn" onClick={() => navigate('/admin-management')}>
                             <img src={require('../media/admin_management_btn.png')} width={40} alt="Administradores" title="Mantenimiento Administradores" />
+                        </button>
+                        <button className="user-calendar-btn" onClick={() => navigate('/admin-working-hours')}>
+                            <img src={require('../media/admin_management_btn.png')} width={40} alt="Horarios" title="Horarios de Trabajo" />
                         </button>
                         <button className="user-calendar-btn" onClick={() => navigate('/admin-calendar-view')}>
                             <img src={require('../media/calendar_management_btn.png')} width={40} alt="Calendario" title="Calendario" />
@@ -34,14 +48,14 @@ const NavBar = ({ isAdmin }) => {
                 )}
 
                 {isAdmin === false && (
-                <button className="user-calendar-btn" onClick={() => navigate('/user-calendar')}>
-                    <img
-                        src={require('../media/calendar_management_btn.png')}
-                        width={40}
-                        alt="Calendario"
-                        title="Calendario"
-                    />
-                </button>
+                    <button className="user-calendar-btn" onClick={() => navigate('/user-calendar')}>
+                        <img
+                            src={require('../media/calendar_management_btn.png')}
+                            width={40}
+                            alt="Calendario"
+                            title="Calendario"
+                        />
+                    </button>
                 )}
             </div>
 
@@ -54,11 +68,20 @@ const NavBar = ({ isAdmin }) => {
                 {/* Menú desplegable */}
                 {isDropdownOpen && (
                     <div className="dropdown-menu">
-                        <button onClick={() => navigate('/user-profile')}>Mi Perfil</button>
-                        <button onClick={() => console.log('Cerrar sesión')}>Cerrar Sesión</button>
+                        {isAdmin === false && (
+                            <button onClick={() => navigate('/user-profile')}>Mi Perfil</button>
+                        )}
+                        <button onClick={handleLogout}>Cerrar Sesión</button>
                     </div>
                 )}
             </div>
+            {showConfirmation && (
+                <VentanaConfirm
+                    onConfirm={confirmLogout}
+                    onCancel={() => setShowConfirmation(false)}
+                    action={'logout'}
+                />
+            )}
         </div>
     );
 };

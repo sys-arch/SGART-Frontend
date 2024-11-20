@@ -7,38 +7,7 @@ import '../App.css';
 import { useNavigate } from 'react-router-dom';
 import VentanaConfirm from './VentanaConfirm';
 import NavBar from './NavBar';
-
-const InviteParticipants = ({ participants, filteredParticipants, searchTerm, handleSearchChange, handleSelectParticipant }) => {
-    return (
-        <div className="participant-list-container">
-            <h2>Invitar Participantes</h2>
-            <div className="search-participants-container">
-                <input
-                    type="text"
-                    className="search-participants-input"
-                    placeholder="Buscar participantes..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                />
-            </div>
-            <div className="participant-list-available">
-                {filteredParticipants.length > 0 ? (
-                    filteredParticipants.map((participant) => (
-                        <div
-                            key={participant.id}
-                            className="available-participant-item"
-                            onClick={() => handleSelectParticipant(participant)}
-                        >
-                            {participant.nombre}
-                        </div>
-                    ))
-                ) : (
-                    <p className="no-participants-message">No se encontraron participantes.</p>
-                )}
-            </div>
-        </div>
-    );
-};
+import LoadingSpinner from './LoadingSpinner';
 
 const UserCalendarUI = () => {
     const navigate = useNavigate();
@@ -54,6 +23,7 @@ const UserCalendarUI = () => {
 
     // Variables de estado adicionales
     const [isEditable, setIsEditable] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Variables del pop-up de creación de eventos
     const [popupSelectedDate, setPopupSelectedDate] = useState('');
@@ -64,6 +34,8 @@ const UserCalendarUI = () => {
     const [popupStartingMinutes, setPopupStartingMinutes] = useState('');
     const [popupEndingHour, setPopupEndingHour] = useState('');
     const [popupEndingMinutes, setPopupEndingMinutes] = useState('');
+    const [eventLocation, setEventLocation] = useState('');
+    const [popupDescription, setPopupDescription] = useState('');
     const [currentStep, setCurrentStep] = useState(1); // 1: Crear evento, 2: Invitar participantes
 
     // Nueva variable para abrir el pop-up de personalización
@@ -77,6 +49,7 @@ const UserCalendarUI = () => {
 
     // Variables para almacenar eventos regulares y horarios de trabajo modificados
     const [regularEvents, setRegularEvents] = useState([]);
+    const [pendingMeetingsEvents, setPendingMeetingsEvents] = useState([]);
     const [modifiedWorkingHours, setModifiedWorkingHours] = useState([]);
     const [defaultWorkingHours, setDefaultWorkingHours] = useState([]);
 
@@ -94,11 +67,14 @@ const UserCalendarUI = () => {
     const [confirmationAction, setConfirmationAction] = useState('');
 
 
+    const [invitees, setInvitees] = useState([]);
+
     // Estado para controlar los usuarios disponibles y los seleccionados
     const [availableUsers, setAvailableUsers] = useState([
         { id: 1, nombre: 'Juan Pérez' },
         { id: 2, nombre: 'María López' },
         { id: 3, nombre: 'Carlos García' },
+        { id: 5, nombre: 'Carlos Enrique De Miguel-Herencia' },
         { id: 4, nombre: 'Ana Martínez' }
     ]);
 
@@ -123,28 +99,41 @@ const UserCalendarUI = () => {
 
     const handleSelectParticipant = (participant) => {
         if (!selectedUsers.includes(participant)) {
-            setSelectedUsers([...selectedUsers, participant]);
-            setAvailableUsers(availableUsers.filter(user => user.id !== participant.id));
+            const enAusencia = checkUserAbsence(participant);
+
+            setSelectedUsers([...selectedUsers, { ...participant, enAusencia }]);
+
+            setAvailableUsers(availableUsers.filter((user) => user.id !== participant.id));
         }
     };
+
 
     // Cargar los eventos regulares de la base de datos
     const loadEvents = useCallback(async () => {
         try {
+            setIsLoading(true);
             const response = await fetch('http://localhost:9000/administrador/eventos/loadEvents');
             if (!response.ok) throw new Error('Error al cargar los eventos');
 
             const backendEvents = await response.json();
             const transformedEvents = backendEvents.map(event => ({
+                id: event.id,
                 title: event.event_title,
                 start: `${event.event_start_date}T${event.event_time_start}`,
                 end: `${event.event_start_date}T${event.event_time_end}`,
                 allDay: event.event_all_day === 1,
-                extendedProps: { frequency: event.event_frequency }
+                extendedProps: {
+                    frequency: event.event_frequency,
+                    organizerId: event.organizer_id,
+                    locationName: event.location_name,
+                    observations: event.observations
+                }
             }));
             setRegularEvents(transformedEvents);
         } catch (error) {
             console.error("Error al cargar los eventos: ", error);
+        } finally {
+            setIsLoading(false);
         }
     }, []);
 
@@ -308,6 +297,7 @@ const UserCalendarUI = () => {
         };
 
         try {
+
             const response = await fetch('http://localhost:9000/administrador/eventos/saveEvent', {
                 method: 'POST',
                 headers: {
@@ -370,400 +360,451 @@ const UserCalendarUI = () => {
         setSelectedUsers(selectedUsers.filter((selectedUser) => selectedUser.id !== user.id));
     };
 
-
     // PRUEBAS
     const [reunionesPendientes, setReunionesPendientes] = useState([
-        { id: 1, nombre: 'Reunión con equipo', fecha: '2024-11-10' },
-        { id: 2, nombre: 'Revisión de proyecto', fecha: '2024-11-12' },
-        { id: 35, nombre: 'Revisión de proyecto', fecha: '2024-11-15' },
-        { id: 4, nombre: 'Revisión de proyecto', fecha: '2024-12-20' },
+        {
+            meetingId: "0be87f14-8fc5-44bc-8e92-114976629f2b", title: "Reunión con Cliente", allDay: 'false', meetingDate: '2024-11-25', startTime: "09:00:00",
+            endTime: "11:00:00", organizerId: "61bc14cd-0c94-43cc-ab5a-8c59501b6470", observations: "Llevar preparado producto mínimo viable", locationName: "ESI"
+        }
     ]);
 
     const [reunionesAceptadas, setReunionesAceptadas] = useState([
-        { id: 3, nombre: 'Presentación cliente', fecha: '2024-11-15' },
-        { id: 7, nombre: 'Presentación cliente', fecha: '2024-11-15' },
-        { id: 8, nombre: 'Presentación cliente', fecha: '2024-11-15' },
-        { id: 9, nombre: 'Presentación cliente', fecha: '2024-11-15' },
+        {
+            meetingId: "0be83f14-8fc5-44bc-8e92-114976629f2b", title: "Reunión de Estrategia", allDay: 'false', meetingDate: '2024-11-21', startTime: "10:00:00",
+            endTime: "12:00:00", organizerId: "61bc15cd-0c94-43cc-ab5a-8c59501b6470", observations: "Hola buenas tardes", locationName: "Online"
+        },
+        {
+            meetingId: "0be83f14-8fc5-44bc-8e92-119976629f2b", title: "Reunión de Planificación", allDay: 'false', meetingDate: '2024-11-20', startTime: "11:00:00",
+            endTime: "14:00:00", organizerId: "61bc15cd-0c94-43cc-ab5a-8c59501b6470", observations: "No hay observaciones", locationName: "Ciudad Real"
+        }
+    ]);
+    // Ejemplo de ausencias de los usuarios (deberían cargarse de un API o base de datos)
+    const [ausencias, setAusencias] = useState([
+        { userId: 1, fecha: '2024-11-20' }, // Ejemplo de ausencia para Juan Pérez
+        { userId: 3, fecha: '2024-11-15' } // Ejemplo de ausencia para otro usuario
     ]);
 
-    const handleAcceptClick = (reunion) => {
-        setSelectedReunion(reunion);
-        setActionType('accept');
-        setIsConfirmPopupOpen(true);
-    };
-
-    const handleRejectClick = (reunion) => {
-        setSelectedReunion(reunion);
-        setActionType('reject');
-        setIsConfirmPopupOpen(true);
-    };
-
     // Funciones para manejar la confirmación
-    const handleAcceptMeeting = (meeting) => {
+    const handleAcceptMeeting = (reunion) => {
+        setSelectedEvent(reunion);
         setConfirmationAction('accept');
         setShowConfirmation(true);
     };
 
-    const handleRejectMeeting = (meeting) => {
+    const handleRejectMeeting = (reunion) => {
+        setSelectedEvent(reunion);
         setConfirmationAction('reject');
         setShowConfirmation(true);
     };
 
     const handleInfoMeeting = (reunion) => {
-        // Aquí puedes usar VentanaConfirm.js o cualquier otro componente para mostrar la información del evento
-        setSelectedEvent(reunion);
+        const transformedEvent = {
+            title: reunion.title,
+            start: `${reunion.meetingDate}T${reunion.startTime}`,
+            end: `${reunion.meetingDate}T${reunion.endTime}`,
+            allDay: reunion.allDay === 'true',
+            extendedProps: {
+                meetingId: reunion.meetingId,
+                organizerId: reunion.organizerId,
+                observations: reunion.observations,
+                locationName: reunion.locationName,
+            }
+        };
+        setSelectedEvent(transformedEvent);
         setIsEventDetailPopupOpen(true);
     };
 
     const handleConfirmAction = () => {
         if (confirmationAction === 'accept') {
             console.log('Reunión aceptada');
-            // Aquí puedes agregar la lógica para aceptar la reunión
+            setReunionesPendientes((prevReunionesPendientes) =>
+                prevReunionesPendientes.filter((reunion) => reunion.id !== selectedEvent.id)
+            );
+            setReunionesAceptadas((prevReunionesAceptadas) => [
+                ...prevReunionesAceptadas, selectedEvent]
+            );
         } else if (confirmationAction === 'reject') {
             console.log('Reunión rechazada');
-            // Aquí puedes agregar la lógica para rechazar la reunión
+            setReunionesPendientes((prevReunionesPendientes) =>
+                prevReunionesPendientes.filter((reunion) => reunion.id !== selectedEvent.id)
+            );
         }
         setShowConfirmation(false); // Cerrar la ventana de confirmación después de realizar la acción
-    };    
+    };
+
+    const checkUserAbsence = (participant) => {
+        return ausencias.some((ausencia) => {
+            const ausenciaFecha = new Date(ausencia.fecha);
+            const selectedFecha = new Date(popupSelectedDate);
+            return (
+                ausencia.userId === participant.id &&
+                ausenciaFecha.getTime() === selectedFecha.getTime()
+            );
+        });
+    };
+
+    useEffect(() => {
+        const transformedAcceptedMeetings = reunionesAceptadas.map(reunion => ({
+            id: reunion.meetingId, // Asegúrate de que cada evento tiene un identificador único
+            title: reunion.title || reunion.nombre,
+            start: `${reunion.meetingDate}T${reunion.startTime}`,
+            end: `${reunion.meetingDate}T${reunion.endTime}`,
+            allDay: reunion.allDay === 'true',
+            extendedProps: {
+                meetingId: reunion.meetingId,
+                organizerId: reunion.organizerId,
+                observations: reunion.observations,
+                locationName: reunion.locationName,
+            }
+        }));
+
+        // Establecer los eventos regulares directamente sin concatenar, para evitar duplicación
+        setRegularEvents(transformedAcceptedMeetings);
+    }, [reunionesAceptadas]);
+
+    useEffect(() => {
+        const transformedPendingMeetings = reunionesPendientes.map(reunion => ({
+            title: reunion.title || reunion.nombre,
+            start: `${reunion.meetingDate}T${reunion.startTime}`,
+            end: `${reunion.meetingDate}T${reunion.endTime}`,
+            allDay: reunion.allDay === 'true',
+            extendedProps: {
+                meetingId: reunion.meetingId,
+                organizerId: reunion.organizerId,
+                observations: reunion.observations,
+                locationName: reunion.locationName,
+            }
+        }));
+        setPendingMeetingsEvents(transformedPendingMeetings);
+    }, [reunionesPendientes]);
+
 
     return (
         <>
-        <NavBar isAdmin={false} />
-        <div className='AdminCalendarapp-container main-content'>
-            <div className="AdminCalendar-left-panel">
-                <h3>Reuniones Pendientes</h3>
-                <div className="meeting-list-pending">
-                    {reunionesPendientes.length > 0 && (
-                        <>
-                            {reunionesPendientes.map((reunion) => (
-                                <div key={reunion.id} className="meeting-item pending">
-                                    <div className='meeting-info'>
-                                        <p>{reunion.nombre}</p>
-                                    </div>
-                                    <div className="meeting-actions">
-                                        <button className="action-button info-button" onClick={() => handleInfoMeeting(reunion)}>
-                                            <img src={require('../media/informacion.png')} alt="Información" title='Información del Evento' />
-                                        </button>
-                                        <button className="action-reunion-button accept-button" onClick={() => handleAcceptMeeting(reunion)}>
-                                            <img src={require('../media/garrapata.png')} alt="Aceptar" title='Aceptar' />
-                                        </button>
-                                        <button className="action-reunion-button reject-button" onClick={() => handleRejectMeeting(reunion)}>
-                                            <img src={require('../media/cancelar.png')} alt="Rechazar" title='Rechazar' />
-                                        </button>
-                                    </div>
-                                    {confirmAction && (
-                                        <VentanaConfirm
-                                            mensaje={confirmAction.message}
-                                            onConfirm={confirmAction.onConfirm}
-                                            onCancel={() => setConfirmAction(null)}
-                                        />
-                                    )}
-                                </div>
-                            ))}
-                        </>
-                    )}
-                </div>
-                <h3>Reuniones Aceptadas</h3>
-                <div className="meeting-list-accepted">
-                    {reunionesAceptadas.length > 0 && (
-                        <>
-                            {reunionesAceptadas.map((reunion) => (
-                                <div key={reunion.id} className="meeting-item accepted">
-                                    <div className="meeting-item-content">
-                                        <div className="meeting-info">
-                                            <p>{reunion.nombre}</p>
+            <NavBar isAdmin={false} />
+            {isLoading ? (
+                <LoadingSpinner />
+            ) : (
+                <div className='AdminCalendarapp-container main-content'>
+                    <div className="AdminCalendar-left-panel">
+                        <h3>Reuniones Pendientes</h3>
+                        <div className="meeting-list-pending">
+                            {reunionesPendientes.length > 0 && (
+                                <>
+                                    {reunionesPendientes.map((reunion) => (
+                                        <div key={reunion.meetingId} className="meeting-item pending">
+                                            <div className='meeting-info'>
+                                                <p>{reunion.title}</p>
+                                            </div>
+                                            <div className="meeting-actions">
+                                                <button className="action-button info-button" onClick={() => handleInfoMeeting(reunion)}>
+                                                    <img src={require('../media/informacion.png')} alt="Información" title='Información del Evento' />
+                                                </button>
+                                                <button className="action-reunion-button accept-button" onClick={() => handleAcceptMeeting(reunion)}>
+                                                    <img src={require('../media/garrapata.png')} alt="Aceptar" title='Aceptar' />
+                                                </button>
+                                                <button className="action-reunion-button reject-button" onClick={() => handleRejectMeeting(reunion)}>
+                                                    <img src={require('../media/cancelar.png')} alt="Rechazar" title='Rechazar' />
+                                                </button>
+                                            </div>
+                                            {confirmAction && (
+                                                <VentanaConfirm
+                                                    mensaje={confirmAction.message}
+                                                    onConfirm={confirmAction.onConfirm}
+                                                    onCancel={() => setConfirmAction(null)}
+                                                />
+                                            )}
                                         </div>
-                                        <div className="meeting-buttons">
-                                            <button className="info-button" onClick={() => { setSelectedEvent(reunion); setIsEventDetailPopupOpen(true); }}>
-                                                <img src={require('../media/informacion.png')} alt="Info" />
-                                            </button>
+                                    ))}
+                                </>
+                            )}
+                        </div>
+                        <h3>Reuniones Aceptadas</h3>
+                        <div className="meeting-list-accepted">
+                            {reunionesAceptadas.length > 0 && (
+                                <>
+                                    {reunionesAceptadas.map((reunion) => (
+                                        <div key={reunion.id} className="meeting-item accepted">
+                                            <div className="meeting-item-content">
+                                                <div className="meeting-info">
+                                                    <p>{reunion.title}</p>
+                                                </div>
+                                                <div className="meeting-buttons">
+                                                    <button className="info-button" onClick={() => { setSelectedEvent(reunion); setIsEventDetailPopupOpen(true); }}>
+                                                        <img src={require('../media/informacion.png')} alt="Info" />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </>
-                    )}
-                </div>
-                <div className="AdminCalendar-add-time">
-                    <button className="add-button" onClick={handleAddTimeClick}>+</button>
-                    <p>Crear nueva reunión</p>
-                </div>
-            </div>
+                                    ))}
+                                </>
+                            )}
+                        </div>
+                        <div className="AdminCalendar-add-time">
+                            <button className="add-button" onClick={handleAddTimeClick}>+</button>
+                            <p>Crear nueva reunión</p>
+                        </div>
+                    </div>
 
-            <div className="AdminCalendar-calendar-container">
-                <h2>Calendario de Trabajo</h2>
-                <div className="calendar-wrapper">
-                    <FullCalendar
-                        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                        initialView="dayGridMonth"
-                        eventSources={[
-                            { events: regularEvents, color: 'blue', textColor: 'white' },
-                            { events: modifiedWorkingHours, color: 'red', textColor: 'white' }
-                        ]}
-                        dateClick={handleDateClick}
-                        eventClick={handleEventClick}
-                        selectable={true}
-                        businessHours={{
-                            daysOfWeek: defaultWorkingHours.map(d => d.dayOfWeek),
-                            startTime: defaultWorkingHours.length > 0 ? defaultWorkingHours[0].startTime : '08:00',
-                            endTime: defaultWorkingHours.length > 0 ? defaultWorkingHours[0].endTime : '15:00',
-                        }}
-                    />
-                </div>
-            </div>
-            {/* Pop-up para Añadir Nuevo Evento */}
-            {isPopupOpen && currentStep === 1 && (
-                <div className="popup-overlay">
-                    <div className="popup-container">
-                        <h2>Crear nuevo evento</h2>
-                        <div className="AdminCalendar-input-group">
-                            <label htmlFor='eventName'>Nombre del Evento:</label>
-                            <input
-                                type="text"
-                                id='eventName'
-                                placeholder="Nombre del Evento"
-                                value={eventName}
-                                onChange={(e) => setEventName(e.target.value)}
-                            />
-                        </div>
-                        <div className="AdminCalendar-input-group">
-                            <label htmlFor='fecha'>Fecha:</label>
-                            <input
-                                type="date"
-                                id='fecha'
-                                value={popupSelectedDate}
-                                onChange={(e) => setPopupSelectedDate(e.target.value)}
-                            />
-                        </div>
-                        <div className="AdminCalendar-input-group">
-                            <label htmlFor='allDay'>¿Es un evento de todo el día?</label>
-                            <input
-                                type="checkbox"
-                                id='allDay'
-                                checked={isAllDay}
-                                onChange={(e) => setIsAllDay(e.target.checked)}
-                            />
-                        </div>
-                        {!isAllDay && (
-                            <>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Hora de inicio:</label>
-                                    <div>
-                                        <input
-                                            type="number"
-                                            placeholder="HH"
-                                            value={popupStartingHour}
-                                            onChange={(e) => handlePopupTimeChange(e, 'popupStartingHour')}
-                                            className={popupHourError ? 'error' : ''}
-                                            min="0"
-                                            max="23"
-                                        />
-                                        :
-                                        <input
-                                            type="number"
-                                            placeholder="MM"
-                                            value={popupStartingMinutes}
-                                            onChange={(e) => handlePopupTimeChange(e, 'popupStartingMinutes')}
-                                            className={popupMinuteError ? 'error' : ''}
-                                            min="0"
-                                            max="59"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Hora de fin:</label>
-                                    <div>
-                                        <input
-                                            type="number"
-                                            placeholder="HH"
-                                            value={popupEndingHour}
-                                            onChange={(e) => handlePopupTimeChange(e, 'popupEndingHour')}
-                                            className={popupHourError ? 'error' : ''}
-                                            min="0"
-                                            max="23"
-                                        />
-                                        :
-                                        <input
-                                            type="number"
-                                            placeholder="MM"
-                                            value={popupEndingMinutes}
-                                            onChange={(e) => handlePopupTimeChange(e, 'popupEndingMinutes')}
-                                            className={popupMinuteError ? 'error' : ''}
-                                            min="0"
-                                            max="59"
-                                        />
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                        <div className="AdminCalendar-input-group">
-                            <label htmlFor='eventFrequency'>Frecuencia del Evento:</label>
-                            <select
-                                value={eventFrequency}
-                                id='eventFrequency'
-                                onChange={(e) => {
-                                    setEventFrequency(e.target.value);
-                                    if (e.target.value === 'Personalizado') setIsCustomPopupOpen(true);
+                    <div className="AdminCalendar-calendar-container">
+                        <h2>Calendario de Trabajo</h2>
+                        <div className="calendar-wrapper">
+                            <FullCalendar
+                                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                                initialView="dayGridMonth"
+                                eventSources={[
+                                    { events: regularEvents, color: 'green', textColor: 'white' },
+                                    { events: pendingMeetingsEvents, color: 'yellow', textColor: 'white' }
+                                ]}
+                                dateClick={handleDateClick}
+                                eventClick={handleEventClick}
+                                selectable={true}
+                                businessHours={{
+                                    daysOfWeek: defaultWorkingHours.map(d => d.dayOfWeek),
+                                    startTime: defaultWorkingHours.length > 0 ? defaultWorkingHours[0].startTime : '08:00',
+                                    endTime: defaultWorkingHours.length > 0 ? defaultWorkingHours[0].endTime : '15:00',
                                 }}
-                            >
-                                <option value="Una vez">Una vez</option>
-                                <option value="Diario">Diario</option>
-                                <option value="Semanal">Semanal</option>
-                                <option value="Mensual">Mensual</option>
-                                <option value="Anual">Anual</option>
-                                <option value="Personalizado">Personalizado...</option>
-                            </select>
-                        </div>
-                        <div className="AdminCalendar-button-group">
-                            <button className="save-button" onClick={() => setCurrentStep(2)}>Siguiente</button>
-                            <button className="close-button" onClick={handleClosePopup}>Cancelar</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {/* Pop-up para Invitar Participantes */}
-            {isPopupOpen && currentStep === 2 && (
-                <div className="popup-overlay">
-                    <div className="popup-container-participants">
-                        <h2>Invitar Participantes</h2>
-
-                        <div className="AdminCalendar-input-group">
-                            <label>Usuarios Disponibles:</label>
-                            <div className="search-participants-container">
-                                <input
-                                    type="text"
-                                    className="search-participants-input"
-                                    placeholder="Buscar participantes..."
-                                    value={searchTerm}
-                                    onChange={handleSearchChange}
-                                />
-                            </div>
-                            {/* Lista de participantes disponibles */}
-                            <div className="participant-list-available">
-                                {filteredParticipants.length > 0 ? (
-                                    filteredParticipants.map((participant) => (
-                                        <div
-                                            key={participant.id}
-                                            className="available-participant-item"
-                                            onClick={() => handleSelectParticipant(participant)}
-                                        >
-                                            {participant.nombre}
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p>No se encontraron participantes.</p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Lista de participantes seleccionados */}
-                        <div className="AdminCalendar-input-group">
-                            <label>Usuarios Seleccionados:</label>
-                            <div className="participant-list-selected">
-                                {selectedUsers.map((user) => (
-                                    <div key={user.id} className="selected-participant-item">
-                                        <p>{user.nombre}</p>
-                                        <button onClick={() => handleRemoveUser(user)}>Eliminar</button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="AdminCalendar-button-group">
-                            <button className="save-participants-button" onClick={handleSaveEvent}>Guardar</button>
-                            <button className="close-participants-button" onClick={handleClosePopup}>Cancelar</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Pop-up para Personalizar Frecuencia */}
-            {isCustomPopupOpen && (
-                <div className="popup-overlay">
-                    <div className="popup-container small">
-                        <h2>Personalizar repetición</h2>
-                        <div className="AdminCalendar-input-group">
-                            <label htmlFor='customFrequency'>Frecuencia de repetición:</label>
-                            <select
-                                value={customFrequency}
-                                id='customFrequency'
-                                onChange={(e) => setCustomFrequency(e.target.value)}
-                            >
-                                <option value="Diario">Diario</option>
-                                <option value="Semanal">Semanal</option>
-                                <option value="Mensual">Mensual</option>
-                                <option value="Anual">Anual</option>
-                            </select>
-                        </div>
-                        <div className="AdminCalendar-input-group">
-                            <label htmlFor='repeatCount'>Número de repeticiones:</label>
-                            <input
-                                type="number"
-                                id='repeatCount'
-                                min="1"
-                                value={repeatCount}
-                                onChange={(e) => setRepeatCount(e.target.value)}
                             />
                         </div>
-                        <div className="AdminCalendar-button-group">
-                            <button className="save-button" onClick={() => setIsCustomPopupOpen(false)}>Guardar</button>
-                            <button className="close-button" onClick={() => setIsCustomPopupOpen(false)}>Cancelar</button>
-                        </div>
                     </div>
-                </div>
-            )}
-            {/* Pop-up para Detalles del Evento */}
-            {isEventDetailPopupOpen && selectedEvent && (
-                <div className="popup-overlay">
-                    <div className="popup-container">
-                        <h2>Detalles del Evento</h2>
-                        <div className="AdminCalendar-input-group">
-                            <label htmlFor='nombreEvento'>Nombre del Evento:</label>
-                            <p>{selectedEvent.title || selectedEvent.nombre}</p>
-                        </div>
-                        <div className="AdminCalendar-input-group">
-                            <label htmlFor='fechaInicio'>Fecha de Inicio:</label>
-                            <p>{selectedEvent.start ? selectedEvent.start.toLocaleString() : selectedEvent.fecha}</p>
-                        </div>
-                        {selectedEvent.start && !selectedEvent.allDay && (
-                            //<div className="AdminCalendar-input-group">
-                            //    <label htmlFor='allDayEvent'>Este evento es de todo el día</label>
-                            //</div>
-                            /*) : (*/
-                            <>
+                    {/* Pop-up para Añadir Nuevo Evento */}
+                    {isPopupOpen && currentStep === 1 && (
+                        <div className="popup-overlay">
+                            <div className="popup-container">
+                                <h2>Crear nueva Reunión</h2>
                                 <div className="AdminCalendar-input-group">
-                                    <label htmlFor='horaInicio'>Hora de inicio:</label>
-                                    <p>{selectedEvent.start.toLocaleTimeString()}</p>
+                                    <label htmlFor='eventName'>Nombre de la Reunión:</label>
+                                    <input
+                                        type="text"
+                                        id='eventName'
+                                        placeholder="Nombre del Evento"
+                                        value={eventName}
+                                        onChange={(e) => setEventName(e.target.value)}
+                                    />
                                 </div>
                                 <div className="AdminCalendar-input-group">
-                                    <label htmlFor='horaFin'>Hora de fin:</label>
-                                    {selectedEvent.end ? (
-                                        <p>{selectedEvent.end.toLocaleTimeString()}</p>
-                                    ) : (
-                                        <p>No definida</p>
-                                    )}
+                                    <label htmlFor='fecha'>Fecha:</label>
+                                    <input
+                                        type="date"
+                                        id='fecha'
+                                        value={popupSelectedDate}
+                                        onChange={(e) => setPopupSelectedDate(e.target.value)}
+                                    />
                                 </div>
-                            </>
-                        )}
-                        {selectedEvent.extendedProps?.eventFrequency && (
-                            <div className="AdminCalendar-input-group">
-                                <label htmlFor='eventFrequency'>Frecuencia del Evento:</label>
-                                <p>{selectedEvent.extendedProps.eventFrequency}</p>
+                                <div className="AdminCalendar-input-group">
+                                    <label htmlFor='allDay'>¿Es una reunión de todo el día?</label>
+                                    <input
+                                        type="checkbox"
+                                        id='allDay'
+                                        checked={isAllDay}
+                                        onChange={(e) => setIsAllDay(e.target.checked)}
+                                    />
+                                </div>
+                                {!isAllDay && (
+                                    <>
+                                        <div className="AdminCalendar-input-group">
+                                            <label>Hora de inicio:</label>
+                                            <div>
+                                                <input
+                                                    type="number"
+                                                    placeholder="HH"
+                                                    value={popupStartingHour}
+                                                    onChange={(e) => handlePopupTimeChange(e, 'popupStartingHour')}
+                                                    className={popupHourError ? 'error' : ''}
+                                                    min="0"
+                                                    max="23"
+                                                />
+                                                :
+                                                <input
+                                                    type="number"
+                                                    placeholder="MM"
+                                                    value={popupStartingMinutes}
+                                                    onChange={(e) => handlePopupTimeChange(e, 'popupStartingMinutes')}
+                                                    className={popupMinuteError ? 'error' : ''}
+                                                    min="0"
+                                                    max="59"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="AdminCalendar-input-group">
+                                            <label>Hora de fin:</label>
+                                            <div>
+                                                <input
+                                                    type="number"
+                                                    placeholder="HH"
+                                                    value={popupEndingHour}
+                                                    onChange={(e) => handlePopupTimeChange(e, 'popupEndingHour')}
+                                                    className={popupHourError ? 'error' : ''}
+                                                    min="0"
+                                                    max="23"
+                                                />
+                                                :
+                                                <input
+                                                    type="number"
+                                                    placeholder="MM"
+                                                    value={popupEndingMinutes}
+                                                    onChange={(e) => handlePopupTimeChange(e, 'popupEndingMinutes')}
+                                                    className={popupMinuteError ? 'error' : ''}
+                                                    min="0"
+                                                    max="59"
+                                                />
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                                <div className="AdminCalendar-input-group">
+                                    <label htmlFor='eventLocation'>Ubicación:</label>
+                                    <select
+                                        value={eventLocation}
+                                        id='eventLocation'
+                                        onChange={(e) => {
+                                            setEventLocation(e.target.value)
+                                        }}
+                                    >
+                                        <option value="Ciudad Real">Ciudad Real</option>
+                                        <option value="Toledo">Toledo</option>
+                                        <option value="Madrid">Madrid</option>
+                                        <option value="Málaga">Málaga</option>
+                                        <option value="Barcelona">Barcelona</option>
+                                    </select>
+                                </div>
+                                <div className='AdminCalendar-input-group'>
+                                    <label htmlFor='popupDescription'>Observaciones:</label>
+                                    <textarea className='areaTexto' id='popupDescription' value={popupDescription} onChange={(e) => setPopupDescription(e.target.value)} />
+                                </div>
+                                <div className="AdminCalendar-button-group">
+                                    <button className="save-button" onClick={() => setCurrentStep(2)}>Siguiente</button>
+                                    <button className="close-button" onClick={handleClosePopup}>Cancelar</button>
+                                </div>
                             </div>
-                        )}
-                        <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>Cerrar</button>
-                    </div>
+                        </div>
+                    )}
+                    {/* Pop-up para Invitar Participantes */}
+                    {isPopupOpen && currentStep === 2 && (
+                        <div className="popup-overlay">
+                            <div className="popup-container-participants">
+                                <h2>Invitar Participantes</h2>
+                                <div className="AdminCalendar-input-group">
+                                    <label>Usuarios Disponibles:</label>
+                                    <div className="search-participants-container">
+                                        <input
+                                            type="text"
+                                            className="search-participants-input"
+                                            placeholder="Buscar participantes..."
+                                            value={searchTerm}
+                                            onChange={handleSearchChange}
+                                        />
+                                    </div>
+                                    {/* Lista de participantes disponibles */}
+                                    <div className="participant-list-available">
+                                        {filteredParticipants.length > 0 ? (
+                                            filteredParticipants.map((participant) => (
+                                                <div key={participant.id} className="available-participant-item"
+                                                    onClick={() => handleSelectParticipant(participant)}
+                                                >
+                                                    {participant.nombre}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p>No se encontraron participantes.</p>
+                                        )}
+                                    </div>
+                                    {/* Lista de participantes seleccionados */}
+                                    <label>Usuarios Seleccionados:</label>
+                                    <div className="participant-list-selected">
+                                        {selectedUsers.map((user) => (
+                                            <div key={user.id} className={`selected-participant-item ${user.enAusencia ? 'en-ausencia' : 'disponible'}`}>
+                                                <p>{user.nombre}</p>
+                                                <button onClick={() => handleRemoveUser(user)}>
+                                                    <img className='papelera-btn' src={require('../media/papelera.png')} alt="Eliminar" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="AdminCalendar-button-group">
+                                    <button className="save-participants-button" onClick={handleSaveEvent}>Guardar</button>
+                                    <button className="close-participants-button" onClick={handleClosePopup}>Cancelar</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {/* Pop-up para Detalles del Evento */}
+                    {isEventDetailPopupOpen && selectedEvent && (
+                        <div className="popup-overlay">
+                            <div className="popup-container">
+                                <h2>Detalles del Evento</h2>
+                                <div className="AdminCalendar-input-group">
+                                    <label htmlFor='nombreEvento'>Nombre de la Reunión:</label>
+                                    <p>{selectedEvent.title}</p>
+                                </div>
+                                <div className="AdminCalendar-input-group">
+                                    <label htmlFor='fechaInicio'>Fecha:</label>
+                                    <p>{selectedEvent.start ? selectedEvent.start.split('T')[0] : selectedEvent.meetingDate}</p>
+                                </div>
+                                {selectedEvent.allDay ? (
+                                    <div className="AdminCalendar-input-group">
+                                        <label htmlFor='allDayEvent'>Esta reunión es de todo el día</label>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="AdminCalendar-input-group">
+                                            <label htmlFor='horaInicio'>Hora de inicio:</label>
+                                            <p>{selectedEvent.start ? selectedEvent.start.split('T')[1] : selectedEvent.startTime}</p>
+                                        </div>
+                                        <div className="AdminCalendar-input-group">
+                                            <label htmlFor='horaFin'>Hora de fin:</label>
+                                            {selectedEvent.end ? (
+                                                <p>{selectedEvent.end.split('T')[1]}</p>
+                                            ) : (
+                                                <p>No definida</p>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                                <div className="AdminCalendar-input-group">
+                                    <label htmlFor='organizadorEvento'>Organizador:</label>
+                                    <p>{selectedEvent.extendedProps?.organizerId || 'No definido'}</p>
+                                </div>
+                                <div className="AdminCalendar-input-group">
+                                    <label htmlFor='ubicacionEvento'>Ubicación:</label>
+                                    <p>{selectedEvent.extendedProps?.locationName || 'No definida'}</p>
+                                </div>
+                                <div className="AdminCalendar-input-group">
+                                    <label htmlFor='descripcionEvento'>Observaciones:</label>
+                                    <p>{selectedEvent.extendedProps?.observations || 'No definidas'}</p>
+                                </div>
+                                {/* Lista de Invitados */}
+                                <div className="admin-calendar-input-group">
+                                    <label>Lista de Invitados:</label>
+                                    <ul>
+                                        {invitees.length > 0 ? (
+                                            invitees.map((invitee, index) => (
+                                                <li key={index}>
+                                                    {invitee.userName} - {invitee.invitationStatus}
+                                                </li>
+                                            ))
+                                        ) : (
+                                            <li>No hay invitados.</li>
+                                        )}
+                                    </ul>
+                                </div>
+                                <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>Cerrar</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Ventana de confirmación */}
+                    {showConfirmation && (
+                        <VentanaConfirm
+                            onConfirm={() => handleConfirmAction()}
+                            onCancel={() => setShowConfirmation(false)}
+                            action={confirmationAction}
+                        />
+                    )}
                 </div>
             )}
-            {/* Ventana de confirmación */}
-            {showConfirmation && (
-                <VentanaConfirm
-                    onConfirm={() => handleConfirmAction()}
-                    onCancel={() => setShowConfirmation(false)}
-                    action={confirmationAction}
-                />
-            )}
-        </div>
-    </>
+        </>
     );
 };
 

@@ -549,6 +549,7 @@ button :hover {
   gap: 20px;
   padding: 20px;
   max-width: 1200px;
+  margin-bottom: 70px;
 }
 
 .AdminCalendar-left-panel {
@@ -579,6 +580,13 @@ button :hover {
 }
 
 .AdminCalendar-input-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.AdminCalendar-input-group select {
   width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
@@ -681,6 +689,13 @@ button :hover {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 300px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.areaTexto {
+  width: 300px;
+  height: 75px;
 }
 
 .save-button, .close-button {
@@ -1033,6 +1048,7 @@ button :hover {
 .meeting-buttons {
   display: flex;
   margin-left: 30px;
+  justify-content: space-between;
 }
 
 .meeting-actions {
@@ -1081,6 +1097,7 @@ button :hover {
 /* Lista de participantes disponibles */
 .participant-list-available {
   margin-top: 10px;
+  margin-bottom: 20px;
   padding: 5px;
   background-color: #f1f5f9;
   border-radius: 8px;
@@ -1142,19 +1159,26 @@ button :hover {
 .selected-participant-item {
   padding: 1px 5px;
   margin-bottom: 2px;
-  border-radius: 2px;
+  border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
   font-size: 0.9em;
   line-height: 1;
   display: flex;
   align-items: center;
-  background-color: #d1fae5;
-  border: 1px solid #4ade80;
+  justify-content: space-between;
 }
 
 .selected-participant-item:hover {
   background-color: #bbf7d0;
+}
+
+.selected-participant-item.disponible {
+  background-color: #d1f5d3; /* Verde claro */
+}
+
+.selected-participant-item.en-ausencia {
+  background-color: #ffe08a; /* Ámbar */
 }
 
 .no-participants-message {
@@ -1205,12 +1229,11 @@ button :hover {
 /* Estilo del contenedor del campo de búsqueda */
 .search-participants-container {
   margin-bottom: 10px;
-  width: 100%; /* Asegurar que el campo de búsqueda ocupa todo el ancho */
+  width: 400px; /* Asegurar que el campo de búsqueda ocupa todo el ancho */
 }
 
 .search-participants-input {
-  width: calc(100% - 20px); /* Ajuste de ancho para encajar mejor */
-  max-width: 350px;
+  width: 400px;
   padding: 20px;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
@@ -1257,12 +1280,10 @@ button :hover {
   width: 34px; /* Ajusta el tamaño según tu preferencia */
   height: 30px; /* Ajusta el tamaño según tu preferencia */
   padding: 5px 7px;
-  margin-left: 5px;
+  margin-left: auto;
   margin-right: 0.2px;
   transition: background-color 0.3s;
   display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .info-button:hover {
@@ -1273,6 +1294,27 @@ button :hover {
 .info-button img {
   width: 100%;
   height: 100%;
+}
+
+.papelera-btn {
+  background-color: transparent;
+  border: none !important;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 20px; /* Ajusta el tamaño según tu preferencia */
+  height: 20px; /* Ajusta el tamaño según tu preferencia */
+  padding: 4px;
+  margin-left: auto;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+
+.papelera-btn:hover {
+  background-color: #da5454;
+  transform: scale(1.1);
 }
 
 /* Botón de aceptar */
@@ -1433,4 +1475,26 @@ button :hover {
 
 .edit-profile-button:hover {
   background-color: #3b82f6;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-top: 5px solid #3498db; /* Color del spinner */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

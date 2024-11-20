@@ -4,6 +4,7 @@ import VerAusenciasModal from './VerAusenciasModal';
 import { useNavigate } from 'react-router-dom';
 import NavBar from './NavBar';
 import axios from 'axios';
+import LoadingSpinner from './LoadingSpinner';
 
 const AdminAusenciasUI = () => {
     const navigate = useNavigate();
@@ -22,10 +23,13 @@ const AdminAusenciasUI = () => {
     const [horaInicio, setHoraInicio] = useState('');
     const [horaFin, setHoraFin] = useState('');
     const [showDateError, setShowDateError] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
 
     useEffect(() => {
         const fetchEmpleados = async () => {
             try {
+                setIsLoading(true);
                 const response = await axios.get('http://localhost:9000/users/cargarUsuarios');
                 const empleadosData = response.data.map(user => ({
                     id: user.id,
@@ -38,6 +42,8 @@ const AdminAusenciasUI = () => {
                 setEmpleados(empleadosData);
             } catch (error) {
                 console.error('Error al cargar la lista de empleados:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchEmpleados();
@@ -73,6 +79,7 @@ const AdminAusenciasUI = () => {
 
     const handleConfirmSave = async () => {
         try {
+            setIsLoading(true);
             if (!empleadoSeleccionado || !empleadoSeleccionado.id) {
                 console.error('No hay usuario seleccionado');
                 alert('Error: No se ha seleccionado ningún usuario');
@@ -104,6 +111,8 @@ const AdminAusenciasUI = () => {
         } catch (error) {
             console.error('Error al guardar la ausencia:', error);
             alert('Ocurrió un error al guardar la ausencia.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -111,6 +120,13 @@ const AdminAusenciasUI = () => {
         setShowConfirmation(false);
         resetForm();
     };
+
+    useEffect(() => {
+        if (fechaInicio !== fechaFin) {
+            setMostrarHoras(false);
+            setShowDateError(false);
+        }
+    }, [fechaInicio, fechaFin]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -159,6 +175,7 @@ const AdminAusenciasUI = () => {
         const empleado = empleados.find(emp => emp.id === empleadoId);
         if (empleado) {
             try {
+                setIsLoading(true);
                 console.log('Cargando ausencias para usuario:', empleado.id);
                 setEmpleadoSeleccionado({
                     id: empleado.id,
@@ -174,6 +191,8 @@ const AdminAusenciasUI = () => {
             } catch (error) {
                 console.error('Error al cargar las ausencias:', error);
                 alert('Ocurrió un error al cargar las ausencias.');
+            } finally {
+                setIsLoading(false);
             }
         }
     };
@@ -186,19 +205,10 @@ const AdminAusenciasUI = () => {
     return (
         <>
             <NavBar isAdmin={true} />
+            {isLoading ? (
+                <LoadingSpinner />
+            ) : (
             <div className="user-validation-container">
-                <div className="admin-buttons">
-                    <button className="admin-btn" onClick={() => navigate('/user-options')}>
-                        <img src={require('../media/user_management_btn.png')} width={60} alt="Mant. Usuarios" title="Mant. Usuarios" />
-                    </button>
-                    <button className="admin-btn">
-                        <img src={require('../media/admin_management_btn.png')} width={60} alt="Mant. Administradores" title="Mant. Administradores" />
-                    </button>
-                    <button className="admin-btn" onClick={() => navigate('/admin-working-hours')}>
-                        <img src={require('../media/calendar_management_btn.png')} width={60} alt="Mant. Calendario" title="Mant. Calendario" />
-                    </button>
-                </div>
-
                 <div className="login-box">
                     <h2>Lista de Trabajadores</h2>
                     <table className="user-table">
@@ -385,6 +395,7 @@ const AdminAusenciasUI = () => {
                     </div>
                 )}
             </div>
+            )}
         </>
     );
 };

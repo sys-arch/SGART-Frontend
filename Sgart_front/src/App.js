@@ -33,7 +33,7 @@ const App = () => {
           {/* Ruta para el Dashboard del Administrador */}
           <Route path="/admin-working-hours" element={<AdminGestionarHorariosDeTrabajo />} />
           <Route path="/admin-calendar-view" element={<AdminVisualizarCalendario/>} />
-
+          <Route path="/admin-management" element={<AdminPanel />} />
 
           {/* Ruta para el Usuario -> Calendario */}        
           <Route path="/user-calendar" element={<UserCalendarUI />} />
