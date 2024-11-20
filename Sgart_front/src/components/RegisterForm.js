@@ -164,18 +164,15 @@ const RegisterForm = () => {
             },
             body: JSON.stringify(usuario),
         })
-            .then(response => response.text())
-            .then((data) => {
-                alert('Correo verificado. Pasando a la autenticación con doble factor...');
-                console.log(JSON.stringify(usuario));
-                navigate('/google-auth', { state: { usuario: usuario } });
-            })
-            .catch(error => {
-                alert('Hubo un error:', error);
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
+        .then(response => response.text())
+        .then((data) => {
+            alert('Correo verificado. Pasando a la autenticación con doble factor...');
+            console.log(JSON.stringify(usuario));
+            navigate('/google-auth', { state: { usuario : usuario, esAdmin:false}});
+        })
+        .catch(error => {
+            alert('Hubo un error:', error);
+        });
     };
 
     const togglePasswordVisibility = () => {

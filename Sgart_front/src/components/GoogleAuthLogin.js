@@ -45,7 +45,7 @@ const GoogleAuthLogin = () => {
                     navigate('/admin-working-hours'); // Navegar a la página del administrador
                     break;
                 case 'user':
-                    navigate('/under-construction'); // Navegar a la página del usuario
+                    navigate('/user-calendar'); // Navegar a la página del usuario
                     break;
             }
         })

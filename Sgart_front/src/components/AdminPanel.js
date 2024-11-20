@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import UserEditForm from './UserEditForm';
 import VentanaConfirm from './VentanaConfirm';
-import AdminManagementForm from './AdminManagementForm';
+import AdminCreateForm from './AdminCreateForm';
+import AdminEditForm from './AdminEditForm';
+import NavBar from './NavBar';
 import { useNavigate } from 'react-router-dom';
 import NavBar from './NavBar';
 import LoadingSpinner from './LoadingSpinner';
@@ -17,45 +19,24 @@ const AdminPanel = () => {
 
     const actualizarAdministradores = () => {
 
+    const actualizarAdministradores = () =>{
+        fetch('admin/getAdmins')
+            .then(async response => {
+                const result = await response.json();
+                const adminsTable = result.map(admin => ({
+                    id: admin.id,
+                    name: admin.name,
+                    lastName: admin.lastName,
+                    email: admin.email,
+                    center: admin.center,
+                    blocked: admin.blocked
+            }));
+                setDatosAdmin(adminsTable);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
     }
-
-    const validarAdmin = (email) => {
-        /*
-        fetch('admin/validar/'+email,{
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-          .then(response => {
-            actualizarUsuarios();
-          })
-          .catch(error => {
-            console.error('Error updating user: ',error);
-          });
-          setDatosUsuarios((prevUsuarios) =>
-            prevUsuarios.map((user) =>
-                user.email === email ? { ...user, blocked: !user.blocked } : user
-            )
-        );*/
-    }
-
-    const invalidarAdmin = (email) => {
-        // Filtramos el array de datos para eliminar el elemento con el id correspondiente
-        /*fetch('admin/eliminar/email/'+email,{
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-          .then(response => {
-            const nuevosDatos = datosValidar.filter((item) => item.email !== email);
-            setDatosValidar(nuevosDatos); // Actualizamos el estado con los nuevos datos
-          })
-          .catch(error => {
-            console.error('Error unvalidating user: ',error);
-          });*/
-    };
 
     const toggleUserStatus = (email) => {
         fetch('admin/cambiarHabilitacion/' + email, {
@@ -79,8 +60,9 @@ const AdminPanel = () => {
 
     // Crear administradores
     const [creatingAdmin, setCreatingAdmin] = useState(false);
+    const [adminToSave, setAdminToSave] = useState(null);
+
     const defaultAdmin = {
-        id: "1",
         email: "email@email.com",
         name: "name",
         lastName: "lastName",
@@ -90,30 +72,56 @@ const AdminPanel = () => {
         setCreatingAdmin(true);
     }
 
-    // Modificar administradores
-    const [editingAdmin, setEditingAdmin] = useState(null);
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    const [adminToSave, setAdminToSave] = useState(null);
-    const [confirmationAction, setConfirmationAction] = useState('');
-
-    const handleEditAdmin = (admin) => {
-        setEditingAdmin(admin); // Establece el usuario que se está editando
-    };
-
     const handleSaveAdmin = (updatedAdmin) => {
         setAdminToSave(updatedAdmin);
         setConfirmationAction('save'); // Establece la acción como guardar
         setShowConfirmation(true);
     };
 
-    const handleConfirmSave = () => {
-        datosAdmin.push(adminToSave)
-        setEditingAdmin(null);
-        setCreatingAdmin(false);
-        setShowConfirmation(false);
+    const handleConfirmSave = async () => {
+        const response= await fetch('admin/verificarEmail', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(adminToSave),
+        });
+        if(response.ok){
+            alert('Correo verificado. Pasando a la autenticación con doble factor...');
+            console.log(JSON.stringify(adminToSave));
+            navigate('/google-auth', { state: { usuario : adminToSave, esAdmin:true}});
+        }
     };
 
     const handleCancelSave = () => {
+        setShowConfirmation(false);
+    };
+
+    // Modificar administradores
+    const [editingAdmin, setEditingAdmin] = useState(null);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [adminToEdit, setAdminToEdit] = useState(null);
+    const [confirmationAction, setConfirmationAction] = useState('');
+
+    const handleEditAdmin = (admin) => {
+        setAdminToEdit(admin); // Establece el usuario que se está editando
+        setEditingAdmin(true);
+    }
+    
+    const handleUpdateAdmin = (admin) => {
+        setAdminToEdit(admin); // Establece el usuario que se está editando
+        setConfirmationAction('edit'); // Establece la acción como guardar
+        setShowConfirmation(true);
+    };
+
+    const handleConfirmUpdate = () => {
+        setDatosAdmin((prevAdmin) =>
+            prevAdmin.map((admin) =>
+                admin.id === adminToEdit.id ? adminToEdit : admin
+            )
+        );
+        setAdminToEdit(null);
+        setEditingAdmin(false);
         setShowConfirmation(false);
     };
 
@@ -122,23 +130,42 @@ const AdminPanel = () => {
         setCreatingAdmin(false);
     };
 
+
+
     // Eliminar administradores
     const [adminToDelete, setAdminToDelete] = useState(null);
 
-    const handleDeleteUser = (admin) => {
+    const handleDeleteAdmin = (admin) => {
         setAdminToDelete(admin);
         setConfirmationAction('delete'); // Establece la acción como eliminar
         setShowConfirmation(true);
     };
 
     const handleConfirmDelete = () => {
-        eliminarAdmin(adminToDelete.email);
+        deleteAdmin(adminToDelete.email);
         setAdminToDelete(null);
         setShowConfirmation(false);
     };
+    
 
-    const eliminarAdmin = (email) => {
-        fetch('admin/eliminar/email/' + email, {
+    const handleConfirm = () => {
+        switch(confirmationAction){
+            case 'save':
+                handleConfirmSave();
+                break;
+            case 'edit':
+                handleConfirmUpdate();
+                break;
+            case 'delete':
+                handleConfirmDelete();
+                break;
+            default:
+                break;
+        }
+    }
+
+    const deleteAdmin = (email) =>{
+        fetch('admin/eliminar/email/'+email,{
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -156,76 +183,72 @@ const AdminPanel = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     return (
-        <>
-            <NavBar isAdmin={true} />
-            {isLoading ? (
-                <LoadingSpinner />
-            ) : (
-                <div className="user-validation-container">
-                    <div className="login-box">
-                        <body>
-                            <h2>Listado de Administradores</h2>
-                            <table className="user-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nombre</th>
-                                        <th>Apellidos</th>
-                                        <th>Email</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {datosAdmin.map((fila) => (
-                                        <tr key={fila.id} className={!fila.blocked ? '' : 'disabled-user'}>
-                                            <td>{fila.id}</td>
-                                            <td>{fila.name}</td>
-                                            <td>{fila.lastName}</td>
-                                            <td>{fila.email}</td>
-                                            <td>
-                                                <button className={fila.blocked ? 'habilitar-btn' : 'deshabilitar-btn'}
-                                                    onClick={() => toggleUserStatus(fila.email)}>
-                                                    <img
-                                                        src={fila.blocked ? require('../media/mano.png') : require('../media/deshabilitar-cursor.png')}
-                                                        alt={fila.blocked ? 'Habilitar' : 'Deshabilitar'}
-                                                        style={{ width: '25px', height: '25px' }} title={fila.blocked ? 'Habilitar' : 'Deshabilitar'}
-                                                    />
-                                                </button>
-                                                <button className="edit-btn" onClick={() => handleEditAdmin(fila)}>
-                                                    <img src={require('../media/editar-perfil.png')} width={25} alt="Editar Perfil" title="Editar Perfil" />
-                                                </button>
-                                                <button className="delete-btn" onClick={() => handleDeleteUser(fila)}>
-                                                    <img src={require('../media/bloquear.png')} width={25} alt="Eliminar Perfil" title="Eliminar Perfil" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </body>
-                    </div>
-                    <button className="create-admin-btn" onClick={() => handleCreateAdmin()}>
-                        Crear admin
-                    </button>
-                    {editingAdmin && (
-                        <div className="user-edit-container">
-                            <AdminManagementForm admin={editingAdmin} creating={false} onSave={handleSaveAdmin} onCancel={handleCancelEdit} />
-                        </div>
-                    )}
-                    {creatingAdmin && (
-                        <div className="user-edit-container">
-                            <AdminManagementForm admin={defaultAdmin} creating={true} onSave={handleSaveAdmin} onCancel={handleCancelEdit} />
-                        </div>
-                    )}
-                    {showConfirmation && (
-                        <VentanaConfirm
-                            onConfirm={confirmationAction === 'save' ? handleConfirmSave : handleConfirmDelete}
-                            onCancel={handleCancelSave}
-                            action={confirmationAction}
-                        />
-                    )}
+    <>
+        <NavBar isAdmin={true} />
+        <div className="user-validation-container">
+        <div className="login-box">
+            <body>
+                <h2>Listado de Administradores</h2>
+                <table className="user-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Apellidos</th>
+                            <th>Email</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {datosAdmin.map((fila) => (
+                        <tr key={fila.id} className={!fila.blocked ? '':'disabled-user'}>
+                            <td>{fila.id}</td>
+                            <td>{fila.name}</td>
+                            <td>{fila.lastName}</td>
+                            <td>{fila.email}</td>
+                            <td>
+                                <button className={fila.blocked ? 'habilitar-btn' : 'deshabilitar-btn'}
+                                    onClick={() => toggleUserStatus(fila.email)}>
+                                    <img 
+                                        src={fila.blocked ? require('../media/mano.png') : require('../media/deshabilitar-cursor.png')} 
+                                        alt={fila.blocked ? 'Habilitar' : 'Deshabilitar'}
+                                        style={{ width: '25px', height: '25px' }} title={fila.blocked ? 'Habilitar' : 'Deshabilitar'}
+                                    />
+                                </button>
+                                <button className="edit-btn" onClick={() => handleEditAdmin(fila)}>
+                                    <img src={require('../media/editar-perfil.png')} width={25} alt="Editar Perfil" title="Editar Perfil"/>
+                                </button>
+                                <button className="delete-btn" onClick={() => handleDeleteAdmin(fila)}>
+                                <img src={require('../media/bloquear.png')} width={25} alt="Eliminar Perfil" title="Eliminar Perfil"/>
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </body>
+        </div>
+        <button className="create-admin-btn" onClick={() => handleCreateAdmin()}>
+            Crear admin
+        </button>
+        {editingAdmin && (
+                <div className="user-edit-container">
+                    <AdminEditForm admin={adminToEdit} onSave={handleUpdateAdmin} onCancel={handleCancelEdit} />
                 </div>
             )}
+        {creatingAdmin && (
+                <div className="user-edit-container">
+                    <AdminCreateForm admin={defaultAdmin} onSave={handleSaveAdmin} onCancel={handleCancelEdit} />
+                </div>
+            )}
+        {showConfirmation && (
+            <VentanaConfirm
+                onConfirm={handleConfirm}
+                onCancel={handleCancelSave}
+                action={confirmationAction}
+            />
+        )}
+        </div>
         </>
     );
 };
