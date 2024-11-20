@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import RegisterForm from './RegisterForm';
 import RecuperarPwdForm from './RecuperarPwdForm';
 import { useNavigate } from 'react-router-dom';
@@ -35,7 +35,7 @@ const LoginForm = () => {
     };
 
     const handleLogin = () => {
-        var errorBool = false;
+        let errorBool = false;
         setErrorEmail('');
         setErrorPassword('');
 
@@ -71,7 +71,9 @@ const LoginForm = () => {
             })
                 .then((response) => {
                     if (!response.ok) {
-                        return response.json().then((data) => { throw new Error(data.message || 'Error al iniciar sesión. Correo y/o contraseña incorrectos') });
+                        return response.json().then((data) => {
+                            throw new Error(data.message || 'Error al iniciar sesión. Correo y/o contraseña incorrectos');
+                        });
                     }
                     return response.json();
                 })
@@ -92,6 +94,12 @@ const LoginForm = () => {
                 });
         }
     };
+
+    const handle2FAComplete = () => {
+        // Redirige a una ruta específica después del 2FA
+        navigate('/user-calendar');
+    };
+
     const togglePasswordVisibility = () => {
         setShowPassword((prevShowPassword) => !prevShowPassword);
     };
@@ -106,7 +114,7 @@ const LoginForm = () => {
 
     const handleToggleForm_2 = () => {
         setIsNoPwd(true);
-    }
+    };
 
     if (isNoPwd) {
         return <RecuperarPwdForm />;
@@ -121,15 +129,36 @@ const LoginForm = () => {
                     <div className="login-box">
                         <h2 className="title">Iniciar Sesión</h2>
                         <div className={errorEmail === '' ? "input-group" : "input-group-error"}>
-                            <input type="text" id="email" name="email" value={email} onChange={handleChange} required />
+                            <input
+                                type="text"
+                                id="email"
+                                name="email"
+                                value={email}
+                                onChange={handleChange}
+                                required
+                            />
                             <label htmlFor="email">Usuario</label>
                         </div>
                         <label className="error">{errorEmail}</label>
                         <div className={errorPassword === '' ? "input-group" : "input-group-error"}>
-                            <input type={showPassword ? "text" : "password"} id="contrasena" name="contrasena" value={contrasena} onChange={handleChange} required />
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                id="contrasena"
+                                name="contrasena"
+                                value={contrasena}
+                                onChange={handleChange}
+                                required
+                            />
                             <label htmlFor="contrasena">Contraseña</label>
-                            <button type="button" onClick={togglePasswordVisibility} className="password-toggle-btn">
-                                <img src={require(showPassword ? '../media/password_off.png' : '../media/password_on.png')} alt='Mostrar Contraseña' />
+                            <button
+                                type="button"
+                                onClick={togglePasswordVisibility}
+                                className="password-toggle-btn"
+                            >
+                                <img
+                                    src={require(showPassword ? '../media/password_off.png' : '../media/password_on.png')}
+                                    alt="Mostrar Contraseña"
+                                />
                             </button>
                         </div>
                         <label className="error">{errorPassword}</label>
@@ -140,6 +169,7 @@ const LoginForm = () => {
                         </div>
                     </div>
                 </div>
+
             )}
         </>
     );
