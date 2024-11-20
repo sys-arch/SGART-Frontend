@@ -9,6 +9,38 @@ import VentanaConfirm from './VentanaConfirm';
 import NavBar from './NavBar';
 import LoadingSpinner from './LoadingSpinner';
 
+const InviteParticipants = ({ participants, filteredParticipants, searchTerm, handleSearchChange, handleSelectParticipant }) => {
+    return (
+        <div className="participant-list-container">
+            <h2>Invitar Participantes</h2>
+            <div className="search-participants-container">
+                <input
+                    type="text"
+                    className="search-participants-input"
+                    placeholder="Buscar participantes..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                />
+            </div>
+            <div className="participant-list-available">
+                {filteredParticipants.length > 0 ? (
+                    filteredParticipants.map((participant) => (
+                        <div
+                            key={participant.id}
+                            className="available-participant-item"
+                            onClick={() => handleSelectParticipant(participant)}
+                        >
+                            {participant.nombre}
+                        </div>
+                    ))
+                ) : (
+                    <p className="no-participants-message">No se encontraron participantes.</p>
+                )}
+            </div>
+        </div>
+    );
+};
+
 const UserCalendarUI = () => {
     const navigate = useNavigate();
 
@@ -208,10 +240,25 @@ const UserCalendarUI = () => {
             setReason('');
         }
     };
+
     const handleEventClick = (clickInfo) => {
-        setSelectedEvent(clickInfo.event);
+        const transformedEvent = {
+            title: clickInfo.event.title,
+            start: clickInfo.event.startStr,
+            end: clickInfo.event.endStr,
+            allDay: clickInfo.event.allDay,
+            extendedProps: {
+                meetingId: clickInfo.event.extendedProps.meetingId,
+                organizerId: clickInfo.event.extendedProps.organizerId,
+                observations: clickInfo.event.extendedProps.observations,
+                locationName: clickInfo.event.extendedProps.locationName,
+                invitees: clickInfo.event.extendedProps.invitees || []
+            }
+        };
+        setSelectedEvent(transformedEvent);
         setIsEventDetailPopupOpen(true);
     };
+
 
     const validateTimeInput = (hour, minute, setHourError, setMinuteError) => {
         const hourValid = hour >= 0 && hour <= 23;
@@ -273,6 +320,10 @@ const UserCalendarUI = () => {
     };
 
     const handleNextStep = () => {
+        if (!eventName || !popupSelectedDate) {
+            alert("Por favor, completa todos los campos obligatorios antes de continuar.");
+            return;
+        }
         setCurrentStep(2);
     };
 
@@ -364,14 +415,22 @@ const UserCalendarUI = () => {
     const [reunionesPendientes, setReunionesPendientes] = useState([
         {
             meetingId: "0be87f14-8fc5-44bc-8e92-114976629f2b", title: "Reunión con Cliente", allDay: 'false', meetingDate: '2024-11-25', startTime: "09:00:00",
-            endTime: "11:00:00", organizerId: "61bc14cd-0c94-43cc-ab5a-8c59501b6470", observations: "Llevar preparado producto mínimo viable", locationName: "ESI"
+            endTime: "11:00:00", organizerId: "61bc14cd-0c94-43cc-ab5a-8c59501b6470", observations: "Llevar preparado producto mínimo viable", locationName: "ESI",
+            invitees: [
+                { userName: "Juan Pérez", invitationStatus: "Aceptado" },
+                { userName: "María López", invitationStatus: "Pendiente" }
+            ]
         }
     ]);
 
     const [reunionesAceptadas, setReunionesAceptadas] = useState([
         {
             meetingId: "0be83f14-8fc5-44bc-8e92-114976629f2b", title: "Reunión de Estrategia", allDay: 'false', meetingDate: '2024-11-21', startTime: "10:00:00",
-            endTime: "12:00:00", organizerId: "61bc15cd-0c94-43cc-ab5a-8c59501b6470", observations: "Hola buenas tardes", locationName: "Online"
+            endTime: "12:00:00", organizerId: "61bc15cd-0c94-43cc-ab5a-8c59501b6470", observations: "Hola buenas tardes", locationName: "Online",
+            invitees: [
+                { userName: "Juan Pérez", invitationStatus: "Aceptado" },
+                { userName: "María López", invitationStatus: "Pendiente" }
+            ]
         },
         {
             meetingId: "0be83f14-8fc5-44bc-8e92-119976629f2b", title: "Reunión de Planificación", allDay: 'false', meetingDate: '2024-11-20', startTime: "11:00:00",
@@ -398,21 +457,22 @@ const UserCalendarUI = () => {
     };
 
     const handleInfoMeeting = (reunion) => {
-        const transformedEvent = {
-            title: reunion.title,
+        setSelectedEvent({
+            id: reunion.meetingId,
+            title: reunion.title || reunion.nombre,
             start: `${reunion.meetingDate}T${reunion.startTime}`,
             end: `${reunion.meetingDate}T${reunion.endTime}`,
             allDay: reunion.allDay === 'true',
             extendedProps: {
-                meetingId: reunion.meetingId,
                 organizerId: reunion.organizerId,
                 observations: reunion.observations,
                 locationName: reunion.locationName,
+                invitees: reunion.invitees || [] // Asegúrate de incluir los invitados aquí
             }
-        };
-        setSelectedEvent(transformedEvent);
+        });
         setIsEventDetailPopupOpen(true);
     };
+
 
     const handleConfirmAction = () => {
         if (confirmationAction === 'accept') {
@@ -444,8 +504,9 @@ const UserCalendarUI = () => {
     };
 
     useEffect(() => {
+        // Transformar reuniones aceptadas al formato del calendario
         const transformedAcceptedMeetings = reunionesAceptadas.map(reunion => ({
-            id: reunion.meetingId, // Asegúrate de que cada evento tiene un identificador único
+            id: reunion.meetingId,  // Asegúrate de que cada evento tenga un id único
             title: reunion.title || reunion.nombre,
             start: `${reunion.meetingDate}T${reunion.startTime}`,
             end: `${reunion.meetingDate}T${reunion.endTime}`,
@@ -455,11 +516,12 @@ const UserCalendarUI = () => {
                 organizerId: reunion.organizerId,
                 observations: reunion.observations,
                 locationName: reunion.locationName,
+                invitees: reunion.invitees || [] 
             }
         }));
 
-        // Establecer los eventos regulares directamente sin concatenar, para evitar duplicación
-        setRegularEvents(transformedAcceptedMeetings);
+        // Reemplazar todos los eventos con las reuniones aceptadas (evitar duplicados)
+        setRegularEvents([...transformedAcceptedMeetings]);
     }, [reunionesAceptadas]);
 
     useEffect(() => {
@@ -524,13 +586,13 @@ const UserCalendarUI = () => {
                             {reunionesAceptadas.length > 0 && (
                                 <>
                                     {reunionesAceptadas.map((reunion) => (
-                                        <div key={reunion.id} className="meeting-item accepted">
+                                        <div key={reunion.meetingId} className="meeting-item accepted">
                                             <div className="meeting-item-content">
                                                 <div className="meeting-info">
                                                     <p>{reunion.title}</p>
                                                 </div>
                                                 <div className="meeting-buttons">
-                                                    <button className="info-button" onClick={() => { setSelectedEvent(reunion); setIsEventDetailPopupOpen(true); }}>
+                                                    <button className="info-button" onClick={() => handleInfoMeeting(reunion)}>
                                                         <img src={require('../media/informacion.png')} alt="Info" />
                                                     </button>
                                                 </div>
@@ -673,63 +735,12 @@ const UserCalendarUI = () => {
                                     <textarea className='areaTexto' id='popupDescription' value={popupDescription} onChange={(e) => setPopupDescription(e.target.value)} />
                                 </div>
                                 <div className="AdminCalendar-button-group">
-                                    <button className="save-button" onClick={() => setCurrentStep(2)}>Siguiente</button>
+                                    <button className="save-button" onClick={handleNextStep}>Siguiente</button>
                                     <button className="close-button" onClick={handleClosePopup}>Cancelar</button>
                                 </div>
                             </div>
                         </div>
                     )}
-                    {/* Pop-up para Invitar Participantes */}
-                    {isPopupOpen && currentStep === 2 && (
-                        <div className="popup-overlay">
-                            <div className="popup-container-participants">
-                                <h2>Invitar Participantes</h2>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Usuarios Disponibles:</label>
-                                    <div className="search-participants-container">
-                                        <input
-                                            type="text"
-                                            className="search-participants-input"
-                                            placeholder="Buscar participantes..."
-                                            value={searchTerm}
-                                            onChange={handleSearchChange}
-                                        />
-                                    </div>
-                                    {/* Lista de participantes disponibles */}
-                                    <div className="participant-list-available">
-                                        {filteredParticipants.length > 0 ? (
-                                            filteredParticipants.map((participant) => (
-                                                <div key={participant.id} className="available-participant-item"
-                                                    onClick={() => handleSelectParticipant(participant)}
-                                                >
-                                                    {participant.nombre}
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <p>No se encontraron participantes.</p>
-                                        )}
-                                    </div>
-                                    {/* Lista de participantes seleccionados */}
-                                    <label>Usuarios Seleccionados:</label>
-                                    <div className="participant-list-selected">
-                                        {selectedUsers.map((user) => (
-                                            <div key={user.id} className={`selected-participant-item ${user.enAusencia ? 'en-ausencia' : 'disponible'}`}>
-                                                <p>{user.nombre}</p>
-                                                <button onClick={() => handleRemoveUser(user)}>
-                                                    <img className='papelera-btn' src={require('../media/papelera.png')} alt="Eliminar" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="AdminCalendar-button-group">
-                                    <button className="save-participants-button" onClick={handleSaveEvent}>Guardar</button>
-                                    <button className="close-participants-button" onClick={handleClosePopup}>Cancelar</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    {/* Pop-up para Detalles del Evento */}
                     {isEventDetailPopupOpen && selectedEvent && (
                         <div className="popup-overlay">
                             <div className="popup-container">
@@ -740,7 +751,7 @@ const UserCalendarUI = () => {
                                 </div>
                                 <div className="AdminCalendar-input-group">
                                     <label htmlFor='fechaInicio'>Fecha:</label>
-                                    <p>{selectedEvent.start ? selectedEvent.start.split('T')[0] : selectedEvent.meetingDate}</p>
+                                    <p>{selectedEvent.start ? selectedEvent.start.split('T')[0] : 'No definida'}</p>
                                 </div>
                                 {selectedEvent.allDay ? (
                                     <div className="AdminCalendar-input-group">
@@ -750,15 +761,11 @@ const UserCalendarUI = () => {
                                     <>
                                         <div className="AdminCalendar-input-group">
                                             <label htmlFor='horaInicio'>Hora de inicio:</label>
-                                            <p>{selectedEvent.start ? selectedEvent.start.split('T')[1] : selectedEvent.startTime}</p>
+                                            <p>{selectedEvent.start ? selectedEvent.start.split('T')[1].split('+')[0] : 'No definida'}</p>
                                         </div>
                                         <div className="AdminCalendar-input-group">
                                             <label htmlFor='horaFin'>Hora de fin:</label>
-                                            {selectedEvent.end ? (
-                                                <p>{selectedEvent.end.split('T')[1]}</p>
-                                            ) : (
-                                                <p>No definida</p>
-                                            )}
+                                            <p>{selectedEvent.end ? selectedEvent.end.split('T')[1].split('+')[0] : 'No definida'}</p>
                                         </div>
                                     </>
                                 )}
@@ -775,25 +782,22 @@ const UserCalendarUI = () => {
                                     <p>{selectedEvent.extendedProps?.observations || 'No definidas'}</p>
                                 </div>
                                 {/* Lista de Invitados */}
-                                <div className="admin-calendar-input-group">
-                                    <label>Lista de Invitados:</label>
-                                    <ul>
-                                        {invitees.length > 0 ? (
-                                            invitees.map((invitee, index) => (
+                                {selectedEvent.extendedProps?.invitees && selectedEvent.extendedProps.invitees.length > 0 && (
+                                    <div className="AdminCalendar-input-group">
+                                        <label>Lista de Invitados:</label>
+                                        <ul>
+                                            {selectedEvent.extendedProps.invitees.map((invitee, index) => (
                                                 <li key={index}>
                                                     {invitee.userName} - {invitee.invitationStatus}
                                                 </li>
-                                            ))
-                                        ) : (
-                                            <li>No hay invitados.</li>
-                                        )}
-                                    </ul>
-                                </div>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                                 <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>Cerrar</button>
                             </div>
                         </div>
                     )}
-
                     {/* Ventana de confirmación */}
                     {showConfirmation && (
                         <VentanaConfirm

@@ -6,6 +6,8 @@ const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
         switch (action) {
             case 'save':
                 return 'Confirmar Cambios';
+            case 'edit':
+                return 'Confirmar Cambios';
             case 'delete':
                 return 'Confirmar Eliminación';
             case 'add':
@@ -20,6 +22,8 @@ const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
     const getMessage = () => {
         switch (action) {
             case 'save':
+                return '¿Está seguro de que desea guardar los cambios?';
+            case 'edit':
                 return '¿Está seguro de que desea guardar los cambios?';
             case 'delete':
                 return '¿Está seguro de que desea eliminar este usuario?';

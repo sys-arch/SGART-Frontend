@@ -46,7 +46,7 @@ const GoogleAuth = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:9000/auth/validate-totp', {
+            const response = await fetch('auth/validate-totp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ mail: usuario.email, code: inputCode }),
