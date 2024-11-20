@@ -14,7 +14,6 @@ const AdminCalendar = () => {
     const [isMeetingDetailPopupOpen, setIsMeetingDetailPopupOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-
     // Función para cargar las reuniones desde el backend
     const loadMeetings = useCallback(async () => {
         try {
@@ -35,8 +34,9 @@ const AdminCalendar = () => {
                 end: `${meeting.meetingDate}T${meeting.endTime}`,
                 allDay: meeting.allDay,
                 extendedProps: {
-                    location: meeting.locationName, // Corregido para usar locationName
+                    location: meeting.locationName,
                     description: meeting.observations,
+                    organizerName: meeting.organizerName, // Añadido
                 },
             }));
             setMeetings(transformedMeetings);
@@ -44,8 +44,7 @@ const AdminCalendar = () => {
 
         } catch (error) {
             console.error("Error al cargar los meetings: ", error);
-        }
-         finally {
+        } finally {
             setIsLoading(false);
         }
     }, []);
@@ -78,8 +77,7 @@ const AdminCalendar = () => {
 
         } catch (error) {
             console.error("Error al cargar los invitados: ", error);
-        }
-        finally {
+        } finally {
             setIsLoading(false);
         }
     }, []);
@@ -94,8 +92,9 @@ const AdminCalendar = () => {
             title: clickInfo.event.title,
             start: clickInfo.event.start,
             end: clickInfo.event.end,
-            location: clickInfo.event.extendedProps.location, // Ahora será locationName
+            location: clickInfo.event.extendedProps.location,
             description: clickInfo.event.extendedProps.description,
+            organizerName: clickInfo.event.extendedProps.organizerName, // Capturar organizerName
         });
         await loadInvitees(clickInfo.event.id);
         setIsMeetingDetailPopupOpen(true);
@@ -103,72 +102,76 @@ const AdminCalendar = () => {
 
     return (
         <>
-        <NavBar isAdmin={true} />
+            <NavBar isAdmin={true} />
             {isLoading ? (
                 <LoadingSpinner />
             ) : (
-        <div className='admin-calendar-view'>
-            <div className="admin-calendar-container">
-                <h2>Calendario de Reuniones de la Empresa</h2>
-                <div className="calendar-wrapper">
-                    <FullCalendar
-                        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                        initialView="dayGridMonth"
-                        events={meetings}
-                        eventClick={handleEventClick}
-                        height="100%"
-                    />
-                </div>
-            </div>
-
-            {/* Pop-up para Detalles del Meeting */}
-            {isMeetingDetailPopupOpen && selectedMeeting && (
-                <div className="popup-overlay">
-                    <div className="popup-container">
-                        <h2>Detalles de la Reunión</h2>
-                        <div className="admin-calendar-input-group">
-                            <label>Nombre de la Reunión:</label>
-                            <p>{selectedMeeting.title}</p>
+                <div className='admin-calendar-view'>
+                    <div className="admin-calendar-container">
+                        <h2>Calendario de Reuniones de la Empresa</h2>
+                        <div className="calendar-wrapper">
+                            <FullCalendar
+                                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                                initialView="dayGridMonth"
+                                events={meetings}
+                                eventClick={handleEventClick}
+                                height="100%"
+                            />
                         </div>
-                        <div className="admin-calendar-input-group">
-                            <label>Fecha de la Reunión:</label>
-                            <p>{new Date(selectedMeeting.start).toLocaleDateString()}</p>
-                        </div>
-                        <div className="admin-calendar-input-group">
-                            <label>Hora de Inicio:</label>
-                            <p>{new Date(selectedMeeting.start).toLocaleTimeString()}</p>
-                        </div>
-                        <div className="admin-calendar-input-group">
-                            <label>Hora de Fin:</label>
-                            <p>{new Date(selectedMeeting.end).toLocaleTimeString()}</p>
-                        </div>
-                        <div className="admin-calendar-input-group">
-                            <label>Ubicación:</label>
-                            <p>{selectedMeeting.location}</p>
-                        </div>
-                        <div className="admin-calendar-input-group">
-                            <label>Hora de Fin:</label>
-                            <p>{selectedMeeting.description}</p>
-                        </div>
-
-                            {/* Lista de Invitados */}
-                            <div className="admin-calendar-input-group">
-                                <label>Lista de Invitados:</label>
-                                <ul>
-                                    {invitees.map((invitee, index) => (
-                                        <li key={index}>
-                                            {invitee.userName} - {invitee.invitationStatus}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                        <button className="close-button" onClick={() => setIsMeetingDetailPopupOpen(false)}>Cerrar</button>
                     </div>
+
+                    {/* Pop-up para Detalles del Meeting */}
+                    {isMeetingDetailPopupOpen && selectedMeeting && (
+                        <div className="popup-overlay">
+                            <div className="popup-container">
+                                <h2>Detalles de la Reunión</h2>
+                                <div className="admin-calendar-input-group">
+                                    <label>Nombre de la Reunión:</label>
+                                    <p>{selectedMeeting.title}</p>
+                                </div>
+                                <div className="admin-calendar-input-group">
+                                    <label>Fecha de la Reunión:</label>
+                                    <p>{new Date(selectedMeeting.start).toLocaleDateString()}</p>
+                                </div>
+                                <div className="admin-calendar-input-group">
+                                    <label>Hora de Inicio:</label>
+                                    <p>{new Date(selectedMeeting.start).toLocaleTimeString()}</p>
+                                </div>
+                                <div className="admin-calendar-input-group">
+                                    <label>Hora de Fin:</label>
+                                    <p>{new Date(selectedMeeting.end).toLocaleTimeString()}</p>
+                                </div>
+                                <div className="admin-calendar-input-group">
+                                    <label>Ubicación:</label>
+                                    <p>{selectedMeeting.location}</p>
+                                </div>
+                                <div className="admin-calendar-input-group">
+                                    <label>Organizador:</label> {/* Campo nuevo */}
+                                    <p>{selectedMeeting.organizerName}</p>
+                                </div>
+                                <div className="admin-calendar-input-group">
+                                    <label>Observaciones:</label>
+                                    <p>{selectedMeeting.description}</p>
+                                </div>
+
+                                {/* Lista de Invitados */}
+                                <div className="admin-calendar-input-group">
+                                    <label>Lista de Invitados:</label>
+                                    <ul>
+                                        {invitees.map((invitee, index) => (
+                                            <li key={index}>
+                                                {invitee.userName} - {invitee.invitationStatus}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <button className="close-button" onClick={() => setIsMeetingDetailPopupOpen(false)}>Cerrar</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
-        </div>
-                )}
         </>
     );
 };
