@@ -5,7 +5,6 @@ import AdminCreateForm from './AdminCreateForm';
 import AdminEditForm from './AdminEditForm';
 import NavBar from './NavBar';
 import { useNavigate } from 'react-router-dom';
-import NavBar from './NavBar';
 import LoadingSpinner from './LoadingSpinner';
 
 const AdminPanel = () => {
@@ -16,9 +15,6 @@ const AdminPanel = () => {
     useEffect(() => {
         actualizarAdministradores();
     }, []);
-
-    const actualizarAdministradores = () => {
-
     const actualizarAdministradores = () =>{
         fetch('admin/getAdmins')
             .then(async response => {
