@@ -39,7 +39,7 @@ const NavBar = ({ isAdmin }) => {
                             <img src={require('../media/admin_management_btn.png')} width={40} alt="Administradores" title="Mantenimiento Administradores" />
                         </button>
                         <button className="user-calendar-btn" onClick={() => navigate('/admin-working-hours')}>
-                            <img src={require('../media/admin_management_btn.png')} width={40} alt="Horarios" title="Horarios de Trabajo" />
+                            <img src={require('../media/schedule_management_btn.png')} width={40} alt="Horarios" title="Horarios de Trabajo" />
                         </button>
                         <button className="user-calendar-btn" onClick={() => navigate('/admin-calendar-view')}>
                             <img src={require('../media/calendar_management_btn.png')} width={40} alt="Calendario" title="Calendario" />
