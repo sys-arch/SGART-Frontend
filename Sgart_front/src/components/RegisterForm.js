@@ -166,7 +166,7 @@ const RegisterForm = () => {
         .then((data) => {
             alert('Correo verificado. Pasando a la autenticación con doble factor...');
             console.log(JSON.stringify(usuario));
-            navigate('/google-auth', { state: { usuario : usuario} });
+            navigate('/google-auth', { state: { usuario : usuario, esAdmin:false}});
         })
         .catch(error => {
             alert('Hubo un error:', error);

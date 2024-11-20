@@ -89,28 +89,12 @@ const AdminCreateForm = ({ admin, onSave, onCancel }) => {
         }
 
         const updatedAdmin = {
-            ...admin,
             name: name,
             lastName: lastName,
             email:email,
             password: password,
             center: center
         };
-
-        /*fetch('/users/modificar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updatedUser),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Usuario editado exitosamente:', data);
-        })
-        .catch(error => {
-            console.error('Error al guardar usuario:', error);
-        });*/
         onSave(updatedAdmin);
     };
 

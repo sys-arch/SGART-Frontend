@@ -59,7 +59,6 @@ const AdminPanel = () => {
     const [adminToSave, setAdminToSave] = useState(null);
 
     const defaultAdmin = {
-        id: "1",
         email: "email@email.com",
         name: "name",
         lastName: "lastName",
@@ -75,11 +74,19 @@ const AdminPanel = () => {
         setShowConfirmation(true);
     };
 
-    const handleConfirmSave = () => {
-        datosAdmin.push(adminToSave)
-        setAdminToSave(null);
-        setCreatingAdmin(false);
-        setShowConfirmation(false);
+    const handleConfirmSave = async () => {
+        const response= await fetch('admin/verificarEmail', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(adminToSave),
+        });
+        if(response.ok){
+            alert('Correo verificado. Pasando a la autenticación con doble factor...');
+            console.log(JSON.stringify(adminToSave));
+            navigate('/google-auth', { state: { usuario : adminToSave, esAdmin:true}});
+        }
     };
 
     const handleCancelSave = () => {
@@ -124,7 +131,7 @@ const AdminPanel = () => {
     // Eliminar administradores
     const [adminToDelete, setAdminToDelete] = useState(null);
 
-    const handleDeleteUser = (admin) => {
+    const handleDeleteAdmin = (admin) => {
         setAdminToDelete(admin);
         setConfirmationAction('delete'); // Establece la acción como eliminar
         setShowConfirmation(true);
@@ -135,6 +142,7 @@ const AdminPanel = () => {
         setAdminToDelete(null);
         setShowConfirmation(false);
     };
+    
 
     const handleConfirm = () => {
         switch(confirmationAction){
@@ -204,7 +212,7 @@ const AdminPanel = () => {
                                 <button className="edit-btn" onClick={() => handleEditAdmin(fila)}>
                                     <img src={require('../media/editar-perfil.png')} width={25} alt="Editar Perfil" title="Editar Perfil"/>
                                 </button>
-                                <button className="delete-btn" onClick={() => handleDeleteUser(fila)}>
+                                <button className="delete-btn" onClick={() => handleDeleteAdmin(fila)}>
                                 <img src={require('../media/bloquear.png')} width={25} alt="Eliminar Perfil" title="Eliminar Perfil"/>
                                 </button>
                             </td>
