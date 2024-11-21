@@ -9,6 +9,7 @@ import VentanaConfirm from './VentanaConfirm';
 import NavBar from './NavBar';
 import LoadingSpinner from './LoadingSpinner';
 
+
 const InviteParticipants = ({ participants, filteredParticipants, searchTerm, handleSearchChange, handleSelectParticipant }) => {
     return (
         <div className="participant-list-container">
@@ -98,7 +99,6 @@ const UserCalendarUI = () => {
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [confirmationAction, setConfirmationAction] = useState('');
 
-
     const [invitees, setInvitees] = useState([]);
 
     // Estado para controlar los usuarios disponibles y los seleccionados
@@ -138,7 +138,6 @@ const UserCalendarUI = () => {
             setAvailableUsers(availableUsers.filter((user) => user.id !== participant.id));
         }
     };
-
 
     // Cargar los eventos regulares de la base de datos
     const loadEvents = useCallback(async () => {
@@ -258,7 +257,6 @@ const UserCalendarUI = () => {
         setSelectedEvent(transformedEvent);
         setIsEventDetailPopupOpen(true);
     };
-
 
     const validateTimeInput = (hour, minute, setHourError, setMinuteError) => {
         const hourValid = hour >= 0 && hour <= 23;
@@ -411,37 +409,92 @@ const UserCalendarUI = () => {
         setSelectedUsers(selectedUsers.filter((selectedUser) => selectedUser.id !== user.id));
     };
 
-    // PRUEBAS
-    const [reunionesPendientes, setReunionesPendientes] = useState([
-        {
-            meetingId: "0be87f14-8fc5-44bc-8e92-114976629f2b", title: "Reunión con Cliente", allDay: 'false', meetingDate: '2024-11-25', startTime: "09:00:00",
-            endTime: "11:00:00", organizerId: "61bc14cd-0c94-43cc-ab5a-8c59501b6470", observations: "Llevar preparado producto mínimo viable", locationName: "ESI",
-            invitees: [
-                { userName: "Juan Pérez", invitationStatus: "Aceptado" },
-                { userName: "María López", invitationStatus: "Pendiente" }
-            ]
-        }
-    ]);
-
-    const [reunionesAceptadas, setReunionesAceptadas] = useState([
-        {
-            meetingId: "0be83f14-8fc5-44bc-8e92-114976629f2b", title: "Reunión de Estrategia", allDay: 'false', meetingDate: '2024-11-21', startTime: "10:00:00",
-            endTime: "12:00:00", organizerId: "61bc15cd-0c94-43cc-ab5a-8c59501b6470", observations: "Hola buenas tardes", locationName: "Online",
-            invitees: [
-                { userName: "Juan Pérez", invitationStatus: "Aceptado" },
-                { userName: "María López", invitationStatus: "Pendiente" }
-            ]
-        },
-        {
-            meetingId: "0be83f14-8fc5-44bc-8e92-119976629f2b", title: "Reunión de Planificación", allDay: 'false', meetingDate: '2024-11-20', startTime: "11:00:00",
-            endTime: "14:00:00", organizerId: "61bc15cd-0c94-43cc-ab5a-8c59501b6470", observations: "No hay observaciones", locationName: "Ciudad Real"
-        }
-    ]);
     // Ejemplo de ausencias de los usuarios (deberían cargarse de un API o base de datos)
     const [ausencias, setAusencias] = useState([
         { userId: 1, fecha: '2024-11-20' }, // Ejemplo de ausencia para Juan Pérez
         { userId: 3, fecha: '2024-11-15' } // Ejemplo de ausencia para otro usuario
     ]);
+
+    const [reunionesPendientes, setReunionesPendientes] = useState([]);
+    const [reunionesAceptadas, setReunionesAceptadas] = useState([]);
+
+    // Cargar reuniones desde el backend
+    useEffect(() => {
+        const loadMeetings = async () => {
+            try {
+                setIsLoading(true);
+    
+                const response = await fetch('http://localhost:9000/usuarios/calendarios/meetings', {
+                    method: 'GET',
+                    credentials: 'include', // Incluir cookies de sesión
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error('Error al cargar las reuniones');
+                }
+    
+                const meetings = await response.json();
+    
+                // Clasificar reuniones
+                const acceptedMeetings = meetings.filter(meeting =>
+                    meeting.invitees.some(invitee => invitee.invitationStatus === 'Aceptado')
+                );
+                const pendingMeetings = meetings.filter(meeting =>
+                    meeting.invitees.every(invitee => invitee.invitationStatus === 'Pendiente')
+                );
+    
+                setReunionesAceptadas(acceptedMeetings);
+                setReunionesPendientes(pendingMeetings);
+            } catch (error) {
+                console.error('Error al cargar las reuniones:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        loadMeetings();
+    }, []);
+
+    // Transformar reuniones aceptadas al formato del calendario
+    useEffect(() => {
+        const transformedAcceptedMeetings = reunionesAceptadas.map(reunion => ({
+            id: reunion.meetingId,
+            title: reunion.title || reunion.nombre,
+            start: `${reunion.meetingDate}T${reunion.startTime}`,
+            end: `${reunion.meetingDate}T${reunion.endTime}`,
+            allDay: reunion.allDay === 'true',
+            extendedProps: {
+                meetingId: reunion.meetingId,
+                organizerId: reunion.organizerId,
+                observations: reunion.observations,
+                locationName: reunion.locationName,
+                invitees: reunion.invitees || []
+            }
+        }));
+
+        setRegularEvents([...transformedAcceptedMeetings]);
+    }, [reunionesAceptadas]);
+
+    useEffect(() => {
+        const transformedPendingMeetings = reunionesPendientes.map(reunion => ({
+            id: reunion.meetingId,
+            title: reunion.title || reunion.nombre,
+            start: `${reunion.meetingDate}T${reunion.startTime}`,
+            end: `${reunion.meetingDate}T${reunion.endTime}`,
+            allDay: reunion.allDay === 'true',
+            extendedProps: {
+                meetingId: reunion.meetingId,
+                organizerId: reunion.organizerId,
+                observations: reunion.observations,
+                locationName: reunion.locationName,
+                invitees: reunion.invitees || []
+            }
+        }));
+        setPendingMeetingsEvents(transformedPendingMeetings);
+    }, [reunionesPendientes]);
 
     // Funciones para manejar la confirmación
     const handleAcceptMeeting = (reunion) => {
@@ -467,29 +520,39 @@ const UserCalendarUI = () => {
                 organizerId: reunion.organizerId,
                 observations: reunion.observations,
                 locationName: reunion.locationName,
-                invitees: reunion.invitees || [] // Asegúrate de incluir los invitados aquí
+                invitees: reunion.invitees || []
             }
         });
         setIsEventDetailPopupOpen(true);
     };
 
+    const handleConfirmAction = async () => {
+        try {
+            const response = await fetch(`http://localhost:9000/administrador/eventos/meetings/${selectedEvent.meetingId}/respond`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ invitationStatus: confirmationAction === 'accept' ? 'Aceptado' : 'Rechazado' }),
+            });
 
-    const handleConfirmAction = () => {
-        if (confirmationAction === 'accept') {
-            console.log('Reunión aceptada');
-            setReunionesPendientes((prevReunionesPendientes) =>
-                prevReunionesPendientes.filter((reunion) => reunion.id !== selectedEvent.id)
-            );
-            setReunionesAceptadas((prevReunionesAceptadas) => [
-                ...prevReunionesAceptadas, selectedEvent]
-            );
-        } else if (confirmationAction === 'reject') {
-            console.log('Reunión rechazada');
-            setReunionesPendientes((prevReunionesPendientes) =>
-                prevReunionesPendientes.filter((reunion) => reunion.id !== selectedEvent.id)
-            );
+            if (!response.ok) {
+                throw new Error('Error al actualizar el estado de la invitación');
+            }
+
+            // Actualizar las reuniones
+            setReunionesPendientes(prev => prev.filter(meeting => meeting.meetingId !== selectedEvent.meetingId));
+
+            if (confirmationAction === 'accept') {
+                setReunionesAceptadas(prev => [...prev, { ...selectedEvent, invitationStatus: 'Aceptado' }]);
+            }
+
+        } catch (error) {
+            console.error('Error al actualizar el estado de la invitación:', error);
+        } finally {
+            setShowConfirmation(false);
         }
-        setShowConfirmation(false); // Cerrar la ventana de confirmación después de realizar la acción
     };
 
     const checkUserAbsence = (participant) => {
@@ -502,43 +565,6 @@ const UserCalendarUI = () => {
             );
         });
     };
-
-    useEffect(() => {
-        // Transformar reuniones aceptadas al formato del calendario
-        const transformedAcceptedMeetings = reunionesAceptadas.map(reunion => ({
-            id: reunion.meetingId,  // Asegúrate de que cada evento tenga un id único
-            title: reunion.title || reunion.nombre,
-            start: `${reunion.meetingDate}T${reunion.startTime}`,
-            end: `${reunion.meetingDate}T${reunion.endTime}`,
-            allDay: reunion.allDay === 'true',
-            extendedProps: {
-                meetingId: reunion.meetingId,
-                organizerId: reunion.organizerId,
-                observations: reunion.observations,
-                locationName: reunion.locationName,
-                invitees: reunion.invitees || [] 
-            }
-        }));
-
-        // Reemplazar todos los eventos con las reuniones aceptadas (evitar duplicados)
-        setRegularEvents([...transformedAcceptedMeetings]);
-    }, [reunionesAceptadas]);
-
-    useEffect(() => {
-        const transformedPendingMeetings = reunionesPendientes.map(reunion => ({
-            title: reunion.title || reunion.nombre,
-            start: `${reunion.meetingDate}T${reunion.startTime}`,
-            end: `${reunion.meetingDate}T${reunion.endTime}`,
-            allDay: reunion.allDay === 'true',
-            extendedProps: {
-                meetingId: reunion.meetingId,
-                organizerId: reunion.organizerId,
-                observations: reunion.observations,
-                locationName: reunion.locationName,
-            }
-        }));
-        setPendingMeetingsEvents(transformedPendingMeetings);
-    }, [reunionesPendientes]);
 
 
     return (

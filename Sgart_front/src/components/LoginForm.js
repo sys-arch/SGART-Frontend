@@ -37,43 +37,51 @@ const LoginForm = () => {
     });
 
     const handleLogin = () => {
+        let hasError = false;
         setError(false);
         setErrorEmail('');
         setErrorPassword('');
-
+    
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
         if (!emailRegex.test(email)) {
             setErrorEmail('El formato del correo electrónico no es válido.');
-            toogleError();
+            hasError = true;
         }
-
-        if (email===''){
+    
+        if (email === '') {
             setErrorEmail('Campo vacío');
-            toogleError();
+            hasError = true;
         }
-        if (contrasena===''){
+    
+        if (contrasena === '') {
             setErrorPassword('Campo vacío');
-            toogleError();
+            hasError = true;
         }
-
-        if (error) {
+    
+        if (hasError) {
+            setError(true);
             return;
-        } else {
-            const user = {
-                email: email,
-                password: contrasena,
-            };
-        
-            fetch('http://localhost:9000/users/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(user),
-            })
+        }
+    
+        const user = {
+            email: email,
+            password: contrasena,
+        };
+    
+        fetch('http://localhost:9000/users/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(user),
+            credentials: 'include', // Enviar y recibir cookies de sesión
+        })
             .then((response) => {
                 if (!response.ok) {
-                    return response.json().then((data) => { throw new Error(data.message || 'Error al iniciar sesión. Correo y/o contraseña incorrectos') });
+                    return response.json().then((data) => {
+                        throw new Error(data.message || 'Error al iniciar sesión. Correo y/o contraseña incorrectos');
+                    });
                 }
                 return response.json();
             })
@@ -82,15 +90,15 @@ const LoginForm = () => {
                     alert('Tu cuenta está bloqueada. Por favor, contacta al soporte.');
                     return;
                 }
-        
+    
                 alert('Login exitoso. Pasando a la autentificación con doble factor...');
                 navigate('/google-auth-login', { state: { data: data, email: email } });
             })
             .catch((error) => {
                 alert(error.message);
             });
-        }
     };
+    
     const togglePasswordVisibility = () => {
         setShowPassword((prevShowPassword) => !prevShowPassword);
     };
