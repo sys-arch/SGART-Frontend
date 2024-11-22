@@ -481,18 +481,18 @@ const UserCalendarUI = () => {
                 const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate, 23, 59);
                 return (
                     ausencia.userId === participant.id &&
-                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < ausenciaFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < ausenciaFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < ausenciaFechaInicio))
+                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < selectedFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < selectedFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < selectedFechaInicio))
                 );
             } else {
                 const selectedFechaInicio = createDateWithDayHourAndMinutes(popupSelectedDate, popupStartingHour, popupStartingMinutes);
                 const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate, popupEndingHour, popupEndingMinutes);
                 return (
                     ausencia.userId === participant.id &&
-                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < ausenciaFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < ausenciaFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < ausenciaFechaInicio))
+                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < selectedFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < selectedFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < selectedFechaInicio))
                 );
             }
 
@@ -527,11 +527,9 @@ const UserCalendarUI = () => {
 
     // Función para seleccionar participantes
     const handleSelectParticipant = (participant) => {
-        if (!selectedUsers.includes(participant)) {
+        if (selectedUsers.filter((user) => user.id === participant.id).length===0) {
             const enAusencia = checkUserAbsence(participant);
-
             setSelectedUsers([...selectedUsers, { ...participant, enAusencia }]);
-
             setAvailableUsers(availableUsers.filter((user) => user.id !== participant.id));
         }
     };
