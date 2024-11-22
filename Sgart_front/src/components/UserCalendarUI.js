@@ -561,6 +561,9 @@ const UserCalendarUI = () => {
                                             })}>
                                                 <img src={require('../media/informacion.png')} alt="Info" />
                                             </button>
+                                            <button className="modify-event-button" /*onClick={}*/>
+                                                <img src={require('../media/mano.png')} alt="Editar" />
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
