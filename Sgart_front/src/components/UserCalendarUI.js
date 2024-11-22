@@ -102,15 +102,11 @@ const UserCalendarUI = () => {
     const [invitees, setInvitees] = useState([]);
 
     // Estado para controlar los usuarios disponibles y los seleccionados
-    const [availableUsers, setAvailableUsers] = useState([
-        { id: 1, nombre: 'Juan Pérez' },
-        { id: 2, nombre: 'María López' },
-        { id: 3, nombre: 'Carlos García' },
-        { id: 5, nombre: 'Carlos Enrique De Miguel-Herencia' },
-        { id: 4, nombre: 'Ana Martínez' }
-    ]);
-
+    const [availableUsers, setAvailableUsers] = useState([]);
     const [selectedUsers, setSelectedUsers] = useState([]);
+
+    // Variable para el error en el campo de invitar usuarios
+    const[errorEvent, setErrorEvent] = useState('');
 
     // Variables para buscar y filtrar usuarios
     const [searchTerm, setSearchTerm] = useState('');
@@ -139,12 +135,24 @@ const UserCalendarUI = () => {
         }
     };
 
+    // Cargar los usuarios de la base de datos
+    const loadUsers = (async () => {
+        const response = await fetch('/meetings/available-users');
+            if (!response.ok) throw new Error('Error al cargar los usuarios');
+
+            const backendUsers = await response.json();
+            const transformedUsers = backendUsers.map(event => ({
+                id: event.id,
+                nombre: event.name+" "+event.lastName
+            }));
+            setAvailableUsers(transformedUsers);
+    })
 
     // Cargar los eventos regulares de la base de datos
     const loadEvents = useCallback(async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('http://localhost:9000/administrador/eventos/loadEvents');
+            const response = await fetch('/admin/eventos/loadEvents');
             if (!response.ok) throw new Error('Error al cargar los eventos');
 
             const backendEvents = await response.json();
@@ -172,7 +180,7 @@ const UserCalendarUI = () => {
     // Cargar los horarios de trabajo modificados de la base de datos
     const loadModifiedWorkingHours = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:9000/administrador/eventos/loadSchedules');
+            const response = await fetch('/administrador/eventos/loadSchedules');
             if (!response.ok) throw new Error('Error al cargar los horarios modificados');
 
             const backendWorkingHours = await response.json();
@@ -191,7 +199,7 @@ const UserCalendarUI = () => {
     // Cargar los horarios de trabajo por defecto de la base de datos
     const loadDefaultWorkingHours = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:9000/administrador/eventos/loadDefaultSchedule');
+            const response = await fetch('/administrador/eventos/loadDefaultSchedule');
             if (!response.ok) throw new Error('Error al cargar los horarios de trabajo por defecto');
 
             const backendDefaultHours = await response.json();
@@ -324,13 +332,21 @@ const UserCalendarUI = () => {
             alert("Por favor, completa todos los campos obligatorios antes de continuar.");
             return;
         }
+        loadUsers();
+        loadAbsences();
         setCurrentStep(2);
     };
 
     const handleSaveEvent = async () => {
+        setErrorEvent('');
         if (!validateTimeInput(popupStartingHour, popupStartingMinutes, setPopupHourError, setPopupMinuteError) ||
             !validateTimeInput(popupEndingHour, popupEndingMinutes, setPopupHourError, setPopupMinuteError)) {
             alert("Por favor, corrige los campos de hora antes de guardar el evento.");
+            return;
+        }
+
+        if(selectedUsers.filter((user) => user.enAusencia === true).length>0){
+            setErrorEvent("ERROR: se está intentando crear una reunión con participantes ausentes.");
             return;
         }
 
@@ -349,7 +365,7 @@ const UserCalendarUI = () => {
 
         try {
 
-            const response = await fetch('http://localhost:9000/administrador/eventos/saveEvent', {
+            const response = await fetch('/administrador/eventos/saveEvent', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -386,7 +402,7 @@ const UserCalendarUI = () => {
         };
 
         try {
-            const response = await fetch('http://localhost:9000/administrador/eventos/saveDay', {
+            const response = await fetch('/administrador/eventos/saveDay', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -438,10 +454,29 @@ const UserCalendarUI = () => {
         }
     ]);
     // Ejemplo de ausencias de los usuarios (deberían cargarse de un API o base de datos)
-    const [ausencias, setAusencias] = useState([
-        { userId: 1, fecha: '2024-11-20' }, // Ejemplo de ausencia para Juan Pérez
-        { userId: 3, fecha: '2024-11-15' } // Ejemplo de ausencia para otro usuario
-    ]);
+    const [ausencias, setAusencias] = useState([]);
+
+    const loadAbsences = (async () => {
+        const response = await fetch('/administrador/ausencias/loadAbsences');
+        if (!response.ok){
+            console.log('Error al cargar las ausencias');
+            return;
+        }
+
+        const backendAbsences = await response.json();
+        const transformedAbsences = backendAbsences.map(ausencia => ({
+            absenceId: ausencia.absenceId,
+            userId: ausencia.userId,
+            absenceStartDate: ausencia.absenceStartDate,
+            absenceEndDate: ausencia.absenceEndDate,
+            absenceAllDay: ausencia.absenceAllDay,
+            absenceStartTime: ausencia.absenceStartTime,
+            absenceEndTime: ausencia.absenceEndTime,
+            absenceReason: ausencia.absenceReason
+        }));
+        setAusencias(transformedAbsences);
+        console.log(transformedAbsences);
+    })
 
     // Funciones para manejar la confirmación
     const handleAcceptMeeting = (reunion) => {
@@ -492,17 +527,6 @@ const UserCalendarUI = () => {
         setShowConfirmation(false); // Cerrar la ventana de confirmación después de realizar la acción
     };
 
-    const checkUserAbsence = (participant) => {
-        return ausencias.some((ausencia) => {
-            const ausenciaFecha = new Date(ausencia.fecha);
-            const selectedFecha = new Date(popupSelectedDate);
-            return (
-                ausencia.userId === participant.id &&
-                ausenciaFecha.getTime() === selectedFecha.getTime()
-            );
-        });
-    };
-
     useEffect(() => {
         // Transformar reuniones aceptadas al formato del calendario
         const transformedAcceptedMeetings = reunionesAceptadas.map(reunion => ({
@@ -539,6 +563,58 @@ const UserCalendarUI = () => {
         }));
         setPendingMeetingsEvents(transformedPendingMeetings);
     }, [reunionesPendientes]);
+
+    const checkUserAbsence = (participant) => {
+        return ausencias.some((ausencia) => {
+            const ausenciaFechaInicio = createDateWithDayAndTime(ausencia.absenceStartDate,ausencia.absenceStartTime);
+            const ausenciaFechaFin = createDateWithDayAndTime(ausencia.absenceEndDate,ausencia.absenceEndTime);
+            if(isAllDay){
+                const selectedFechaInicio =  createDateWithDayHourAndMinutes(popupSelectedDate,0,0);
+                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate,23,59);
+                return (
+                    ausencia.userId === participant.id &&
+                    ((ausenciaFechaInicio>selectedFechaInicio&&ausenciaFechaInicio<ausenciaFechaFin)||
+                    (ausenciaFechaFin>selectedFechaInicio&&ausenciaFechaFin<ausenciaFechaFin)||
+                    (ausenciaFechaFin>selectedFechaFin&&ausenciaFechaInicio<ausenciaFechaInicio))
+                );
+            }else{
+                const selectedFechaInicio =  createDateWithDayHourAndMinutes(popupSelectedDate,popupStartingHour,popupStartingMinutes);
+                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate,popupEndingHour,popupEndingMinutes);
+                return (
+                    ausencia.userId === participant.id &&
+                    ((ausenciaFechaInicio>selectedFechaInicio&&ausenciaFechaInicio<ausenciaFechaFin)||
+                    (ausenciaFechaFin>selectedFechaInicio&&ausenciaFechaFin<ausenciaFechaFin)||
+                    (ausenciaFechaFin>selectedFechaFin&&ausenciaFechaInicio<ausenciaFechaInicio))
+                );
+            }
+            
+        });
+    };
+
+    const createDateWithDayAndTime = (fecha, horaMinuto) => {
+        // Dividimos la fecha en partes (año, mes, día)
+       const [year, month, day] = fecha.split('-').map(Number);
+
+       // Dividimos el tiempo en partes
+       const [hour, minute, second] = horaMinuto.split(':').map(Number);
+     
+       // Crear el objeto Date
+       const date = new Date(year, month - 1, day, hour, minute, second);
+     
+       return date;
+     };
+
+     const createDateWithDayHourAndMinutes = (fecha, hora, minuto) => {
+       // Dividimos la fecha en partes (año, mes, día)
+       const [year, month, day] = fecha.split('-').map(Number);
+       const hour = parseInt(hora, 10);  // Convertir hora a entero
+       const minute = parseInt(minuto, 10);  // Convertir minuto a entero
+     
+       // Crear el objeto Date (el mes es 0-indexado)
+       const date = new Date(year, month - 1, day, hour, minute);
+     
+       return date;
+     };
 
 
     return (
@@ -738,6 +814,57 @@ const UserCalendarUI = () => {
                                     <button className="save-button" onClick={handleNextStep}>Siguiente</button>
                                     <button className="close-button" onClick={handleClosePopup}>Cancelar</button>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+                     {/* Pop-up para Invitar Participantes */}
+                     {isPopupOpen && currentStep === 2 && (
+                        <div className="popup-overlay">
+                            <div className="popup-container-participants">
+                                <h2>Invitar Participantes</h2>
+                                <div className="AdminCalendar-input-group">
+                                    <label>Usuarios Disponibles:</label>
+                                    <div className="search-participants-container">
+                                        <input
+                                            type="text"
+                                            className="search-participants-input"
+                                            placeholder="Buscar participantes..."
+                                            value={searchTerm}
+                                            onChange={handleSearchChange}
+                                        />
+                                    </div>
+                                    {/* Lista de participantes disponibles */}
+                                    <div className="participant-list-available">
+                                        {filteredParticipants.length > 0 ? (
+                                            filteredParticipants.map((participant) => (
+                                                <div key={participant.id} className="available-participant-item"
+                                                    onClick={() => handleSelectParticipant(participant)}
+                                                >
+                                                    {participant.nombre}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p>No se encontraron participantes.</p>
+                                        )}
+                                    </div>
+                                    {/* Lista de participantes seleccionados */}
+                                    <label>Usuarios Seleccionados:</label>
+                                    <div className="participant-list-selected">
+                                        {selectedUsers.map((user) => (
+                                            <div key={user.id} className={`selected-participant-item ${user.enAusencia ? 'en-ausencia' : 'disponible'}`}>
+                                                <p>{user.nombre}</p>
+                                                <button onClick={() => handleRemoveUser(user)}>
+                                                    <img className='papelera-btn' src={require('../media/papelera.png')} alt="Eliminar" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="AdminCalendar-button-group">
+                                    <button className="save-participants-button" onClick={handleSaveEvent}>Guardar</button>
+                                    <button className="close-participants-button" onClick={handleClosePopup}>Cancelar</button>
+                                </div>
+                                <b style={{color:'red'}}>{errorEvent}</b>
                             </div>
                         </div>
                     )}
