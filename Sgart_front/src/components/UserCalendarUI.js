@@ -234,7 +234,26 @@ const UserCalendarUI = () => {
         }
     }, [loadInvitees]);
 
-    // El handleEventClick ahora puede usar los invitados ya cargados
+    // Add this new function to check attendance status
+    const checkAttendanceStatus = async (meetingId) => {
+        try {
+            const response = await fetch(`http://localhost:9000/invitations/${meetingId}/attendance`, {
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to get attendance status');
+            }
+
+            const attendance = await response.json();
+            return attendance === 1;
+        } catch (error) {
+            console.error('Error checking attendance status:', error);
+            return false;
+        }
+    };
+
+    // Modify the handleEventClick function
     const handleEventClick = async (clickInfo) => {
         const transformedEvent = {
             id: clickInfo.event.id,
@@ -251,6 +270,13 @@ const UserCalendarUI = () => {
 
         // Cargar invitados frescos al hacer click
         const invitados = await loadInvitees(clickInfo.event.id);
+        
+        // Check attendance status if it's an accepted meeting
+        if (regularEvents.find(event => event.id === clickInfo.event.id)) {
+            const hasConfirmedAttendance = await checkAttendanceStatus(clickInfo.event.id);
+            transformedEvent.extendedProps.hasConfirmedAttendance = hasConfirmedAttendance;
+        }
+
         setInvitees(invitados);
         setSelectedEvent(transformedEvent);
         setIsEventDetailPopupOpen(true);
@@ -447,6 +473,40 @@ const UserCalendarUI = () => {
     const handleRemoveUser = (user) => {
         setSelectedUsers(selectedUsers.filter(selectedUser => selectedUser.id !== user.id));
         setAvailableUsers([...availableUsers, user]);
+    };
+
+    // Add this new function near other handler functions
+    const handleAttendanceUpdate = async (meetingId) => {
+        try {
+            const response = await fetch(`http://localhost:9000/invitations/${meetingId}/attendance`, {
+                method: 'PUT',
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update attendance');
+            }
+
+            // Update both regularEvents and reunionesAceptadas
+            const updateEvents = (events) => 
+                events.map(event => 
+                    event.id === meetingId 
+                        ? { ...event, extendedProps: { ...event.extendedProps, hasConfirmedAttendance: true } }
+                        : event
+                );
+
+            setRegularEvents(prevEvents => updateEvents(prevEvents));
+            setReunionesAceptadas(prevEvents => updateEvents(prevEvents));
+            
+            // Force re-render by updating the selectedEvent
+            setSelectedEvent(prev => ({
+                ...prev,
+                extendedProps: { ...prev.extendedProps, hasConfirmedAttendance: true }
+            }));
+
+        } catch (error) {
+            console.error('Error updating attendance:', error);
+        }
     };
 
     // Efectos
@@ -664,9 +724,28 @@ const UserCalendarUI = () => {
                                         ))}
                                     </ul>
                                 </div>
-                                <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>
-                                    Cerrar
-                                </button>
+                                <div className="popup-button-container">
+                                    <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>
+                                        Cerrar
+                                    </button>
+                                    
+                                    {regularEvents.find(event => event.id === selectedEvent.id) && (
+                                        <div className="attendance-button-container">
+                                            {selectedEvent.extendedProps.hasConfirmedAttendance ? (
+                                                <button className="attendance-confirmed-button">
+                                                    <img src={require('../media/garrapata.png')} alt="Attendance Confirmed" />
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    className="attendance-button"
+                                                    onClick={() => handleAttendanceUpdate(selectedEvent.id)}
+                                                >
+                                                    Asistencia
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
