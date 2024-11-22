@@ -178,28 +178,39 @@ const UserCalendarUI = () => {
 
     const handleConfirmAction = async () => {
         try {
-            const response = await fetch(`http://localhost:9000/administrador/eventos/meetings/${selectedEvent.id}/respond`, {
-                method: 'POST',
+            console.log('Iniciando actualización de estado para evento:', selectedEvent);
+            console.log('Acción seleccionada:', confirmationAction);
+            
+            const url = `http://localhost:9000/invitations/${selectedEvent.id}/status`;
+            console.log('URL de la petición:', url);
+    
+            const requestBody = {
+                newStatus: confirmationAction === 'accept' ? 'Aceptada' : 'Rechazada',
+                comment: ''
+            };
+            console.log('Cuerpo de la petición:', requestBody);
+    
+            const response = await fetch(url, {
+                method: 'PUT', // Cambiado de PATCH a PUT
                 credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    invitationStatus: confirmationAction === 'accept' ? 'Aceptado' : 'Rechazado'
-                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
             });
-
-            if (!response.ok) throw new Error('Error al actualizar el estado de la invitación');
-
-            setReunionesPendientes(prev =>
-                prev.filter(meeting => meeting.meetingId !== selectedEvent.id)
-            );
-
-            if (confirmationAction === 'accept') {
-                setReunionesAceptadas(prev => [...prev, { ...selectedEvent, invitationStatus: 'Aceptado' }]);
+    
+            console.log('Respuesta del servidor:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                throw new Error(`Error al actualizar el estado de la invitación: ${errorText}`);
             }
-
+    
             await loadMeetings(); // Recargar reuniones después de la actualización
+            console.log('Actualización completada con éxito');
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error detallado:', error);
         } finally {
             setShowConfirmation(false);
         }
