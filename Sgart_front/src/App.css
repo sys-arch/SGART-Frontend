@@ -1498,3 +1498,16 @@ button :hover {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.meeting-item.organized {
+  background-color: #f3e5f5;  /* Color morado muy claro */
+  border-left: 4px solid #9c27b0;  /* Borde izquierdo morado más oscuro */
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.meeting-item.organized:hover {
+  background-color: #e1bee7;  /* Un tono morado un poco más oscuro al hacer hover */
+}
