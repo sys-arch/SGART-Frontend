@@ -106,7 +106,7 @@ const UserCalendarUI = () => {
     const [selectedUsers, setSelectedUsers] = useState([]);
 
     // Variable para el error en el campo de invitar usuarios
-    const[errorEvent, setErrorEvent] = useState('');
+    const [errorEvent, setErrorEvent] = useState('');
 
     // Variables para buscar y filtrar usuarios
     const [searchTerm, setSearchTerm] = useState('');
@@ -138,14 +138,14 @@ const UserCalendarUI = () => {
     // Cargar los usuarios de la base de datos
     const loadUsers = (async () => {
         const response = await fetch('/meetings/available-users');
-            if (!response.ok) throw new Error('Error al cargar los usuarios');
+        if (!response.ok) throw new Error('Error al cargar los usuarios');
 
-            const backendUsers = await response.json();
-            const transformedUsers = backendUsers.map(event => ({
-                id: event.id,
-                nombre: event.name+" "+event.lastName
-            }));
-            setAvailableUsers(transformedUsers);
+        const backendUsers = await response.json();
+        const transformedUsers = backendUsers.map(event => ({
+            id: event.id,
+            nombre: event.name + " " + event.lastName
+        }));
+        setAvailableUsers(transformedUsers);
     })
 
     // Cargar los eventos regulares de la base de datos
@@ -325,6 +325,7 @@ const UserCalendarUI = () => {
     const handleClosePopup = () => {
         setIsPopupOpen(false);
         setCurrentStep(1);
+        setIsEditMode(false);
     };
 
     const handleNextStep = () => {
@@ -345,7 +346,7 @@ const UserCalendarUI = () => {
             return;
         }
 
-        if(selectedUsers.filter((user) => user.enAusencia === true).length>0){
+        if (selectedUsers.filter((user) => user.enAusencia === true).length > 0) {
             setErrorEvent("ERROR: se está intentando crear una reunión con participantes ausentes.");
             return;
         }
@@ -364,7 +365,7 @@ const UserCalendarUI = () => {
         };
 
         try {
-
+            setIsLoading(true);
             const response = await fetch('/administrador/eventos/saveEvent', {
                 method: 'POST',
                 headers: {
@@ -381,6 +382,8 @@ const UserCalendarUI = () => {
             alert("[!] Se ha guardado el evento de manera exitosa.");
         } catch (error) {
             console.error('Error al guardar el evento:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
     const handleEditDayClick = () => {
@@ -458,7 +461,7 @@ const UserCalendarUI = () => {
 
     const loadAbsences = (async () => {
         const response = await fetch('/administrador/ausencias/loadAbsences');
-        if (!response.ok){
+        if (!response.ok) {
             console.log('Error al cargar las ausencias');
             return;
         }
@@ -540,7 +543,7 @@ const UserCalendarUI = () => {
                 organizerId: reunion.organizerId,
                 observations: reunion.observations,
                 locationName: reunion.locationName,
-                invitees: reunion.invitees || [] 
+                invitees: reunion.invitees || []
             }
         }));
 
@@ -566,55 +569,121 @@ const UserCalendarUI = () => {
 
     const checkUserAbsence = (participant) => {
         return ausencias.some((ausencia) => {
-            const ausenciaFechaInicio = createDateWithDayAndTime(ausencia.absenceStartDate,ausencia.absenceStartTime);
-            const ausenciaFechaFin = createDateWithDayAndTime(ausencia.absenceEndDate,ausencia.absenceEndTime);
-            if(isAllDay){
-                const selectedFechaInicio =  createDateWithDayHourAndMinutes(popupSelectedDate,0,0);
-                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate,23,59);
+            const ausenciaFechaInicio = createDateWithDayAndTime(ausencia.absenceStartDate, ausencia.absenceStartTime);
+            const ausenciaFechaFin = createDateWithDayAndTime(ausencia.absenceEndDate, ausencia.absenceEndTime);
+            if (isAllDay) {
+                const selectedFechaInicio = createDateWithDayHourAndMinutes(popupSelectedDate, 0, 0);
+                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate, 23, 59);
                 return (
                     ausencia.userId === participant.id &&
-                    ((ausenciaFechaInicio>selectedFechaInicio&&ausenciaFechaInicio<ausenciaFechaFin)||
-                    (ausenciaFechaFin>selectedFechaInicio&&ausenciaFechaFin<ausenciaFechaFin)||
-                    (ausenciaFechaFin>selectedFechaFin&&ausenciaFechaInicio<ausenciaFechaInicio))
+                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < ausenciaFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < ausenciaFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < ausenciaFechaInicio))
                 );
-            }else{
-                const selectedFechaInicio =  createDateWithDayHourAndMinutes(popupSelectedDate,popupStartingHour,popupStartingMinutes);
-                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate,popupEndingHour,popupEndingMinutes);
+            } else {
+                const selectedFechaInicio = createDateWithDayHourAndMinutes(popupSelectedDate, popupStartingHour, popupStartingMinutes);
+                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate, popupEndingHour, popupEndingMinutes);
                 return (
                     ausencia.userId === participant.id &&
-                    ((ausenciaFechaInicio>selectedFechaInicio&&ausenciaFechaInicio<ausenciaFechaFin)||
-                    (ausenciaFechaFin>selectedFechaInicio&&ausenciaFechaFin<ausenciaFechaFin)||
-                    (ausenciaFechaFin>selectedFechaFin&&ausenciaFechaInicio<ausenciaFechaInicio))
+                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < ausenciaFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < ausenciaFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < ausenciaFechaInicio))
                 );
             }
-            
+
         });
     };
 
     const createDateWithDayAndTime = (fecha, horaMinuto) => {
         // Dividimos la fecha en partes (año, mes, día)
-       const [year, month, day] = fecha.split('-').map(Number);
+        const [year, month, day] = fecha.split('-').map(Number);
 
-       // Dividimos el tiempo en partes
-       const [hour, minute, second] = horaMinuto.split(':').map(Number);
-     
-       // Crear el objeto Date
-       const date = new Date(year, month - 1, day, hour, minute, second);
-     
-       return date;
-     };
+        // Dividimos el tiempo en partes
+        const [hour, minute, second] = horaMinuto.split(':').map(Number);
 
-     const createDateWithDayHourAndMinutes = (fecha, hora, minuto) => {
-       // Dividimos la fecha en partes (año, mes, día)
-       const [year, month, day] = fecha.split('-').map(Number);
-       const hour = parseInt(hora, 10);  // Convertir hora a entero
-       const minute = parseInt(minuto, 10);  // Convertir minuto a entero
-     
-       // Crear el objeto Date (el mes es 0-indexado)
-       const date = new Date(year, month - 1, day, hour, minute);
-     
-       return date;
-     };
+        // Crear el objeto Date
+        const date = new Date(year, month - 1, day, hour, minute, second);
+
+        return date;
+    };
+
+    const createDateWithDayHourAndMinutes = (fecha, hora, minuto) => {
+        // Dividimos la fecha en partes (año, mes, día)
+        const [year, month, day] = fecha.split('-').map(Number);
+        const hour = parseInt(hora, 10);  // Convertir hora a entero
+        const minute = parseInt(minuto, 10);  // Convertir minuto a entero
+
+        // Crear el objeto Date (el mes es 0-indexado)
+        const date = new Date(year, month - 1, day, hour, minute);
+
+        return date;
+    };
+
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+
+    const handleEditMeeting = () => {
+        setPopupSelectedDate(selectedEvent.start.split('T')[0]);
+        setPopupStartingHour(selectedEvent.start.split('T')[1].split(':')[0]);
+        setPopupStartingMinutes(selectedEvent.start.split('T')[1].split(':')[1]);
+        setPopupEndingHour(selectedEvent.end.split('T')[1].split(':')[0]);
+        setPopupEndingMinutes(selectedEvent.end.split('T')[1].split(':')[1]);
+        setEventName(selectedEvent.title);
+        setEventLocation(selectedEvent.extendedProps?.locationName || '');
+        setPopupDescription(selectedEvent.extendedProps?.observations || '');
+        setSelectedUsers(selectedEvent.extendedProps?.invitees || []);
+        setIsPopupOpen(true);
+        setCurrentStep(1);
+        setIsEditMode(true); // Marcar que estamos en modo edición
+    };
+
+    const handleUpdateEvent = async () => {
+        setErrorEvent('');
+        if (!validateTimeInput(popupStartingHour, popupStartingMinutes, setPopupHourError, setPopupMinuteError) ||
+            !validateTimeInput(popupEndingHour, popupEndingMinutes, setPopupHourError, setPopupMinuteError)) {
+            alert("Por favor, corrige los campos de hora antes de guardar el evento.");
+            return;
+        }
+    
+        const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
+        const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
+    
+        const updatedEvent = {
+            id: selectedEvent.id,
+            event_title: eventName,
+            event_start_date: popupSelectedDate,
+            event_all_day: isAllDay ? 1 : 0,
+            event_time_start: isAllDay ? '00:00:00' : startingTime,
+            event_time_end: isAllDay ? '23:59:59' : endingTime,
+            event_frequency: eventFrequency === 'Personalizado' ? customFrequency : eventFrequency,
+            event_repetitions_count: eventFrequency === 'Personalizado' ? parseInt(repeatCount, 10) : (eventFrequency === 'Una vez' ? 1 : -1),
+            location_name: eventLocation,
+            observations: popupDescription,
+            invitees: selectedUsers
+        };
+    
+        try {
+            setIsLoading(true);
+            const response = await fetch(`/administrador/eventos/updateEvent/${updatedEvent.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedEvent),
+            });
+    
+            if (!response.ok) throw new Error('Error al actualizar el evento');
+    
+            await loadEvents(); // Recargar los eventos después de la actualización
+            setIsPopupOpen(false);
+            setIsEditMode(false);
+            alert("[!] Se ha actualizado el evento de manera exitosa.");
+        } catch (error) {
+            console.error('Error al actualizar el evento:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };   
 
 
     return (
@@ -817,8 +886,8 @@ const UserCalendarUI = () => {
                             </div>
                         </div>
                     )}
-                     {/* Pop-up para Invitar Participantes */}
-                     {isPopupOpen && currentStep === 2 && (
+                    {/* Pop-up para Invitar Participantes */}
+                    {isPopupOpen && currentStep === 2 && (
                         <div className="popup-overlay">
                             <div className="popup-container-participants">
                                 <h2>Invitar Participantes</h2>
@@ -861,10 +930,12 @@ const UserCalendarUI = () => {
                                     </div>
                                 </div>
                                 <div className="AdminCalendar-button-group">
-                                    <button className="save-participants-button" onClick={handleSaveEvent}>Guardar</button>
+                                    <button className="save-participants-button" onClick={isEditMode ? handleUpdateEvent : handleSaveEvent}>
+                                        {isEditMode ? "Actualizar" : "Guardar"}
+                                    </button>
                                     <button className="close-participants-button" onClick={handleClosePopup}>Cancelar</button>
                                 </div>
-                                <b style={{color:'red'}}>{errorEvent}</b>
+                                <b style={{ color: 'red' }}>{errorEvent}</b>
                             </div>
                         </div>
                     )}
@@ -920,6 +991,11 @@ const UserCalendarUI = () => {
                                             ))}
                                         </ul>
                                     </div>
+                                )}
+                                {selectedEvent.extendedProps?.organizerId === currentUser.id && (
+                                    <button className="edit-button" onClick={handleEditMeeting}>
+                                        Modificar
+                                    </button>
                                 )}
                                 <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>Cerrar</button>
                             </div>
