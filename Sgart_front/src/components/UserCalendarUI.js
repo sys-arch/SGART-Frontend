@@ -50,6 +50,9 @@ const UserCalendarUI = () => {
     const [organizedEvents, setOrganizedEvents] = useState([]);
     const [reunionesOrganizadas, setReunionesOrganizadas] = useState([]);
 
+    // Ausencias de los usuarios
+    const [ausencias, setAusencias] = useState([]);
+
     // Cargar invitados de una reunión
     const loadInvitees = useCallback(async (meetingId) => {
         try {
@@ -340,6 +343,8 @@ const UserCalendarUI = () => {
             alert("Por favor, completa todos los campos obligatorios antes de continuar.");
             return;
         }
+        setErrorEvent('');
+        setSelectedUsers([]);
         loadUsers();
         loadAbsences();
         setCurrentStep(2);
@@ -359,7 +364,7 @@ const UserCalendarUI = () => {
         }
 
         if (selectedUsers.filter((user) => user.enAusencia === true).length > 0) {
-            setErrorEvent("ERROR: se está intentando crear una reunión con participantes ausentes.");
+            setErrorEvent("Error al crear la reunión. Se está intentando crear una reunión con participantes ausentes.");
             return;
         }
 
@@ -430,42 +435,104 @@ const UserCalendarUI = () => {
     };
 
     // Función para cargar usuarios disponibles
-    const loadUsers = async () => {
-        try {
-            const response = await fetch('http://localhost:9000/users/available', {
-                credentials: 'include'
-            });
-            if (!response.ok) throw new Error('Error al cargar los usuarios');
-
-            const users = await response.json();
-            setAvailableUsers(users);
-            setFilteredParticipants(users);
-        } catch (error) {
-            console.error('Error cargando usuarios:', error);
+    const loadUsers = (async () => {
+        const response = await fetch('/meetings/available-users');
+        if (!response.ok){
+            console.log('Error al cargar los usuarios');
+            return;
         }
+        const backendUsers = await response.json();
+        const transformedUsers = backendUsers.map(event => ({
+            id: event.id,
+            nombre: event.name + " " + event.lastName
+        }));
+        setAvailableUsers(transformedUsers);
+        setFilteredParticipants(transformedUsers);
+    })
+
+     const loadAbsences = (async () => {
+         const response = await fetch('/administrador/ausencias/loadAbsences');
+         if (!response.ok) {
+             console.log('Error al cargar las ausencias');
+             return;
+         }
+ 
+         const backendAbsences = await response.json();
+         const transformedAbsences = backendAbsences.map(ausencia => ({
+             absenceId: ausencia.absenceId,
+             userId: ausencia.userId,
+             absenceStartDate: ausencia.absenceStartDate,
+             absenceEndDate: ausencia.absenceEndDate,
+             absenceAllDay: ausencia.absenceAllDay,
+             absenceStartTime: ausencia.absenceStartTime,
+             absenceEndTime: ausencia.absenceEndTime,
+             absenceReason: ausencia.absenceReason
+         }));
+         setAusencias(transformedAbsences);
+         console.log(transformedAbsences);
+     })
+
+     const checkUserAbsence = (participant) => {
+        return ausencias.some((ausencia) => {
+            const ausenciaFechaInicio = createDateWithDayAndTime(ausencia.absenceStartDate, ausencia.absenceStartTime);
+            const ausenciaFechaFin = createDateWithDayAndTime(ausencia.absenceEndDate, ausencia.absenceEndTime);
+            if (isAllDay) {
+                const selectedFechaInicio = createDateWithDayHourAndMinutes(popupSelectedDate, 0, 0);
+                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate, 23, 59);
+                return (
+                    ausencia.userId === participant.id &&
+                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < ausenciaFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < ausenciaFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < ausenciaFechaInicio))
+                );
+            } else {
+                const selectedFechaInicio = createDateWithDayHourAndMinutes(popupSelectedDate, popupStartingHour, popupStartingMinutes);
+                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate, popupEndingHour, popupEndingMinutes);
+                return (
+                    ausencia.userId === participant.id &&
+                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < ausenciaFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < ausenciaFechaFin) ||
+                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < ausenciaFechaInicio))
+                );
+            }
+
+        });
     };
 
-    // Función para cargar ausencias
-    const loadAbsences = async () => {
-        try {
-            const response = await fetch('http://localhost:9000/absences', {
-                credentials: 'include'
-            });
-            if (!response.ok) throw new Error('Error al cargar las ausencias');
+    const createDateWithDayAndTime = (fecha, horaMinuto) => {
+        // Dividimos la fecha en partes (año, mes, día)
+        const [year, month, day] = fecha.split('-').map(Number);
 
-            const absences = await response.json();
-            // Aquí puedes procesar las ausencias como necesites
-            console.log('Ausencias cargadas:', absences);
-        } catch (error) {
-            console.error('Error cargando ausencias:', error);
-        }
+        // Dividimos el tiempo en partes
+        const [hour, minute, second] = horaMinuto.split(':').map(Number);
+
+        // Crear el objeto Date
+        const date = new Date(year, month - 1, day, hour, minute, second);
+
+        return date;
     };
+
+    const createDateWithDayHourAndMinutes = (fecha, hora, minuto) => {
+        // Dividimos la fecha en partes (año, mes, día)
+        const [year, month, day] = fecha.split('-').map(Number);
+        const hour = parseInt(hora, 10);  // Convertir hora a entero
+        const minute = parseInt(minuto, 10);  // Convertir minuto a entero
+
+        // Crear el objeto Date (el mes es 0-indexado)
+        const date = new Date(year, month - 1, day, hour, minute);
+
+        return date;
+    };
+ 
 
     // Función para seleccionar participantes
     const handleSelectParticipant = (participant) => {
-        if (!selectedUsers.some(user => user.id === participant.id)) {
-            setSelectedUsers([...selectedUsers, participant]);
-            setAvailableUsers(availableUsers.filter(user => user.id !== participant.id));
+        if (!selectedUsers.includes(participant)) {
+            const enAusencia = checkUserAbsence(participant);
+
+            setSelectedUsers([...selectedUsers, { ...participant, enAusencia }]);
+
+            setAvailableUsers(availableUsers.filter((user) => user.id !== participant.id));
         }
     };
 
@@ -890,17 +957,18 @@ const UserCalendarUI = () => {
                                 <div className="selected-participants">
                                     <h3>Participantes Seleccionados:</h3>
                                     {selectedUsers.map((user) => (
-                                        <div key={user.id} className="selected-participant">
+                                        <div key={user.id} className="selected-participant" 
+                                        style={user.enAusencia?{color:'red'}:{}}>
                                             {user.nombre}
                                             <button onClick={() => handleRemoveUser(user)}>X</button>
                                         </div>
                                     ))}
                                 </div>
-                                {errorEvent && <p className="error-message">{errorEvent}</p>}
                                 <div className="AdminCalendar-button-group">
                                     <button onClick={handleSaveEvent}>Guardar</button>
                                     <button onClick={handleClosePopup}>Cancelar</button>
                                 </div>
+                                {errorEvent && <b style={{color:'red'}} className="error-message">{errorEvent}</b>}
                             </div>
                         </div>
                     )}
