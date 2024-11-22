@@ -71,7 +71,7 @@ const UserCalendarUI = () => {
         try {
             setIsLoading(true);
             console.log("Iniciando carga de meetings...");
-            
+
             // Obtener el userId del backend
             const currentUserId = await getUserId();
             console.log("ID del usuario actual:", currentUserId, "Tipo:", typeof currentUserId);
@@ -94,11 +94,11 @@ const UserCalendarUI = () => {
             // Procesar cada reunión y sus invitados
             for (const meeting of backendMeetings) {
                 console.log(`\n--- Procesando reunión ID: ${meeting.meetingId} ---`);
-                
+
                 // Cargar invitados para esta reunión
                 const invitados = await loadInvitees(meeting.meetingId);
                 console.log(`Invitados recibidos para reunión ${meeting.meetingId}:`, invitados);
-                
+
                 // Imprimir cada invitado y su estado
                 invitados.forEach(invitee => {
                     console.log(`Invitado ID: ${invitee.userId} (${typeof invitee.userId}), Estado: "${invitee.status}"`);
@@ -227,9 +227,23 @@ const UserCalendarUI = () => {
                                                 <p>{reunion.title}</p>
                                             </div>
                                             <div className="meeting-actions">
-                                                <button className="action-button info-button" onClick={() => handleEventClick({ event: reunion })}>
+                                                <button className="action-button info-button" onClick={() => handleEventClick({
+                                                    event: {
+                                                        id: reunion.id,
+                                                        title: reunion.title,
+                                                        startStr: reunion.start,
+                                                        endStr: reunion.end,
+                                                        allDay: reunion.allDay,
+                                                        extendedProps: {
+                                                            locationName: reunion.extendedProps.locationName,
+                                                            observations: reunion.extendedProps.observations,
+                                                            organizerName: reunion.extendedProps.organizerName,
+                                                        }
+                                                    }
+                                                })}>
                                                     <img src={require('../media/informacion.png')} alt="Información" title='Información del Evento' />
                                                 </button>
+
                                                 <button className="action-reunion-button accept-button" onClick={() => {
                                                     setSelectedEvent(reunion);
                                                     setConfirmationAction('accept');
@@ -259,9 +273,23 @@ const UserCalendarUI = () => {
                                             <p>{reunion.title}</p>
                                         </div>
                                         <div className="meeting-buttons">
-                                            <button className="info-button" onClick={() => handleEventClick({ event: reunion })}>
+                                            <button className="info-button" onClick={() => handleEventClick({
+                                                event: {
+                                                    id: reunion.id,
+                                                    title: reunion.title,
+                                                    startStr: reunion.start,
+                                                    endStr: reunion.end,
+                                                    allDay: reunion.allDay,
+                                                    extendedProps: {
+                                                        locationName: reunion.extendedProps.locationName,
+                                                        observations: reunion.extendedProps.observations,
+                                                        organizerName: reunion.extendedProps.organizerName,
+                                                    }
+                                                }
+                                            })}>
                                                 <img src={require('../media/informacion.png')} alt="Info" />
                                             </button>
+
                                         </div>
                                     </div>
                                 </div>
