@@ -22,7 +22,9 @@ stages:
           - script: npm cache clean --force
             displayName: 'Limpiar caché de npm'
 
-          - script: npm install
+          - script: |
+              cd Sgart_front
+              npm install
             displayName: 'Instalar dependencias'
 
           - script: |
