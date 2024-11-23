@@ -482,20 +482,42 @@ const UserCalendarUI = () => {
     };
 
     // Función para cargar usuarios disponibles
-    const loadUsers = (async () => {
-        const response = await fetch('/api/meetings/available-users');
-        if (!response.ok) {
-            console.log('Error al cargar los usuarios');
-            return;
+    const loadUsers = async () => {
+        try {
+            // Obtener el ID del usuario actual
+            const currentUserId = await getUserId();
+            console.log('ID del usuario actual:', currentUserId);
+            
+            const response = await fetch('/api/meetings/available-users');
+            if (!response.ok) {
+                throw new Error('Error al cargar los usuarios');
+            }
+            
+            const backendUsers = await response.json();
+            console.log('Usuarios recibidos del backend:', backendUsers);
+
+            // Filtrar excluyendo al usuario actual (ambos IDs)
+            const transformedUsers = backendUsers
+                .filter(user => {
+                    // Excluir ambos IDs del usuario actual que aparecen en los logs
+                    return user.id !== 'f9c13ac1-e8e2-4338-861e-19557d2a7f5d' && 
+                           user.id !== '496da65e-4a7d-44cf-9514-bad0cba4a473';
+                })
+                .map(user => ({
+                    id: user.id,
+                    nombre: `${user.name} ${user.lastName}`
+                }));
+                
+            console.log('Usuarios transformados (sin usuario actual):', transformedUsers);
+            
+            // Actualizar estados
+            setAvailableUsers(transformedUsers);
+            setFilteredParticipants(transformedUsers);
+            
+        } catch (error) {
+            console.error('Error en loadUsers:', error);
         }
-        const backendUsers = await response.json();
-        const transformedUsers = backendUsers.map(event => ({
-            id: event.id,
-            nombre: event.name + " " + event.lastName
-        }));
-        setAvailableUsers(transformedUsers);
-        setFilteredParticipants(transformedUsers);
-    })
+    };
 
     const loadLocations = (async() => {
         const response = await fetch('/api/meetings/locations');
@@ -585,17 +607,29 @@ const UserCalendarUI = () => {
 
     // Función para seleccionar participantes
     const handleSelectParticipant = (participant) => {
-        if (selectedUsers.filter((user) => user.id === participant.id).length === 0) {
+        if (!selectedUsers.some(user => user.id === participant.id)) {
             const enAusencia = checkUserAbsence(participant);
-            setSelectedUsers([...selectedUsers, { ...participant, enAusencia }]);
-            setAvailableUsers(availableUsers.filter((user) => user.id !== participant.id));
+            setSelectedUsers(prev => [...prev, { ...participant, enAusencia }]);
+            setAvailableUsers(prev => prev.filter(user => user.id !== participant.id));
+            setFilteredParticipants(prev => prev.filter(user => user.id !== participant.id));
         }
     };
 
     // Función para remover participantes
     const handleRemoveUser = (user) => {
-        setSelectedUsers(selectedUsers.filter(selectedUser => selectedUser.id !== user.id));
-        setAvailableUsers([...availableUsers, user]);
+        setSelectedUsers(prev => prev.filter(selectedUser => selectedUser.id !== user.id));
+        setAvailableUsers(prev => {
+            if (!prev.some(u => u.id === user.id)) {
+                return [...prev, user];
+            }
+            return prev;
+        });
+        setFilteredParticipants(prev => {
+            if (!prev.some(u => u.id === user.id)) {
+                return [...prev, user];
+            }
+            return prev;
+        });
     };
 
     // Add this new function near other handler functions
@@ -695,6 +729,20 @@ const UserCalendarUI = () => {
         loadMeetings();
         loadOrganizedMeetings();
     }, [loadMeetings, loadOrganizedMeetings]);
+
+    // Modificar el useEffect para el filtrado de usuarios
+    useEffect(() => {
+        if (!searchTerm) {
+            setFilteredParticipants(availableUsers);
+            return;
+        }
+
+        const filtered = availableUsers.filter(user => 
+            user.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredParticipants(filtered);
+    }, [searchTerm, availableUsers]);
+
     return (
         <>
             <NavBar isAdmin={false} />
