@@ -53,6 +53,9 @@ const UserCalendarUI = () => {
     // Ausencias de los usuarios
     const [ausencias, setAusencias] = useState([]);
 
+    // Localizaciones
+    const [locations, setLocations] = useState([]);
+
     // Cargar invitados de una reunión
     const loadInvitees = useCallback(async (meetingId) => {
         try {
@@ -338,6 +341,7 @@ const UserCalendarUI = () => {
 
     // Añadir estas funciones para manejar la creación de reuniones
     const handleAddTimeClick = () => {
+        loadLocations();
         setPopupStartingHour('');
         setPopupStartingMinutes('');
         setPopupEndingHour('');
@@ -350,7 +354,7 @@ const UserCalendarUI = () => {
     };
 
     const handleNextStep = () => {
-        if (!eventName || !popupSelectedDate) {
+        if (!eventName || !popupSelectedDate || !eventLocation.length) {
             alert("Por favor, completa todos los campos obligatorios antes de continuar.");
             return;
         }
@@ -383,24 +387,26 @@ const UserCalendarUI = () => {
         const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
         const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
 
-        const newEvent = {
-            event_title: eventName,
-            event_start_date: popupSelectedDate,
-            event_all_day: isAllDay ? 1 : 0,
-            event_time_start: isAllDay ? '00:00:00' : startingTime,
-            event_time_end: isAllDay ? '23:59:59' : endingTime,
-            location_name: eventLocation,
-            observations: popupDescription,
-            invitees: selectedUsers
-        };
-
         try {
+            const currentUserId = await getUserId();
+            const eventloc=eventLocation;
+            const newEvent = {
+                organizerId: currentUserId,
+                meetingTitle: eventName,
+                meetingDate: popupSelectedDate,
+                meetingAllDay: isAllDay ? 1 : 0,
+                meetingStartTime: isAllDay ? '00:00:00' : startingTime,
+                meetingEndTime: isAllDay ? '23:59:59' : endingTime,
+                locationId: eventLocation,
+                meetingObservations: popupDescription,
+            };
+    
             setIsLoading(true);
             let response;
 
             if (isEditing) {
                 // Si estamos editando, realizamos una petición PUT
-                response = await fetch(`http://localhost:9000/meetings/${eventIdToEdit}`, {
+                response = await fetch(`/api/meetings/${eventIdToEdit}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -410,7 +416,7 @@ const UserCalendarUI = () => {
                 });
             } else {
                 // Si estamos creando, realizamos una petición POST
-                response = await fetch('http://localhost:9000/meetings', {
+                response = await fetch('/api/meetings/create', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -478,6 +484,20 @@ const UserCalendarUI = () => {
         }));
         setAvailableUsers(transformedUsers);
         setFilteredParticipants(transformedUsers);
+    })
+
+    const loadLocations = (async() => {
+        const response = await fetch('/api/meetings/locations');
+        if (!response.ok) {
+            console.log('Error al cargar las localizaciones');
+            return;
+        }
+        const backendLocations = await response.json();
+        const transformedLocations= backendLocations.map(location => ({
+            locationId: location.locationId,
+            locationName: location.locationName
+        }));
+        setLocations(transformedLocations);
     })
 
     const loadAbsences = (async () => {
@@ -1007,11 +1027,13 @@ const UserCalendarUI = () => {
                                         value={eventLocation}
                                         onChange={(e) => setEventLocation(e.target.value)}
                                     >
-                                        <option value="Ciudad Real">Ciudad Real</option>
-                                        <option value="Toledo">Toledo</option>
-                                        <option value="Madrid">Madrid</option>
-                                        <option value="Málaga">Málaga</option>
-                                        <option value="Barcelona">Barcelona</option>
+                                    <option value="" disabled>Seleccione...</option>
+                                    {locations.map((location) => (
+                                        <option key={location.locationId}
+                                            value={location.locationId}>
+                                            {location.locationName}
+                                        </option>
+                                    ))}
                                     </select>
                                 </div>
                                 <div className="AdminCalendar-input-group">
