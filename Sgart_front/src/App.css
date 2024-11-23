@@ -1058,10 +1058,28 @@ button :hover {
 
 .meeting-item.pending {
   background-color: #fff8b5; /* Amarillo apagado */
+  border-left: 4px solid #f7d154;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.meeting-item.pending:hover {
+  background-color: #d7f551;  /* Un tono morado un poco más oscuro al hacer hover */
 }
 
 .meeting-item.accepted {
-  background-color: #56b656; /* Verde claro */
+  background-color: #90e689;  /* Color morado muy claro */
+  border-left: 4px solid #0ee00e;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.meeting-item.accepted:hover {
+  background-color: #78e258;  /* Un tono morado un poco más oscuro al hacer hover */
 }
 
 .AdminCalendar-left-panel h3 {
@@ -1497,4 +1515,90 @@ button :hover {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.meeting-item.organized {
+  background-color: #f3e5f5;  /* Color morado muy claro */
+  border-left: 4px solid #9c27b0;  /* Borde izquierdo morado más oscuro */
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.meeting-item.organized:hover {
+  background-color: #e1bee7;  /* Un tono morado un poco más oscuro al hacer hover */
+}
+
+.modify-event-button {
+  background-color: #e4e734; /* Azul */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 34px; /* Ajusta el tamaño según tu preferencia */
+  height: 30px; /* Ajusta el tamaño según tu preferencia */
+  padding: 5px 7px;
+  margin-left: auto;
+  margin-right: 0.2px;
+  transition: background-color 0.3s;
+  display: flex;
+}
+
+.modify-event-button:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+.modify-event-button img {
+  width: 100%;
+  height: 100%;
+}
+
+.attendance-button-container {
+  margin: 10px 0;
+}
+
+.attendance-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.attendance-button:hover {
+  background-color: #0056b3;
+}
+
+.attendance-confirmed-button {
+  background-color: #28a745;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: default;
+}
+
+.attendance-confirmed-button img {
+  width: 20px;
+  height: 20px;
+}
+
+.popup-button-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.close-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  /* other existing styles */
+}
+
+.attendance-button-container {
+  margin: 0; /* Remove margin since we're handling spacing with flex */
 }
