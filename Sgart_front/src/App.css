@@ -1546,7 +1546,7 @@ button :hover {
 }
 
 .modify-event-button:hover {
-  background-color: #0056b3;
+  background-color: #e4e734;
   transform: scale(1.1);
 }
 
@@ -1619,7 +1619,7 @@ button :hover {
 }
 
 .delete-event-button:hover {
-  background-color: #0056b3;
+  background-color: #eb5151;
   transform: scale(1.1);
 }
 

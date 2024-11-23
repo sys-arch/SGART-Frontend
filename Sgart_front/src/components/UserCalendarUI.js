@@ -353,6 +353,7 @@ const UserCalendarUI = () => {
     const handleClosePopup = () => {
         setIsPopupOpen(false);
         setCurrentStep(1);
+        setIsEditingEvent(false);
     };
 
     const handleSaveEvent = async () => {
@@ -590,10 +591,12 @@ const UserCalendarUI = () => {
     };
 
     const [isEditing, setIsEditing] = useState(false);
-    const [eventIdToEdit, setEventIdToEdit] = useState(null);  // Para almacenar el ID del evento a modificar
+    const [eventIdToEdit, setEventIdToEdit] = useState(null);
+    const [isEditingEvent, setIsEditingEvent] = useState(false);
 
 
     const handleModifyEvent = (event) => {
+        setIsEditingEvent(true);
         setEventName(event.title);
         setPopupSelectedDate(event.start.split('T')[0]);
         if (event.allDay) {
@@ -868,7 +871,7 @@ const UserCalendarUI = () => {
                                         Cerrar
                                     </button>
                                     {organizedEvents.find(event => event.id === selectedEvent.id) && (
-                                        <button className="modify-button" onClick={() => handleModifyEvent(selectedEvent)}>
+                                        <button className="close-button" onClick={() => handleModifyEvent(selectedEvent)}>
                                             Modificar
                                         </button>
                                     )}
@@ -905,7 +908,7 @@ const UserCalendarUI = () => {
                     {isPopupOpen && currentStep === 1 && (
                         <div className="popup-overlay">
                             <div className="popup-container">
-                                <h2>Crear nueva Reunión</h2>
+                            <h2>{isEditingEvent ? 'Modificar Reunión' : 'Crear nueva Reunión'}</h2>
                                 <div className="AdminCalendar-input-group">
                                     <label>Nombre de la Reunión:</label>
                                     <input
