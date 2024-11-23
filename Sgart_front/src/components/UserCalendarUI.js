@@ -476,7 +476,7 @@ const UserCalendarUI = () => {
         return ausencias.some((ausencia) => {
             // Para la ausencia
             const startTime = ausencia.absenceAllDay===true?'00:00:00':ausencia.absenceStartTime;
-            const endTime = ausencia.absenceAllDay===true?'23:59:00':ausencia.absenceStartTime;
+            const endTime = ausencia.absenceAllDay===true?'23:59:00':ausencia.absenceEndTime;
 
             const ausenciaFechaInicio = createDateWithDayAndTime(ausencia.absenceStartDate, startTime);
             const ausenciaFechaFin = createDateWithDayAndTime(ausencia.absenceEndDate, endTime);
