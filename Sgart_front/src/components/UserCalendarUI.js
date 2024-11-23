@@ -186,7 +186,13 @@ const UserCalendarUI = () => {
         }
     }, [loadInvitees]);
 
-    // Añadir función para cargar reuniones organizadas
+    // Añadir esta función auxiliar cerca de otras funciones auxiliares
+    const areAllInvitationsRejected = (invitees) => {
+        if (!invitees || invitees.length === 0) return false;
+        return invitees.every(invitee => invitee.status.trim() === 'Rechazada');
+    };
+
+    // Modificar la función loadOrganizedMeetings
     const loadOrganizedMeetings = useCallback(async () => {
         try {
             console.log("Iniciando carga de reuniones organizadas...");
@@ -208,12 +214,17 @@ const UserCalendarUI = () => {
                 const invitados = await loadInvitees(meeting.meetingId);
                 console.log(`Invitados cargados para reunión ${meeting.meetingId}:`, invitados);
 
+                const allRejected = areAllInvitationsRejected(invitados);
+
                 const transformedMeeting = {
                     id: meeting.meetingId,
                     title: meeting.title || "Título no especificado",
                     start: `${meeting.meetingDate}T${meeting.startTime}`,
                     end: `${meeting.meetingDate}T${meeting.endTime}`,
                     allDay: meeting.allDay,
+                    backgroundColor: allRejected ? '#ffcccc' : '#ce93d8',
+                    allRejected: allRejected,
+                    className: allRejected ? 'rejected-meeting' : 'normal-meeting',
                     extendedProps: {
                         locationName: meeting.locationName,
                         observations: meeting.observations,
@@ -742,7 +753,10 @@ const UserCalendarUI = () => {
                         <h3>Reuniones Organizadas</h3>
                         <div className="meeting-list-organized">
                             {reunionesOrganizadas.map((reunion) => (
-                                <div key={reunion.id} className="meeting-item organized">
+                                <div 
+                                    key={reunion.id} 
+                                    className={`meeting-item organized ${reunion.allRejected ? 'rejected-meeting' : 'normal-meeting'}`}
+                                >
                                     <div className="meeting-item-content">
                                         <div className="meeting-info">
                                             <p>{reunion.title}</p>
@@ -760,9 +774,11 @@ const UserCalendarUI = () => {
                                             })}>
                                                 <img src={require('../media/informacion.png')} alt="Info" />
                                             </button>
-                                            <button className="modify-event-button" onClick={() => handleModifyEvent(reunion)}>
-                                                <img src={require('../media/mano.png')} alt="Editar" title='Editar Reunión' />
-                                            </button>
+                                            {!reunion.allRejected && (
+                                                <button className="modify-event-button" onClick={() => handleModifyEvent(reunion)}>
+                                                    <img src={require('../media/mano.png')} alt="Editar" title='Editar Reunión' />
+                                                </button>
+                                            )}
                                             <button className="delete-event-button" onClick={() => handleDeleteEvent(reunion)}>
                                                 <img src={require('../media/papelera.png')} alt="Eliminar" title='Eliminar Reunión' />
                                             </button>
@@ -786,18 +802,19 @@ const UserCalendarUI = () => {
                                 eventSources={[
                                     {
                                         events: regularEvents,
-                                        color: '#28a745',  // Verde para reuniones aceptadas
+                                        color: '#28a745',
                                         textColor: 'white'
                                     },
                                     {
                                         events: pendingMeetingsEvents,
-                                        color: '#ffc107',  // Amarillo para reuniones pendientes
+                                        color: '#ffc107',
                                         textColor: 'black'
                                     },
                                     {
-                                        events: organizedEvents,
-                                        color: '#9c27b0',  // Morado para reuniones organizadas
-                                        textColor: 'white'
+                                        events: organizedEvents.map(event => ({
+                                            ...event,
+                                            color: event.backgroundColor // Usar el color definido en el evento
+                                        }))
                                     }
                                 ]}
                                 eventDidMount={(info) => {
@@ -871,9 +888,11 @@ const UserCalendarUI = () => {
                                         Cerrar
                                     </button>
                                     {organizedEvents.find(event => event.id === selectedEvent.id) && (
-                                        <button className="close-button" onClick={() => handleModifyEvent(selectedEvent)}>
-                                            Modificar
-                                        </button>
+                                        !areAllInvitationsRejected(invitees) && (
+                                            <button className="close-button" onClick={() => handleModifyEvent(selectedEvent)}>
+                                                Modificar
+                                            </button>
+                                        )
                                     )}
                                     {regularEvents.find(event => event.id === selectedEvent.id) && (
                                         <div className="attendance-button-container">

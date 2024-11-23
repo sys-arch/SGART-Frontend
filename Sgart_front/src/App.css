@@ -1627,3 +1627,34 @@ button :hover {
   width: 100%;
   height: 100%;
 }
+
+/* Para reuniones organizadas normales */
+.meeting-item.organized[style*="ce93d8"]:hover {
+    background-color: #ba68c8 !important;
+}
+
+/* Para reuniones organizadas rechazadas */
+.meeting-item.organized[style*="ffcccc"]:hover {
+    background-color: #ffb3b3 !important;
+}
+
+
+/* Estilos base para las reuniones organizadas */
+.meeting-item.organized.normal-meeting {
+    background-color: #ce93d8;
+    transition: background-color 0.2s;
+}
+
+.meeting-item.organized.rejected-meeting {
+    background-color: #ffcccc;
+    transition: background-color 0.2s;
+}
+
+/* Estilos hover */
+.meeting-item.organized.normal-meeting:hover {
+    background-color: #ba68c8;
+}
+
+.meeting-item.organized.rejected-meeting:hover {
+    background-color: #ffb3b3;
+}
