@@ -19,22 +19,16 @@ stages:
               versionSpec: '20.x'
             displayName: 'Instalar Node.js'
 
-          - script: |
-              echo "Limpieza de caché npm y dependencias"
-              rm -rf node_modules package-lock.json
-              npm cache clean --force
-            displayName: 'Limpieza inicial'
+          - script: npm cache clean --force
+            displayName: 'Limpiar caché de npm'
 
           - script: npm install
             displayName: 'Instalar dependencias'
 
           - script: |
-              echo "Contenido de node_modules:"
-              ls -la node_modules || echo "node_modules no existe"
-            displayName: 'Inspeccionar node_modules'
-
-          - script: npm run build
-            displayName: 'Construir aplicación'
+              cd Sgart_front
+              npm run build
+            displayName: 'Build'
 
           - script: |
               npm install -g firebase-tools
