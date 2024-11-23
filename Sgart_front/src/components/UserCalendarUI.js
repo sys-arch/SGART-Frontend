@@ -193,7 +193,7 @@ const UserCalendarUI = () => {
             const response = await fetch('http://localhost:9000/usuarios/calendarios/organized-meetings', {
                 credentials: 'include'
             });
-            
+
             if (!response.ok) {
                 console.error('Error en la respuesta:', response.status, response.statusText);
                 throw new Error('Error al cargar reuniones organizadas');
@@ -204,7 +204,7 @@ const UserCalendarUI = () => {
 
             const transformedMeetings = await Promise.all(backendMeetings.map(async (meeting, index) => {
                 console.log(`Procesando reunión organizada ${index + 1}:`, meeting);
-                
+
                 const invitados = await loadInvitees(meeting.meetingId);
                 console.log(`Invitados cargados para reunión ${meeting.meetingId}:`, invitados);
 
@@ -273,7 +273,7 @@ const UserCalendarUI = () => {
 
         // Cargar invitados frescos al hacer click
         const invitados = await loadInvitees(clickInfo.event.id);
-        
+
         // Check attendance status if it's an accepted meeting
         if (regularEvents.find(event => event.id === clickInfo.event.id)) {
             const hasConfirmedAttendance = await checkAttendanceStatus(clickInfo.event.id);
@@ -289,16 +289,16 @@ const UserCalendarUI = () => {
         try {
             console.log('Iniciando actualización de estado para evento:', selectedEvent);
             console.log('Acción seleccionada:', confirmationAction);
-            
+
             const url = `http://localhost:9000/invitations/${selectedEvent.id}/status`;
             console.log('URL de la petición:', url);
-    
+
             const requestBody = {
                 newStatus: confirmationAction === 'accept' ? 'Aceptada' : 'Rechazada',
                 comment: ''
             };
             console.log('Cuerpo de la petición:', requestBody);
-    
+
             const response = await fetch(url, {
                 method: 'PUT', // Cambiado de PATCH a PUT
                 credentials: 'include',
@@ -307,15 +307,15 @@ const UserCalendarUI = () => {
                 },
                 body: JSON.stringify(requestBody),
             });
-    
+
             console.log('Respuesta del servidor:', response.status);
-            
+
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('Error response:', errorText);
                 throw new Error(`Error al actualizar el estado de la invitación: ${errorText}`);
             }
-    
+
             await loadMeetings(); // Recargar reuniones después de la actualización
             console.log('Actualización completada con éxito');
         } catch (error) {
@@ -384,20 +384,38 @@ const UserCalendarUI = () => {
 
         try {
             setIsLoading(true);
-            const response = await fetch('http://localhost:9000/meetings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(newEvent),
-            });
+            let response;
+
+            if (isEditing) {
+                // Si estamos editando, realizamos una petición PUT
+                response = await fetch(`http://localhost:9000/meetings/${eventIdToEdit}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(newEvent),
+                });
+            } else {
+                // Si estamos creando, realizamos una petición POST
+                response = await fetch('http://localhost:9000/meetings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(newEvent),
+                });
+            }
 
             if (!response.ok) throw new Error('Error al guardar el evento');
 
             await loadMeetings();
+            await loadOrganizedMeetings();  // Recargar reuniones organizadas
             setIsPopupOpen(false);
             setCurrentStep(1);
+            setIsEditing(false);  // Reiniciar el estado de edición
+            setEventIdToEdit(null);  // Limpiar el ID del evento a editar
             alert("Se ha guardado el evento de manera exitosa.");
         } catch (error) {
             console.error('Error al guardar el evento:', error);
@@ -437,7 +455,7 @@ const UserCalendarUI = () => {
     // Función para cargar usuarios disponibles
     const loadUsers = (async () => {
         const response = await fetch('/api/meetings/available-users');
-        if (!response.ok){
+        if (!response.ok) {
             console.log('Error al cargar los usuarios');
             return;
         }
@@ -450,48 +468,48 @@ const UserCalendarUI = () => {
         setFilteredParticipants(transformedUsers);
     })
 
-     const loadAbsences = (async () => {
-         const response = await fetch('/administrador/ausencias/loadAbsences');
-         if (!response.ok) {
-             console.log('Error al cargar las ausencias');
-             return;
-         }
- 
-         const backendAbsences = await response.json();
-         const transformedAbsences = backendAbsences.map(ausencia => ({
-             absenceId: ausencia.absenceId,
-             userId: ausencia.userId,
-             absenceStartDate: ausencia.absenceStartDate,
-             absenceEndDate: ausencia.absenceEndDate,
-             absenceAllDay: ausencia.absenceAllDay,
-             absenceStartTime: ausencia.absenceStartTime,
-             absenceEndTime: ausencia.absenceEndTime,
-             absenceReason: ausencia.absenceReason
-         }));
-         setAusencias(transformedAbsences);
-         console.log(transformedAbsences);
-     })
+    const loadAbsences = (async () => {
+        const response = await fetch('/administrador/ausencias/loadAbsences');
+        if (!response.ok) {
+            console.log('Error al cargar las ausencias');
+            return;
+        }
 
-     const checkUserAbsence = (participant) => {
+        const backendAbsences = await response.json();
+        const transformedAbsences = backendAbsences.map(ausencia => ({
+            absenceId: ausencia.absenceId,
+            userId: ausencia.userId,
+            absenceStartDate: ausencia.absenceStartDate,
+            absenceEndDate: ausencia.absenceEndDate,
+            absenceAllDay: ausencia.absenceAllDay,
+            absenceStartTime: ausencia.absenceStartTime,
+            absenceEndTime: ausencia.absenceEndTime,
+            absenceReason: ausencia.absenceReason
+        }));
+        setAusencias(transformedAbsences);
+        console.log(transformedAbsences);
+    })
+
+    const checkUserAbsence = (participant) => {
         return ausencias.some((ausencia) => {
             // Para la ausencia
-            const startTime = ausencia.absenceAllDay===true?'00:00:00':ausencia.absenceStartTime;
-            const endTime = ausencia.absenceAllDay===true?'23:59:00':ausencia.absenceEndTime;
+            const startTime = ausencia.absenceAllDay === true ? '00:00:00' : ausencia.absenceStartTime;
+            const endTime = ausencia.absenceAllDay === true ? '23:59:00' : ausencia.absenceEndTime;
 
             const ausenciaFechaInicio = createDateWithDayAndTime(ausencia.absenceStartDate, startTime);
             const ausenciaFechaFin = createDateWithDayAndTime(ausencia.absenceEndDate, endTime);
-            
+
             // Para la fecha seleccionada
-            const selectedStartTime = isAllDay===true?'00:00:00':(popupStartingHour+":"+popupStartingMinutes+":00");
-            const selectedEndTime = isAllDay===true?'23:59:00':(popupEndingHour+":"+popupEndingMinutes+":00");
+            const selectedStartTime = isAllDay === true ? '00:00:00' : (popupStartingHour + ":" + popupStartingMinutes + ":00");
+            const selectedEndTime = isAllDay === true ? '23:59:00' : (popupEndingHour + ":" + popupEndingMinutes + ":00");
 
             const selectedFechaInicio = createDateWithDayAndTime(popupSelectedDate, selectedStartTime);
             const selectedFechaFin = createDateWithDayAndTime(popupSelectedDate, selectedEndTime);
             return (
                 ausencia.userId === participant.id &&
                 ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < selectedFechaFin) ||
-                (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < selectedFechaFin) ||
-                (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < selectedFechaInicio))
+                    (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < selectedFechaFin) ||
+                    (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < selectedFechaInicio))
             );
         });
     };
@@ -520,11 +538,11 @@ const UserCalendarUI = () => {
 
         return date;
     };
- 
+
 
     // Función para seleccionar participantes
     const handleSelectParticipant = (participant) => {
-        if (selectedUsers.filter((user) => user.id === participant.id).length===0) {
+        if (selectedUsers.filter((user) => user.id === participant.id).length === 0) {
             const enAusencia = checkUserAbsence(participant);
             setSelectedUsers([...selectedUsers, { ...participant, enAusencia }]);
             setAvailableUsers(availableUsers.filter((user) => user.id !== participant.id));
@@ -550,16 +568,16 @@ const UserCalendarUI = () => {
             }
 
             // Update both regularEvents and reunionesAceptadas
-            const updateEvents = (events) => 
-                events.map(event => 
-                    event.id === meetingId 
+            const updateEvents = (events) =>
+                events.map(event =>
+                    event.id === meetingId
                         ? { ...event, extendedProps: { ...event.extendedProps, hasConfirmedAttendance: true } }
                         : event
                 );
 
             setRegularEvents(prevEvents => updateEvents(prevEvents));
             setReunionesAceptadas(prevEvents => updateEvents(prevEvents));
-            
+
             // Force re-render by updating the selectedEvent
             setSelectedEvent(prev => ({
                 ...prev,
@@ -570,6 +588,62 @@ const UserCalendarUI = () => {
             console.error('Error updating attendance:', error);
         }
     };
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [eventIdToEdit, setEventIdToEdit] = useState(null);  // Para almacenar el ID del evento a modificar
+
+
+    const handleModifyEvent = (event) => {
+        setEventName(event.title);
+        setPopupSelectedDate(event.start.split('T')[0]);
+        if (event.allDay) {
+            setIsAllDay(true);
+        } else {
+            setIsAllDay(false);
+            const [startHour, startMinutes] = event.start.split('T')[1].split(':');
+            setPopupStartingHour(startHour);
+            setPopupStartingMinutes(startMinutes);
+
+            const [endHour, endMinutes] = event.end.split('T')[1].split(':');
+            setPopupEndingHour(endHour);
+            setPopupEndingMinutes(endMinutes);
+        }
+        setEventLocation(event.extendedProps.locationName || '');
+        setPopupDescription(event.extendedProps.observations || '');
+        setIsPopupOpen(true);
+        setCurrentStep(1);
+        setIsEditing(true);  // Indicamos que estamos editando un evento
+        setEventIdToEdit(event.id);  // Almacenamos el ID del evento que estamos editando
+    };
+
+    const handleDeleteEvent = async (reunion) => {
+        try {
+            // Mostrar un mensaje de confirmación antes de eliminar la reunión
+            if (!window.confirm(`¿Estás seguro de que quieres eliminar la reunión "${reunion.title}"?`)) {
+                return;
+            }
+
+            // Hacer una petición DELETE al backend para eliminar la reunión
+            const response = await fetch(`http://localhost:9000/meetings/${reunion.id}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar la reunión');
+            }
+
+            // Actualizar las reuniones organizadas para eliminar la reunión eliminada
+            setOrganizedEvents(prevEvents => prevEvents.filter(event => event.id !== reunion.id));
+            setReunionesOrganizadas(prevMeetings => prevMeetings.filter(meeting => meeting.id !== reunion.id));
+
+            alert('La reunión se ha eliminado correctamente.');
+        } catch (error) {
+            console.error('Error al eliminar la reunión:', error);
+            alert('Hubo un error al intentar eliminar la reunión. Por favor, inténtalo de nuevo.');
+        }
+    };
+
 
     // Efectos
     useEffect(() => {
@@ -683,8 +757,11 @@ const UserCalendarUI = () => {
                                             })}>
                                                 <img src={require('../media/informacion.png')} alt="Info" />
                                             </button>
-                                            <button className="modify-event-button" /*onClick={}*/>
-                                                <img src={require('../media/mano.png')} alt="Editar" />
+                                            <button className="modify-event-button" onClick={() => handleModifyEvent(reunion)}>
+                                                <img src={require('../media/mano.png')} alt="Editar" title='Editar Reunión' />
+                                            </button>
+                                            <button className="delete-event-button" onClick={() => handleDeleteEvent(reunion)}>
+                                                <img src={require('../media/papelera.png')} alt="Eliminar" title='Eliminar Reunión' />
                                             </button>
                                         </div>
                                     </div>
@@ -790,7 +867,11 @@ const UserCalendarUI = () => {
                                     <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>
                                         Cerrar
                                     </button>
-                                    
+                                    {organizedEvents.find(event => event.id === selectedEvent.id) && (
+                                        <button className="modify-button" onClick={() => handleModifyEvent(selectedEvent)}>
+                                            Modificar
+                                        </button>
+                                    )}
                                     {regularEvents.find(event => event.id === selectedEvent.id) && (
                                         <div className="attendance-button-container">
                                             {selectedEvent.extendedProps.hasConfirmedAttendance ? (
@@ -798,7 +879,7 @@ const UserCalendarUI = () => {
                                                     <img src={require('../media/garrapata.png')} alt="Attendance Confirmed" />
                                                 </button>
                                             ) : (
-                                                <button 
+                                                <button
                                                     className="attendance-button"
                                                     onClick={() => handleAttendanceUpdate(selectedEvent.id)}
                                                 >
@@ -951,8 +1032,8 @@ const UserCalendarUI = () => {
                                 <div className="selected-participants">
                                     <h3>Participantes Seleccionados:</h3>
                                     {selectedUsers.map((user) => (
-                                        <div key={user.id} className="selected-participant" 
-                                        style={user.enAusencia?{color:'red'}:{}}>
+                                        <div key={user.id} className="selected-participant"
+                                            style={user.enAusencia ? { color: 'red' } : {}}>
                                             {user.nombre}
                                             <button onClick={() => handleRemoveUser(user)}>X</button>
                                         </div>
@@ -962,7 +1043,7 @@ const UserCalendarUI = () => {
                                     <button onClick={handleSaveEvent}>Guardar</button>
                                     <button onClick={handleClosePopup}>Cancelar</button>
                                 </div>
-                                {errorEvent && <b style={{color:'red'}} className="error-message">{errorEvent}</b>}
+                                {errorEvent && <b style={{ color: 'red' }} className="error-message">{errorEvent}</b>}
                             </div>
                         </div>
                     )}
