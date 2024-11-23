@@ -25,6 +25,7 @@ stages:
             displayName: 'npm install y instalación firebase'
 
           - script: |
+              cd Sgart_front
               npm run build
             displayName: 'Build'
 
