@@ -1,6 +1,6 @@
 {
     "hosting": {
-        "public": "build",
+        "public": "Sgart_front/build",
         "ignore": [
             "firebase.json",
             "**/.*",
