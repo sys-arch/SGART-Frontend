@@ -925,7 +925,6 @@ const UserCalendarUI = () => {
                             </div>
                         </div>
                     )}
-
                     {isPopupOpen && currentStep === 2 && (
                         <div className="popup-overlay">
                             <div className="popup-container">
