@@ -436,7 +436,7 @@ const UserCalendarUI = () => {
 
     // Función para cargar usuarios disponibles
     const loadUsers = (async () => {
-        const response = await fetch('/meetings/available-users');
+        const response = await fetch('/api/meetings/available-users');
         if (!response.ok){
             console.log('Error al cargar los usuarios');
             return;
@@ -474,28 +474,25 @@ const UserCalendarUI = () => {
 
      const checkUserAbsence = (participant) => {
         return ausencias.some((ausencia) => {
-            const ausenciaFechaInicio = createDateWithDayAndTime(ausencia.absenceStartDate, ausencia.absenceStartTime);
-            const ausenciaFechaFin = createDateWithDayAndTime(ausencia.absenceEndDate, ausencia.absenceEndTime);
-            if (isAllDay) {
-                const selectedFechaInicio = createDateWithDayHourAndMinutes(popupSelectedDate, 0, 0);
-                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate, 23, 59);
-                return (
-                    ausencia.userId === participant.id &&
-                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < selectedFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < selectedFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < selectedFechaInicio))
-                );
-            } else {
-                const selectedFechaInicio = createDateWithDayHourAndMinutes(popupSelectedDate, popupStartingHour, popupStartingMinutes);
-                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate, popupEndingHour, popupEndingMinutes);
-                return (
-                    ausencia.userId === participant.id &&
-                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < selectedFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < selectedFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < selectedFechaInicio))
-                );
-            }
+            // Para la ausencia
+            const startTime = ausencia.absenceAllDay===true?'00:00:00':ausencia.absenceStartTime;
+            const endTime = ausencia.absenceAllDay===true?'23:59:00':ausencia.absenceStartTime;
 
+            const ausenciaFechaInicio = createDateWithDayAndTime(ausencia.absenceStartDate, startTime);
+            const ausenciaFechaFin = createDateWithDayAndTime(ausencia.absenceEndDate, endTime);
+            
+            // Para la fecha seleccionada
+            const selectedStartTime = isAllDay===true?'00:00:00':(popupStartingHour+":"+popupStartingMinutes+":00");
+            const selectedEndTime = isAllDay===true?'23:59:00':(popupEndingHour+":"+popupEndingMinutes+":00");
+
+            const selectedFechaInicio = createDateWithDayAndTime(popupSelectedDate, selectedStartTime);
+            const selectedFechaFin = createDateWithDayAndTime(popupSelectedDate, selectedEndTime);
+            return (
+                ausencia.userId === participant.id &&
+                ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < selectedFechaFin) ||
+                (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < selectedFechaFin) ||
+                (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < selectedFechaInicio))
+            );
         });
     };
 

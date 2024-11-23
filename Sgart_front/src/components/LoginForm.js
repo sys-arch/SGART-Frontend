@@ -69,7 +69,7 @@ const LoginForm = () => {
             password: contrasena,
         };
     
-        fetch('http://localhost:9000/users/login', {
+        fetch('/users/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
