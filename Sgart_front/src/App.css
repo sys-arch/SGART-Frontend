@@ -1066,7 +1066,7 @@ button :hover {
 }
 
 .meeting-item.pending:hover {
-  background-color: #d7f551;  /* Un tono morado un poco más oscuro al hacer hover */
+  background-color: #e9e65e;  /* Un tono morado un poco más oscuro al hacer hover */
 }
 
 .meeting-item.accepted {
@@ -1079,7 +1079,7 @@ button :hover {
 }
 
 .meeting-item.accepted:hover {
-  background-color: #78e258;  /* Un tono morado un poco más oscuro al hacer hover */
+  background-color: #8ae270;
 }
 
 .AdminCalendar-left-panel h3 {
@@ -1601,4 +1601,29 @@ button :hover {
 
 .attendance-button-container {
   margin: 0; /* Remove margin since we're handling spacing with flex */
+}
+
+.delete-event-button {
+  background-color: #eb5151; /* Azul */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 34px; /* Ajusta el tamaño según tu preferencia */
+  height: 30px; /* Ajusta el tamaño según tu preferencia */
+  padding: 5px 7px;
+  margin-left: auto;
+  margin-right: 0.2px;
+  transition: background-color 0.3s;
+  display: flex;
+}
+
+.delete-event-button:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+.delete-event-button img {
+  width: 100%;
+  height: 100%;
 }
