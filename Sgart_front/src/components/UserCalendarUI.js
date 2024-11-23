@@ -388,8 +388,9 @@ const UserCalendarUI = () => {
         const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
 
         try {
+            setIsLoading(true);
             const currentUserId = await getUserId();
-            const eventloc=eventLocation;
+            const eventloc = eventLocation;
             const newEvent = {
                 organizerId: currentUserId,
                 meetingTitle: eventName,
@@ -400,44 +401,54 @@ const UserCalendarUI = () => {
                 locationId: eventLocation,
                 meetingObservations: popupDescription,
             };
-    
-            setIsLoading(true);
+
             let response;
+            let meetingId;
 
             if (isEditing) {
-                // Si estamos editando, realizamos una petición PUT
                 response = await fetch(`/api/meetings/${eventIdToEdit}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify(newEvent),
                 });
+                meetingId = eventIdToEdit;
             } else {
-                // Si estamos creando, realizamos una petición POST
                 response = await fetch('/api/meetings/create', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify(newEvent),
                 });
+                const meetingData = await response.json();
+                meetingId = meetingData.meetingId; // Assuming your backend returns the created meeting ID
             }
 
             if (!response.ok) throw new Error('Error al guardar el evento');
 
+            // Send invitations
+            const userIds = selectedUsers.map(user => user.id);
+            const inviteResponse = await fetch(`http://localhost:9000/invitations/${meetingId}/invite`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(userIds),
+            });
+
+            if (!inviteResponse.ok) {
+                throw new Error('Error al enviar las invitaciones');
+            }
+
             await loadMeetings();
-            await loadOrganizedMeetings();  // Recargar reuniones organizadas
+            await loadOrganizedMeetings();
             setIsPopupOpen(false);
             setCurrentStep(1);
-            setIsEditing(false);  // Reiniciar el estado de edición
-            setEventIdToEdit(null);  // Limpiar el ID del evento a editar
-            alert("Se ha guardado el evento de manera exitosa.");
+            setIsEditing(false);
+            setEventIdToEdit(null);
+            alert("Se ha guardado el evento y enviado las invitaciones de manera exitosa.");
         } catch (error) {
-            console.error('Error al guardar el evento:', error);
-            setErrorEvent('Error al crear la reunión. Por favor, inténtalo de nuevo.');
+            console.error('Error:', error);
+            setErrorEvent('Error al crear la reunión o enviar las invitaciones. Por favor, inténtalo de nuevo.');
         } finally {
             setIsLoading(false);
         }
