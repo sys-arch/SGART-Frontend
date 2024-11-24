@@ -1678,6 +1678,7 @@ button :hover {
 }
 
 .reset-password-container {
+  height: 100%;
   width: 100%;
   max-width: 400px;
   padding: 20px;

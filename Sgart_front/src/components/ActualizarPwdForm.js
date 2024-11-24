@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
-import '../App.css';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const ActualizarPwdForm = () => {
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get('token');
     const navigate = useNavigate();
-    const { token } = useParams();  // Obtener el token de la URL
+    
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    // Función para manejar el envío del formulario
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMessage('');
 
-        // Verificar si las contraseñas coinciden
+        if (!token) {
+            setErrorMessage('Token inválido o expirado');
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
             setErrorMessage('Las contraseñas no coinciden.');
             return;
@@ -28,48 +33,65 @@ const ActualizarPwdForm = () => {
                 body: JSON.stringify({
                     token: token,
                     newPassword: newPassword
-                }),
+                })
             });
 
-            if (!response.ok) {
-                throw new Error('Error al actualizar la contraseña.');
-            }
+            const data = await response.json();
 
-            alert('Contraseña actualizada correctamente. Ahora puedes iniciar sesión.');
-            navigate('/login');
+            if (response.ok) {
+                alert(data.message || 'Contraseña actualizada correctamente');
+                navigate('/');
+            } else {
+                setErrorMessage(data.error || 'Error al actualizar la contraseña');
+            }
         } catch (error) {
             console.error('Error al actualizar la contraseña:', error);
-            setErrorMessage('No se pudo actualizar la contraseña. Por favor, intenta de nuevo.');
+            setErrorMessage('Error de conexión. Por favor, intente nuevamente.');
         }
     };
 
+    // Para debug
+    console.log('Token recibido:', token);
+
     return (
-        <div className='reset-password-container'>
-            <h2>Actualizar Contraseña</h2>
-            <form onSubmit={handleSubmit} className='reset-password-form'>
-                <div className='input-group'>
-                    <input
-                        type='password'
-                        id='newPassword'
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                    />
-                    <label htmlFor='newPassword'>Nueva Contraseña:</label>
-                </div>
-                <div className='input-group'>
-                    <input
-                        type='password'
-                        id='confirmPassword'
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                    />
-                    <label htmlFor='confirmPassword'>Repetir Nueva Contraseña:</label>
-                </div>
-                {errorMessage && <p className='error-message'>{errorMessage}</p>}
-                <button type='submit' className='update-btn'>Actualizar Contraseña</button>
-            </form>
+        <div className="login-container">
+            <div className="login-box">
+                <form onSubmit={handleSubmit}>
+                    <h2>Actualizar Contraseña</h2>
+                    
+                    {errorMessage && (
+                        <div className="error-message">{errorMessage}</div>
+                    )}
+
+                    <div className="input-group">
+                        <input
+                            type="password"
+                            id="newPassword"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                            minLength="6"
+                        />
+                        <label htmlFor="newPassword">Nueva Contraseña</label>
+                    </div>
+
+                    <div className="input-group">
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                            minLength="6"
+                        />
+                        <label htmlFor="confirmPassword">Confirmar Contraseña</label>
+                    </div>
+
+                    <button type="submit" className="login-btn">
+                        Actualizar Contraseña
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };
