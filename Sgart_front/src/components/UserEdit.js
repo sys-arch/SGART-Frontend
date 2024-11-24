@@ -23,7 +23,7 @@ const UserEdit = ({ user, onSave, onCancel }) => {
         };
 
         // Realizar la solicitud al backend
-        fetch('users/modificar', {
+        fetch('https://sgart-backend.onrender.com/users/modificar', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

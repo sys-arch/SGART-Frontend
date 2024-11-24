@@ -26,7 +26,7 @@ const RecuperarPwdForm = () => {
 
         try {
             // Realiza la solicitud POST al backend
-            const response = await fetch(`/auth/forgot-password?email=${encodeURIComponent(email)}`, {
+            const response = await fetch(`https://sgart-backend.onrender.com/auth/forgot-password?email=${encodeURIComponent(email)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

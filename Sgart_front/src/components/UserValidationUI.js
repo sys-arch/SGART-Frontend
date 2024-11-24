@@ -15,7 +15,7 @@ const UserValidationUI = () => {
     }, []);
 
     const actualizarUsuarios = () => {
-        fetch('admin/getUsuariosSinValidar')
+        fetch('https://sgart-backend.onrender.com/admin/getUsuariosSinValidar')
             .then(async response => {
                 const result = await response.json();
                 const usersTable = result.map(user => ({
@@ -34,7 +34,7 @@ const UserValidationUI = () => {
             .catch(error => {
                 console.error('Error fetching data:', error);
             });
-        fetch('admin/getUsuariosValidados')
+        fetch('https://sgart-backend.onrender.com/admin/getUsuariosValidados')
             .then(async response => {
                 const result = await response.json();
                 const usersTable = result.map(user => ({
@@ -57,7 +57,7 @@ const UserValidationUI = () => {
 
     const invalidarUsuario = (email) => {
         // Filtramos el array de datos para eliminar el elemento con el id correspondiente
-        fetch('admin/eliminar/email/' + email, {
+        fetch('https://sgart-backend.onrender.com/admin/eliminar/email/' + email, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ const UserValidationUI = () => {
     };
 
     const validarUsuario = (email) => {
-        fetch('admin/validar/' + email, {
+        fetch('https://sgart-backend.onrender.com/admin/validar/' + email, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const UserValidationUI = () => {
     }
 
     const toggleUserStatus = (email) => {
-        fetch('admin/cambiarHabilitacion/' + email, {
+        fetch('https://sgart-backend.onrender.com/admin/cambiarHabilitacion/' + email, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ const UserValidationUI = () => {
     };
 
     const eliminarUsuario = (email) => {
-        fetch('admin/eliminar/email/' + email, {
+        fetch('https://sgart-backend.onrender.com/admin/eliminar/email/' + email, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
