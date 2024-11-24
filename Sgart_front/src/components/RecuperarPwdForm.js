@@ -5,6 +5,7 @@ const RecuperarPwdForm = () => {
 
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [isOut, setIsOut] = useState(false);
 
     const handleChange = (event) => {
@@ -60,6 +61,8 @@ const RecuperarPwdForm = () => {
                 Introduzca su dirección de correo electrónico y le enviaremos un enlace para restablecer su contraseña.
                 </p>
                     <div className="input-group">
+                        {successMessage && <div className="success-message">{successMessage}</div>}
+                        {error && <div className="error-message">{error}</div>}
                         <input type="email" id="email" name="email" value={email} onChange={handleChange} required/>
                         <label htmlFor="email">Usuario</label>
                     </div>
