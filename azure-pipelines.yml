@@ -49,7 +49,7 @@ stages:
             - agent.name -equals SonarLocalPC
         steps:
           - checkout: none
-          - script: sonar-scanner -Dsonar.token=$(SQ_TOKEN) -Dproject.settings=Sgart_front/sonar-project.properties
+          - script: sonar-scanner -Dsonar.token=$(SQ_TOKEN) -Dproject.settings=Sgart_front/sonar-project.properties -X
             displayName: 'SonarQube analysis'
           - script: echo "SonarQube OK"
             displayName: 'Confirm SonarQube'
