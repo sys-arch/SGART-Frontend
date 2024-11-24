@@ -4,270 +4,457 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import '../App.css';
-import { useNavigate } from 'react-router-dom';
 import VentanaConfirm from './VentanaConfirm';
 import NavBar from './NavBar';
 import LoadingSpinner from './LoadingSpinner';
 
-const InviteParticipants = ({ participants, filteredParticipants, searchTerm, handleSearchChange, handleSelectParticipant }) => {
-    return (
-        <div className="participant-list-container">
-            <h2>Invitar Participantes</h2>
-            <div className="search-participants-container">
-                <input
-                    type="text"
-                    className="search-participants-input"
-                    placeholder="Buscar participantes..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                />
-            </div>
-            <div className="participant-list-available">
-                {filteredParticipants.length > 0 ? (
-                    filteredParticipants.map((participant) => (
-                        <div
-                            key={participant.id}
-                            className="available-participant-item"
-                            onClick={() => handleSelectParticipant(participant)}
-                        >
-                            {participant.nombre}
-                        </div>
-                    ))
-                ) : (
-                    <p className="no-participants-message">No se encontraron participantes.</p>
-                )}
-            </div>
-        </div>
-    );
-};
-
 const UserCalendarUI = () => {
-    const navigate = useNavigate();
-
-    // Variables para modificar día laborable
-    const [selectedDate, setSelectedDate] = useState('');
-    const [startingHour, setStartingHour] = useState('');
-    const [startingMinutes, setStartingMinutes] = useState('');
-    const [endingHour, setEndingHour] = useState('');
-    const [endingMinutes, setEndingMinutes] = useState('');
-    const [eventName, setEventName] = useState('');
-    const [reason, setReason] = useState('');
-
-    // Variables de estado adicionales
-    const [isEditable, setIsEditable] = useState(false);
+    // Estados esenciales para reuniones
     const [isLoading, setIsLoading] = useState(false);
+    const [regularEvents, setRegularEvents] = useState([]);
+    const [pendingMeetingsEvents, setPendingMeetingsEvents] = useState([]);
+    const [reunionesPendientes, setReunionesPendientes] = useState([]);
+    const [reunionesAceptadas, setReunionesAceptadas] = useState([]);
 
-    // Variables del pop-up de creación de eventos
+    // Estados para pop-ups y eventos seleccionados
+    const [isEventDetailPopupOpen, setIsEventDetailPopupOpen] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [confirmationAction, setConfirmationAction] = useState('');
+    const [invitees, setInvitees] = useState([]);
+
+    // Añadir estos estados adicionales cerca de los otros estados
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [currentStep, setCurrentStep] = useState(1);
+    const [eventName, setEventName] = useState('');
     const [popupSelectedDate, setPopupSelectedDate] = useState('');
     const [eventFrequency, setEventFrequency] = useState('Una vez');
     const [isAllDay, setIsAllDay] = useState(false);
-    const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupStartingHour, setPopupStartingHour] = useState('');
     const [popupStartingMinutes, setPopupStartingMinutes] = useState('');
     const [popupEndingHour, setPopupEndingHour] = useState('');
     const [popupEndingMinutes, setPopupEndingMinutes] = useState('');
     const [eventLocation, setEventLocation] = useState('');
     const [popupDescription, setPopupDescription] = useState('');
-    const [currentStep, setCurrentStep] = useState(1); // 1: Crear evento, 2: Invitar participantes
+    const [availableUsers, setAvailableUsers] = useState([]);
+    const [selectedUsers, setSelectedUsers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredParticipants, setFilteredParticipants] = useState([]);
+    const [errorEvent, setErrorEvent] = useState('');
 
-    // Nueva variable para abrir el pop-up de personalización
-    const [isCustomPopupOpen, setIsCustomPopupOpen] = useState(false);
-    const [customFrequency, setCustomFrequency] = useState('Diario');
-    const [repeatCount, setRepeatCount] = useState('');
-
-    // Variables para el pop-up de detalles de los eventos
-    const [isEventDetailPopupOpen, setIsEventDetailPopupOpen] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState(null);
-
-    // Variables para almacenar eventos regulares y horarios de trabajo modificados
-    const [regularEvents, setRegularEvents] = useState([]);
-    const [pendingMeetingsEvents, setPendingMeetingsEvents] = useState([]);
-    const [modifiedWorkingHours, setModifiedWorkingHours] = useState([]);
-    const [defaultWorkingHours, setDefaultWorkingHours] = useState([]);
-
-    // Variables para el control de errores en campos de hora
-    const [hourError, setHourError] = useState(false);
-    const [minuteError, setMinuteError] = useState(false);
+    // Añadir estos estados adicionales junto a los otros estados
     const [popupHourError, setPopupHourError] = useState(false);
     const [popupMinuteError, setPopupMinuteError] = useState(false);
 
-    const [isConfirmPopupOpen, setIsConfirmPopupOpen] = useState(false);
-    const [selectedReunion, setSelectedReunion] = useState(null);
-    const [actionType, setActionType] = useState('');
-    const [confirmAction, setConfirmAction] = useState(null);
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    const [confirmationAction, setConfirmationAction] = useState('');
+    // Añadir nuevo estado para reuniones organizadas
+    const [organizedEvents, setOrganizedEvents] = useState([]);
+    const [reunionesOrganizadas, setReunionesOrganizadas] = useState([]);
 
+    // Ausencias de los usuarios
+    const [ausencias, setAusencias] = useState([]);
 
-    const [invitees, setInvitees] = useState([]);
+    // Localizaciones
+    const [locations, setLocations] = useState([]);
 
-    // Estado para controlar los usuarios disponibles y los seleccionados
-    const [availableUsers, setAvailableUsers] = useState([]);
-    const [selectedUsers, setSelectedUsers] = useState([]);
+    // Cargar invitados de una reunión
+    const loadInvitees = useCallback(async (meetingId) => {
+        try {
+            console.log(`Cargando invitados para la reunión ID: ${meetingId}`);
+            const response = await fetch(`http://localhost:9000/administrador/calendarios/invitados`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ meetingId }),
+            });
 
-    // Variable para el error en el campo de invitar usuarios
-    const [errorEvent, setErrorEvent] = useState('');
+            if (!response.ok) {
+                throw new Error(`Error al cargar los invitados: ${response.statusText}`);
+            }
 
-    // Variables para buscar y filtrar usuarios
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filteredParticipants, setFilteredParticipants] = useState(availableUsers);
+            const backendInvitees = await response.json();
+            console.log("Lista de invitados cargada:", backendInvitees);
+            return backendInvitees;
 
-    useEffect(() => {
-        // Filtrar la lista de participantes según el término de búsqueda
-        setFilteredParticipants(
-            availableUsers.filter((participant) =>
-                participant.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-        );
-    }, [searchTerm, availableUsers]);
+        } catch (error) {
+            console.error("Error al cargar los invitados:", error);
+            return [];
+        }
+    }, []);
 
-    const handleSearchChange = (event) => {
-        setSearchTerm(event.target.value);
-    };
-
-    const handleSelectParticipant = (participant) => {
-        if (!selectedUsers.includes(participant)) {
-            const enAusencia = checkUserAbsence(participant);
-
-            setSelectedUsers([...selectedUsers, { ...participant, enAusencia }]);
-
-            setAvailableUsers(availableUsers.filter((user) => user.id !== participant.id));
+    // Función para obtener el userId del usuario actual
+    const getUserId = async () => {
+        try {
+            const response = await fetch('http://localhost:9000/users/current/userId', {
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                throw new Error('No se pudo obtener el ID del usuario');
+            }
+            const data = await response.json();
+            console.log("ID de usuario obtenido:", data.userId);
+            return data.userId;
+        } catch (error) {
+            console.error('Error al obtener el ID del usuario:', error);
+            return null;
         }
     };
 
-    // Cargar los usuarios de la base de datos
-    const loadUsers = (async () => {
-        const response = await fetch('/meetings/available-users');
-        if (!response.ok) throw new Error('Error al cargar los usuarios');
-
-        const backendUsers = await response.json();
-        const transformedUsers = backendUsers.map(event => ({
-            id: event.id,
-            nombre: event.name + " " + event.lastName
-        }));
-        setAvailableUsers(transformedUsers);
-    })
-
-    // Cargar los eventos regulares de la base de datos
-    const loadEvents = useCallback(async () => {
+    // Cargar reuniones y clasificarlas según los invitados
+    const loadMeetings = useCallback(async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('/admin/eventos/loadEvents');
-            if (!response.ok) throw new Error('Error al cargar los eventos');
+            console.log("Iniciando carga de meetings...");
 
-            const backendEvents = await response.json();
-            const transformedEvents = backendEvents.map(event => ({
-                id: event.id,
-                title: event.event_title,
-                start: `${event.event_start_date}T${event.event_time_start}`,
-                end: `${event.event_start_date}T${event.event_time_end}`,
-                allDay: event.event_all_day === 1,
-                extendedProps: {
-                    frequency: event.event_frequency,
-                    organizerId: event.organizer_id,
-                    locationName: event.location_name,
-                    observations: event.observations
+            // Obtener el userId del backend
+            const currentUserId = await getUserId();
+            console.log("ID del usuario actual:", currentUserId, "Tipo:", typeof currentUserId);
+
+            if (!currentUserId) {
+                throw new Error('No se pudo obtener el ID del usuario');
+            }
+
+            const response = await fetch('http://localhost:9000/administrador/calendarios/loadMeetings');
+            if (!response.ok) {
+                throw new Error(`Error al cargar los meetings: ${response.statusText}`);
+            }
+
+            const backendMeetings = await response.json();
+            console.log("Total de reuniones recibidas:", backendMeetings.length);
+
+            const acceptedMeetings = [];
+            const pendingMeetings = [];
+
+            // Procesar cada reunión y sus invitados
+            for (const meeting of backendMeetings) {
+                console.log(`\n--- Procesando reunión ID: ${meeting.meetingId} ---`);
+
+                // Cargar invitados para esta reunión
+                const invitados = await loadInvitees(meeting.meetingId);
+                console.log(`Invitados recibidos para reunión ${meeting.meetingId}:`, invitados);
+
+                // Imprimir cada invitado y su estado
+                invitados.forEach(invitee => {
+                    console.log(`Invitado ID: ${invitee.userId} (${typeof invitee.userId}), Estado: "${invitee.status}"`);
+                });
+
+                const transformedMeeting = {
+                    id: meeting.meetingId,
+                    title: meeting.title || "Título no especificado",
+                    start: `${meeting.meetingDate}T${meeting.startTime}`,
+                    end: `${meeting.meetingDate}T${meeting.endTime}`,
+                    allDay: meeting.allDay,
+                    extendedProps: {
+                        locationName: meeting.locationName,
+                        observations: meeting.observations,
+                        organizerName: meeting.organizerName,
+                        invitees: invitados
+                    }
+                };
+
+                // Buscar la invitación del usuario actual por userId
+                const currentUserInvitation = invitados.find(invitee => {
+                    console.log(`Comparando: invitado.userId=${invitee.userId} con currentUserId=${currentUserId}`);
+                    return invitee.userId.toString() === currentUserId.toString(); // Convertir ambos a string para comparar
+                });
+
+                if (currentUserInvitation) {
+                    console.log(`Estado de invitación encontrado: "${currentUserInvitation.status}"`);
+                    if (currentUserInvitation.status.trim() === 'Aceptada') {
+                        console.log(`Reunión ${meeting.meetingId} clasificada como ACEPTADA`);
+                        acceptedMeetings.push(transformedMeeting);
+                    } else if (currentUserInvitation.status.trim() === 'Pendiente') {
+                        console.log(`Reunión ${meeting.meetingId} clasificada como PENDIENTE`);
+                        pendingMeetings.push(transformedMeeting);
+                    }
+                } else {
+                    console.log(`No se encontró invitación para el usuario actual (${currentUserId}) en la reunión ${meeting.meetingId}`);
                 }
-            }));
-            setRegularEvents(transformedEvents);
+            }
+
+            console.log("\n=== RESUMEN FINAL ===");
+            console.log("Total reuniones aceptadas:", acceptedMeetings.length);
+            console.log("Total reuniones pendientes:", pendingMeetings.length);
+
+            // Actualizar estados
+            setRegularEvents(acceptedMeetings);
+            setPendingMeetingsEvents(pendingMeetings);
+            setReunionesAceptadas(acceptedMeetings);
+            setReunionesPendientes(pendingMeetings);
+
         } catch (error) {
-            console.error("Error al cargar los eventos: ", error);
+            console.error("Error al cargar los meetings: ", error);
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [loadInvitees]);
 
-    // Cargar los horarios de trabajo modificados de la base de datos
-    const loadModifiedWorkingHours = useCallback(async () => {
+    // Añadir esta función auxiliar cerca de otras funciones auxiliares
+    const areAllInvitationsRejected = (invitees) => {
+        if (!invitees || invitees.length === 0) return false;
+        return invitees.every(invitee => invitee.status.trim() === 'Rechazada');
+    };
+
+    // Modificar la función loadOrganizedMeetings
+    const loadOrganizedMeetings = useCallback(async () => {
         try {
-            const response = await fetch('/administrador/eventos/loadSchedules');
-            if (!response.ok) throw new Error('Error al cargar los horarios modificados');
+            console.log("Iniciando carga de reuniones organizadas...");
+            const response = await fetch('http://localhost:9000/usuarios/calendarios/organized-meetings', {
+                credentials: 'include'
+            });
 
-            const backendWorkingHours = await response.json();
-            const transformedWorkingHours = backendWorkingHours.map(hour => ({
-                title: hour.reason || "Horario Modificado",
-                start: `${hour.selectedDate}T${hour.startingTime}`,
-                end: `${hour.selectedDate}T${hour.endingTime}`,
-                allDay: false,
+            if (!response.ok) {
+                console.error('Error en la respuesta:', response.status, response.statusText);
+                throw new Error('Error al cargar reuniones organizadas');
+            }
+
+            const backendMeetings = await response.json();
+            console.log("Reuniones organizadas recibidas del backend:", backendMeetings);
+
+            const transformedMeetings = await Promise.all(backendMeetings.map(async (meeting, index) => {
+                console.log(`Procesando reunión organizada ${index + 1}:`, meeting);
+
+                const invitados = await loadInvitees(meeting.meetingId);
+                console.log(`Invitados cargados para reunión ${meeting.meetingId}:`, invitados);
+
+                const allRejected = areAllInvitationsRejected(invitados);
+
+                const transformedMeeting = {
+                    id: meeting.meetingId,
+                    title: meeting.title || "Título no especificado",
+                    start: `${meeting.meetingDate}T${meeting.startTime}`,
+                    end: `${meeting.meetingDate}T${meeting.endTime}`,
+                    allDay: meeting.allDay,
+                    backgroundColor: allRejected ? '#ffcccc' : '#ce93d8',
+                    allRejected: allRejected,
+                    className: allRejected ? 'rejected-meeting' : 'normal-meeting',
+                    extendedProps: {
+                        locationName: meeting.locationName,
+                        observations: meeting.observations,
+                        organizerName: meeting.organizerName,
+                        invitees: invitados
+                    }
+                };
+
+                console.log(`Reunión ${index + 1} transformada:`, transformedMeeting);
+                return transformedMeeting;
             }));
-            setModifiedWorkingHours(transformedWorkingHours);
-        } catch (error) {
-            console.error("Error al cargar los horarios modificados: ", error);
-        }
-    }, []);
 
-    // Cargar los horarios de trabajo por defecto de la base de datos
-    const loadDefaultWorkingHours = useCallback(async () => {
+            console.log("Total de reuniones organizadas transformadas:", transformedMeetings.length);
+            console.log("Reuniones organizadas transformadas:", transformedMeetings);
+
+            setOrganizedEvents(transformedMeetings);
+            setReunionesOrganizadas(transformedMeetings);
+
+        } catch (error) {
+            console.error("Error detallado al cargar reuniones organizadas:", error);
+        }
+    }, [loadInvitees]);
+
+    // Add this new function to check attendance status
+    const checkAttendanceStatus = async (meetingId) => {
         try {
-            const response = await fetch('/administrador/eventos/loadDefaultSchedule');
-            if (!response.ok) throw new Error('Error al cargar los horarios de trabajo por defecto');
+            const response = await fetch(`http://localhost:9000/invitations/${meetingId}/attendance`, {
+                credentials: 'include'
+            });
 
-            const backendDefaultHours = await response.json();
-            const transformedDefaultHours = backendDefaultHours.map(hour => ({
-                dayOfWeek: hour.day_of_week,
-                startTime: hour.start_time,
-                endTime: hour.end_time
-            }));
-            setDefaultWorkingHours(transformedDefaultHours);
+            if (!response.ok) {
+                throw new Error('Failed to get attendance status');
+            }
+
+            const attendance = await response.json();
+            return attendance === 1;
         } catch (error) {
-            console.error("Error al cargar los horarios de trabajo por defecto: ", error);
-        }
-    }, []);
-
-    // Cargar los datos al iniciar
-    useEffect(() => {
-        loadEvents();
-        loadModifiedWorkingHours();
-        loadDefaultWorkingHours();
-    }, [loadEvents, loadModifiedWorkingHours, loadDefaultWorkingHours]);
-
-    const handleDateClick = (arg) => {
-        const clickedDate = arg.dateStr;
-        setSelectedDate(clickedDate);
-        const dayOfWeek = new Date(arg.date).getDay();
-        const defaultHours = defaultWorkingHours.find(d => d.dayOfWeek === dayOfWeek);
-        const modifiedHours = modifiedWorkingHours.find(event => event.start.includes(clickedDate));
-
-        if (modifiedHours) {
-            setStartingHour(modifiedHours.start.split("T")[1].split(":")[0]);
-            setStartingMinutes(modifiedHours.start.split("T")[1].split(":")[1]);
-            setEndingHour(modifiedHours.end.split("T")[1].split(":")[0]);
-            setEndingMinutes(modifiedHours.end.split("T")[1].split(":")[1]);
-            setReason(modifiedHours.title);
-        } else if (defaultHours) {
-            setStartingHour(defaultHours.startTime.split(":")[0]);
-            setStartingMinutes(defaultHours.startTime.split(":")[1]);
-            setEndingHour(defaultHours.endTime.split(":")[0]);
-            setEndingMinutes(defaultHours.endTime.split(":")[1]);
-            setReason('');
-        } else {
-            setStartingHour('');
-            setStartingMinutes('');
-            setEndingHour('');
-            setEndingMinutes('');
-            setReason('');
+            console.error('Error checking attendance status:', error);
+            return false;
         }
     };
 
-    const handleEventClick = (clickInfo) => {
+    // Modify the handleEventClick function
+    const handleEventClick = async (clickInfo) => {
         const transformedEvent = {
+            id: clickInfo.event.id,
             title: clickInfo.event.title,
             start: clickInfo.event.startStr,
             end: clickInfo.event.endStr,
             allDay: clickInfo.event.allDay,
             extendedProps: {
-                meetingId: clickInfo.event.extendedProps.meetingId,
-                organizerId: clickInfo.event.extendedProps.organizerId,
-                observations: clickInfo.event.extendedProps.observations,
                 locationName: clickInfo.event.extendedProps.locationName,
-                invitees: clickInfo.event.extendedProps.invitees || []
+                observations: clickInfo.event.extendedProps.observations,
+                organizerName: clickInfo.event.extendedProps.organizerName,
             }
         };
+
+        // Cargar invitados frescos al hacer click
+        const invitados = await loadInvitees(clickInfo.event.id);
+
+        // Check attendance status if it's an accepted meeting
+        if (regularEvents.find(event => event.id === clickInfo.event.id)) {
+            const hasConfirmedAttendance = await checkAttendanceStatus(clickInfo.event.id);
+            transformedEvent.extendedProps.hasConfirmedAttendance = hasConfirmedAttendance;
+        }
+
+        setInvitees(invitados);
         setSelectedEvent(transformedEvent);
         setIsEventDetailPopupOpen(true);
     };
 
+    const handleConfirmAction = async () => {
+        try {
+            console.log('Iniciando actualización de estado para evento:', selectedEvent);
+            console.log('Acción seleccionada:', confirmationAction);
 
+            const url = `http://localhost:9000/invitations/${selectedEvent.id}/status`;
+            console.log('URL de la petición:', url);
+
+            const requestBody = {
+                newStatus: confirmationAction === 'accept' ? 'Aceptada' : 'Rechazada',
+                comment: ''
+            };
+            console.log('Cuerpo de la petición:', requestBody);
+
+            const response = await fetch(url, {
+                method: 'PUT', // Cambiado de PATCH a PUT
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            console.log('Respuesta del servidor:', response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                throw new Error(`Error al actualizar el estado de la invitación: ${errorText}`);
+            }
+
+            await loadMeetings(); // Recargar reuniones después de la actualización
+            console.log('Actualización completada con éxito');
+        } catch (error) {
+            console.error('Error detallado:', error);
+        } finally {
+            setShowConfirmation(false);
+        }
+    };
+
+    // Añadir estas funciones para manejar la creación de reuniones
+    const handleAddTimeClick = () => {
+        loadLocations();
+        setPopupStartingHour('');
+        setPopupStartingMinutes('');
+        setPopupEndingHour('');
+        setPopupEndingMinutes('');
+        setEventName('');
+        setPopupSelectedDate('');
+        setEventFrequency('Una vez');
+        setIsAllDay(false);
+        setIsPopupOpen(true);
+    };
+
+    const handleNextStep = () => {
+        if (!eventName || !popupSelectedDate || !eventLocation.length) {
+            alert("Por favor, completa todos los campos obligatorios antes de continuar.");
+            return;
+        }
+        setErrorEvent('');
+        setSelectedUsers([]);
+        loadUsers();
+        loadAbsences();
+        setCurrentStep(2);
+    };
+
+    const handleClosePopup = () => {
+        setIsPopupOpen(false);
+        setCurrentStep(1);
+        setIsEditingEvent(false);
+    };
+
+    const handleSaveEvent = async () => {
+        setErrorEvent('');
+        if (!validateTimeInput(popupStartingHour, popupStartingMinutes, setPopupHourError, setPopupMinuteError) ||
+            !validateTimeInput(popupEndingHour, popupEndingMinutes, setPopupHourError, setPopupMinuteError)) {
+            alert("Por favor, corrige los campos de hora antes de guardar el evento.");
+            return;
+        }
+
+        if (selectedUsers.filter((user) => user.enAusencia === true).length > 0) {
+            setErrorEvent("Error al crear la reunión. Se está intentando crear una reunión con participantes ausentes.");
+            return;
+        }
+
+        const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
+        const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
+
+        try {
+            setIsLoading(true);
+            const currentUserId = await getUserId();
+            const eventloc = eventLocation;
+            const newEvent = {
+                organizerId: currentUserId,
+                meetingTitle: eventName,
+                meetingDate: popupSelectedDate,
+                meetingAllDay: isAllDay ? 1 : 0,
+                meetingStartTime: isAllDay ? '00:00:00' : startingTime,
+                meetingEndTime: isAllDay ? '23:59:59' : endingTime,
+                locationId: eventLocation,
+                meetingObservations: popupDescription,
+            };
+
+            let response;
+            let meetingId;
+
+            if (isEditing) {
+                response = await fetch(`/api/meetings/${eventIdToEdit}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(newEvent),
+                });
+                meetingId = eventIdToEdit;
+            } else {
+                response = await fetch('/api/meetings/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(newEvent),
+                });
+                const meetingData = await response.json();
+                meetingId = meetingData.meetingId; // Assuming your backend returns the created meeting ID
+            }
+
+            if (!response.ok) throw new Error('Error al guardar el evento');
+
+            // Send invitations
+            const userIds = selectedUsers.map(user => user.id);
+            const inviteResponse = await fetch(`http://localhost:9000/invitations/${meetingId}/invite`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(userIds),
+            });
+
+            if (!inviteResponse.ok) {
+                throw new Error('Error al enviar las invitaciones');
+            }
+
+            await loadMeetings();
+            await loadOrganizedMeetings();
+            setIsPopupOpen(false);
+            setCurrentStep(1);
+            setIsEditing(false);
+            setEventIdToEdit(null);
+            alert("Se ha guardado el evento y enviado las invitaciones de manera exitosa.");
+        } catch (error) {
+            console.error('Error:', error);
+            setErrorEvent('Error al crear la reunión o enviar las invitaciones. Por favor, inténtalo de nuevo.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Función para validar el formato de tiempo
     const validateTimeInput = (hour, minute, setHourError, setMinuteError) => {
         const hourValid = hour >= 0 && hour <= 23;
         const minuteValid = minute >= 0 && minute <= 59;
@@ -276,23 +463,7 @@ const UserCalendarUI = () => {
         return hourValid && minuteValid;
     };
 
-    const handleTimeChange = (e, type) => {
-        const value = e.target.value;
-        if (type === 'startingHour') {
-            setStartingHour(value);
-            validateTimeInput(value, startingMinutes, setHourError, setMinuteError);
-        } else if (type === 'startingMinutes') {
-            setStartingMinutes(value);
-            validateTimeInput(startingHour, value, setHourError, setMinuteError);
-        } else if (type === 'endingHour') {
-            setEndingHour(value);
-            validateTimeInput(value, endingMinutes, setHourError, setMinuteError);
-        } else if (type === 'endingMinutes') {
-            setEndingMinutes(value);
-            validateTimeInput(endingHour, value, setHourError, setMinuteError);
-        }
-    };
-
+    // Función para manejar cambios en los campos de tiempo
     const handlePopupTimeChange = (e, type) => {
         const value = e.target.value;
         if (type === 'popupStartingHour') {
@@ -310,154 +481,57 @@ const UserCalendarUI = () => {
         }
     };
 
-    const handleAddTimeClick = () => {
-        setPopupStartingHour('');
-        setPopupStartingMinutes('');
-        setPopupEndingHour('');
-        setPopupEndingMinutes('');
-        setEventName('');
-        setPopupSelectedDate('');
-        setEventFrequency('Una vez');
-        setIsAllDay(false);
-        setIsPopupOpen(true);
-    };
-
-    const handleClosePopup = () => {
-        setIsPopupOpen(false);
-        setCurrentStep(1);
-        setIsEditMode(false);
-    };
-
-    const handleNextStep = () => {
-        if (!eventName || !popupSelectedDate) {
-            alert("Por favor, completa todos los campos obligatorios antes de continuar.");
-            return;
-        }
-        loadUsers();
-        loadAbsences();
-        setCurrentStep(2);
-    };
-
-    const handleSaveEvent = async () => {
-        setErrorEvent('');
-        if (!validateTimeInput(popupStartingHour, popupStartingMinutes, setPopupHourError, setPopupMinuteError) ||
-            !validateTimeInput(popupEndingHour, popupEndingMinutes, setPopupHourError, setPopupMinuteError)) {
-            alert("Por favor, corrige los campos de hora antes de guardar el evento.");
-            return;
-        }
-
-        if (selectedUsers.filter((user) => user.enAusencia === true).length > 0) {
-            setErrorEvent("ERROR: se está intentando crear una reunión con participantes ausentes.");
-            return;
-        }
-
-        const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
-        const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
-
-        const newEvent = {
-            event_title: eventName,
-            event_start_date: popupSelectedDate,
-            event_all_day: isAllDay ? 1 : 0,
-            event_time_start: isAllDay ? '00:00:00' : startingTime,
-            event_time_end: isAllDay ? '23:59:59' : endingTime,
-            event_frequency: eventFrequency === 'Personalizado' ? customFrequency : eventFrequency,
-            event_repetitions_count: eventFrequency === 'Personalizado' ? parseInt(repeatCount, 10) : (eventFrequency === 'Una vez' ? 1 : -1),
-        };
-
+    // Función para cargar usuarios disponibles
+    const loadUsers = async () => {
         try {
-            setIsLoading(true);
-            const response = await fetch('/administrador/eventos/saveEvent', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newEvent),
-            });
+            // Obtener el ID del usuario actual
+            const currentUserId = await getUserId();
+            console.log('ID del usuario actual:', currentUserId);
+            
+            const response = await fetch('/api/meetings/available-users');
+            if (!response.ok) {
+                throw new Error('Error al cargar los usuarios');
+            }
+            
+            const backendUsers = await response.json();
+            console.log('Usuarios recibidos del backend:', backendUsers);
 
-            if (!response.ok) throw new Error('Error al guardar el evento');
-
-            await loadEvents();
-            setIsPopupOpen(false);
-            setCurrentStep(1);
-            alert("[!] Se ha guardado el evento de manera exitosa.");
+            // Filtrar excluyendo al usuario actual (ambos IDs)
+            const transformedUsers = backendUsers
+                .filter(user => {
+                    // Excluir ambos IDs del usuario actual que aparecen en los logs
+                    return user.id !== 'f9c13ac1-e8e2-4338-861e-19557d2a7f5d' && 
+                           user.id !== '496da65e-4a7d-44cf-9514-bad0cba4a473';
+                })
+                .map(user => ({
+                    id: user.id,
+                    nombre: `${user.name} ${user.lastName}`
+                }));
+                
+            console.log('Usuarios transformados (sin usuario actual):', transformedUsers);
+            
+            // Actualizar estados
+            setAvailableUsers(transformedUsers);
+            setFilteredParticipants(transformedUsers);
+            
         } catch (error) {
-            console.error('Error al guardar el evento:', error);
-        } finally {
-            setIsLoading(false);
+            console.error('Error en loadUsers:', error);
         }
     };
-    const handleEditDayClick = () => {
-        setIsEditable(true);
-    };
 
-    const handleSaveDayClick = async () => {
-        if (!validateTimeInput(startingHour, startingMinutes, setHourError, setMinuteError) ||
-            !validateTimeInput(endingHour, endingMinutes, setHourError, setMinuteError)) {
-            alert("Por favor, corrige los campos de hora antes de guardar el horario.");
+    const loadLocations = (async() => {
+        const response = await fetch('/api/meetings/locations');
+        if (!response.ok) {
+            console.log('Error al cargar las localizaciones');
             return;
         }
-
-        const horarioData = {
-            selectedDate,
-            startingTime: `${startingHour.padStart(2, '0')}:${startingMinutes.padStart(2, '0')}:00`,
-            endingTime: `${endingHour.padStart(2, '0')}:${endingMinutes.padStart(2, '0')}:00`,
-            reason,
-        };
-
-        try {
-            const response = await fetch('/administrador/eventos/saveDay', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(horarioData),
-            });
-
-            if (!response.ok) throw new Error('Error al guardar el horario');
-
-            alert("[!] El horario se guardó exitosamente");
-            await loadModifiedWorkingHours();
-        } catch (error) {
-            console.error('Error al guardar el horario:', error);
-        } finally {
-            setIsEditable(false);
-            setReason('');
-        }
-    };
-
-    const handleRemoveUser = (user) => {
-        setAvailableUsers([...availableUsers, user]);
-        setSelectedUsers(selectedUsers.filter((selectedUser) => selectedUser.id !== user.id));
-    };
-
-    // PRUEBAS
-    const [reunionesPendientes, setReunionesPendientes] = useState([
-        {
-            meetingId: "0be87f14-8fc5-44bc-8e92-114976629f2b", title: "Reunión con Cliente", allDay: 'false', meetingDate: '2024-11-25', startTime: "09:00:00",
-            endTime: "11:00:00", organizerId: "61bc14cd-0c94-43cc-ab5a-8c59501b6470", observations: "Llevar preparado producto mínimo viable", locationName: "ESI",
-            invitees: [
-                { userName: "Juan Pérez", invitationStatus: "Aceptado" },
-                { userName: "María López", invitationStatus: "Pendiente" }
-            ]
-        }
-    ]);
-
-    const [reunionesAceptadas, setReunionesAceptadas] = useState([
-        {
-            meetingId: "0be83f14-8fc5-44bc-8e92-114976629f2b", title: "Reunión de Estrategia", allDay: 'false', meetingDate: '2024-11-21', startTime: "10:00:00",
-            endTime: "12:00:00", organizerId: "61bc15cd-0c94-43cc-ab5a-8c59501b6470", observations: "Hola buenas tardes", locationName: "Online",
-            invitees: [
-                { userName: "Juan Pérez", invitationStatus: "Aceptado" },
-                { userName: "María López", invitationStatus: "Pendiente" }
-            ]
-        },
-        {
-            meetingId: "0be83f14-8fc5-44bc-8e92-119976629f2b", title: "Reunión de Planificación", allDay: 'false', meetingDate: '2024-11-20', startTime: "11:00:00",
-            endTime: "14:00:00", organizerId: "61bc15cd-0c94-43cc-ab5a-8c59501b6470", observations: "No hay observaciones", locationName: "Ciudad Real"
-        }
-    ]);
-    // Ejemplo de ausencias de los usuarios (deberían cargarse de un API o base de datos)
-    const [ausencias, setAusencias] = useState([]);
+        const backendLocations = await response.json();
+        const transformedLocations= backendLocations.map(location => ({
+            locationId: location.locationId,
+            locationName: location.locationName
+        }));
+        setLocations(transformedLocations);
+    })
 
     const loadAbsences = (async () => {
         const response = await fetch('/administrador/ausencias/loadAbsences');
@@ -481,116 +555,27 @@ const UserCalendarUI = () => {
         console.log(transformedAbsences);
     })
 
-    // Funciones para manejar la confirmación
-    const handleAcceptMeeting = (reunion) => {
-        setSelectedEvent(reunion);
-        setConfirmationAction('accept');
-        setShowConfirmation(true);
-    };
-
-    const handleRejectMeeting = (reunion) => {
-        setSelectedEvent(reunion);
-        setConfirmationAction('reject');
-        setShowConfirmation(true);
-    };
-
-    const handleInfoMeeting = (reunion) => {
-        setSelectedEvent({
-            id: reunion.meetingId,
-            title: reunion.title || reunion.nombre,
-            start: `${reunion.meetingDate}T${reunion.startTime}`,
-            end: `${reunion.meetingDate}T${reunion.endTime}`,
-            allDay: reunion.allDay === 'true',
-            extendedProps: {
-                organizerId: reunion.organizerId,
-                observations: reunion.observations,
-                locationName: reunion.locationName,
-                invitees: reunion.invitees || [] // Asegúrate de incluir los invitados aquí
-            }
-        });
-        setIsEventDetailPopupOpen(true);
-    };
-
-
-    const handleConfirmAction = () => {
-        if (confirmationAction === 'accept') {
-            console.log('Reunión aceptada');
-            setReunionesPendientes((prevReunionesPendientes) =>
-                prevReunionesPendientes.filter((reunion) => reunion.id !== selectedEvent.id)
-            );
-            setReunionesAceptadas((prevReunionesAceptadas) => [
-                ...prevReunionesAceptadas, selectedEvent]
-            );
-        } else if (confirmationAction === 'reject') {
-            console.log('Reunión rechazada');
-            setReunionesPendientes((prevReunionesPendientes) =>
-                prevReunionesPendientes.filter((reunion) => reunion.id !== selectedEvent.id)
-            );
-        }
-        setShowConfirmation(false); // Cerrar la ventana de confirmación después de realizar la acción
-    };
-
-    useEffect(() => {
-        // Transformar reuniones aceptadas al formato del calendario
-        const transformedAcceptedMeetings = reunionesAceptadas.map(reunion => ({
-            id: reunion.meetingId,  // Asegúrate de que cada evento tenga un id único
-            title: reunion.title || reunion.nombre,
-            start: `${reunion.meetingDate}T${reunion.startTime}`,
-            end: `${reunion.meetingDate}T${reunion.endTime}`,
-            allDay: reunion.allDay === 'true',
-            extendedProps: {
-                meetingId: reunion.meetingId,
-                organizerId: reunion.organizerId,
-                observations: reunion.observations,
-                locationName: reunion.locationName,
-                invitees: reunion.invitees || []
-            }
-        }));
-
-        // Reemplazar todos los eventos con las reuniones aceptadas (evitar duplicados)
-        setRegularEvents([...transformedAcceptedMeetings]);
-    }, [reunionesAceptadas]);
-
-    useEffect(() => {
-        const transformedPendingMeetings = reunionesPendientes.map(reunion => ({
-            title: reunion.title || reunion.nombre,
-            start: `${reunion.meetingDate}T${reunion.startTime}`,
-            end: `${reunion.meetingDate}T${reunion.endTime}`,
-            allDay: reunion.allDay === 'true',
-            extendedProps: {
-                meetingId: reunion.meetingId,
-                organizerId: reunion.organizerId,
-                observations: reunion.observations,
-                locationName: reunion.locationName,
-            }
-        }));
-        setPendingMeetingsEvents(transformedPendingMeetings);
-    }, [reunionesPendientes]);
-
     const checkUserAbsence = (participant) => {
         return ausencias.some((ausencia) => {
-            const ausenciaFechaInicio = createDateWithDayAndTime(ausencia.absenceStartDate, ausencia.absenceStartTime);
-            const ausenciaFechaFin = createDateWithDayAndTime(ausencia.absenceEndDate, ausencia.absenceEndTime);
-            if (isAllDay) {
-                const selectedFechaInicio = createDateWithDayHourAndMinutes(popupSelectedDate, 0, 0);
-                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate, 23, 59);
-                return (
-                    ausencia.userId === participant.id &&
-                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < ausenciaFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < ausenciaFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < ausenciaFechaInicio))
-                );
-            } else {
-                const selectedFechaInicio = createDateWithDayHourAndMinutes(popupSelectedDate, popupStartingHour, popupStartingMinutes);
-                const selectedFechaFin = createDateWithDayHourAndMinutes(popupSelectedDate, popupEndingHour, popupEndingMinutes);
-                return (
-                    ausencia.userId === participant.id &&
-                    ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < ausenciaFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < ausenciaFechaFin) ||
-                        (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < ausenciaFechaInicio))
-                );
-            }
+            // Para la ausencia
+            const startTime = ausencia.absenceAllDay === true ? '00:00:00' : ausencia.absenceStartTime;
+            const endTime = ausencia.absenceAllDay === true ? '23:59:00' : ausencia.absenceEndTime;
 
+            const ausenciaFechaInicio = createDateWithDayAndTime(ausencia.absenceStartDate, startTime);
+            const ausenciaFechaFin = createDateWithDayAndTime(ausencia.absenceEndDate, endTime);
+
+            // Para la fecha seleccionada
+            const selectedStartTime = isAllDay === true ? '00:00:00' : (popupStartingHour + ":" + popupStartingMinutes + ":00");
+            const selectedEndTime = isAllDay === true ? '23:59:00' : (popupEndingHour + ":" + popupEndingMinutes + ":00");
+
+            const selectedFechaInicio = createDateWithDayAndTime(popupSelectedDate, selectedStartTime);
+            const selectedFechaFin = createDateWithDayAndTime(popupSelectedDate, selectedEndTime);
+            return (
+                ausencia.userId === participant.id &&
+                ((ausenciaFechaInicio > selectedFechaInicio && ausenciaFechaInicio < selectedFechaFin) ||
+                    (ausenciaFechaFin > selectedFechaInicio && ausenciaFechaFin < selectedFechaFin) ||
+                    (ausenciaFechaFin > selectedFechaFin && ausenciaFechaInicio < selectedFechaInicio))
+            );
         });
     };
 
@@ -619,72 +604,144 @@ const UserCalendarUI = () => {
         return date;
     };
 
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [currentUser, setCurrentUser] = useState(null);
 
-    const handleEditMeeting = () => {
-        setPopupSelectedDate(selectedEvent.start.split('T')[0]);
-        setPopupStartingHour(selectedEvent.start.split('T')[1].split(':')[0]);
-        setPopupStartingMinutes(selectedEvent.start.split('T')[1].split(':')[1]);
-        setPopupEndingHour(selectedEvent.end.split('T')[1].split(':')[0]);
-        setPopupEndingMinutes(selectedEvent.end.split('T')[1].split(':')[1]);
-        setEventName(selectedEvent.title);
-        setEventLocation(selectedEvent.extendedProps?.locationName || '');
-        setPopupDescription(selectedEvent.extendedProps?.observations || '');
-        setSelectedUsers(selectedEvent.extendedProps?.invitees || []);
-        setIsPopupOpen(true);
-        setCurrentStep(1);
-        setIsEditMode(true); // Marcar que estamos en modo edición
+    // Función para seleccionar participantes
+    const handleSelectParticipant = (participant) => {
+        if (!selectedUsers.some(user => user.id === participant.id)) {
+            const enAusencia = checkUserAbsence(participant);
+            setSelectedUsers(prev => [...prev, { ...participant, enAusencia }]);
+            setAvailableUsers(prev => prev.filter(user => user.id !== participant.id));
+            setFilteredParticipants(prev => prev.filter(user => user.id !== participant.id));
+        }
     };
 
-    const handleUpdateEvent = async () => {
-        setErrorEvent('');
-        if (!validateTimeInput(popupStartingHour, popupStartingMinutes, setPopupHourError, setPopupMinuteError) ||
-            !validateTimeInput(popupEndingHour, popupEndingMinutes, setPopupHourError, setPopupMinuteError)) {
-            alert("Por favor, corrige los campos de hora antes de guardar el evento.");
+    // Función para remover participantes
+    const handleRemoveUser = (user) => {
+        setSelectedUsers(prev => prev.filter(selectedUser => selectedUser.id !== user.id));
+        setAvailableUsers(prev => {
+            if (!prev.some(u => u.id === user.id)) {
+                return [...prev, user];
+            }
+            return prev;
+        });
+        setFilteredParticipants(prev => {
+            if (!prev.some(u => u.id === user.id)) {
+                return [...prev, user];
+            }
+            return prev;
+        });
+    };
+
+    // Add this new function near other handler functions
+    const handleAttendanceUpdate = async (meetingId) => {
+        try {
+            const response = await fetch(`http://localhost:9000/invitations/${meetingId}/attendance`, {
+                method: 'PUT',
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update attendance');
+            }
+
+            // Update both regularEvents and reunionesAceptadas
+            const updateEvents = (events) =>
+                events.map(event =>
+                    event.id === meetingId
+                        ? { ...event, extendedProps: { ...event.extendedProps, hasConfirmedAttendance: true } }
+                        : event
+                );
+
+            setRegularEvents(prevEvents => updateEvents(prevEvents));
+            setReunionesAceptadas(prevEvents => updateEvents(prevEvents));
+
+            // Force re-render by updating the selectedEvent
+            setSelectedEvent(prev => ({
+                ...prev,
+                extendedProps: { ...prev.extendedProps, hasConfirmedAttendance: true }
+            }));
+
+        } catch (error) {
+            console.error('Error updating attendance:', error);
+        }
+    };
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [eventIdToEdit, setEventIdToEdit] = useState(null);
+    const [isEditingEvent, setIsEditingEvent] = useState(false);
+
+
+    const handleModifyEvent = (event) => {
+        setIsEditingEvent(true);
+        setEventName(event.title);
+        setPopupSelectedDate(event.start.split('T')[0]);
+        if (event.allDay) {
+            setIsAllDay(true);
+        } else {
+            setIsAllDay(false);
+            const [startHour, startMinutes] = event.start.split('T')[1].split(':');
+            setPopupStartingHour(startHour);
+            setPopupStartingMinutes(startMinutes);
+
+            const [endHour, endMinutes] = event.end.split('T')[1].split(':');
+            setPopupEndingHour(endHour);
+            setPopupEndingMinutes(endMinutes);
+        }
+        setEventLocation(event.extendedProps.locationName || '');
+        setPopupDescription(event.extendedProps.observations || '');
+        setIsPopupOpen(true);
+        setCurrentStep(1);
+        setIsEditing(true);  // Indicamos que estamos editando un evento
+        setEventIdToEdit(event.id);  // Almacenamos el ID del evento que estamos editando
+    };
+
+    const handleDeleteEvent = async (reunion) => {
+        try {
+            // Mostrar un mensaje de confirmación antes de eliminar la reunión
+            if (!window.confirm(`¿Estás seguro de que quieres eliminar la reunión "${reunion.title}"?`)) {
+                return;
+            }
+
+            // Hacer una petición DELETE al backend para eliminar la reunión
+            const response = await fetch(`http://localhost:9000/meetings/${reunion.id}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar la reunión');
+            }
+
+            // Actualizar las reuniones organizadas para eliminar la reunión eliminada
+            setOrganizedEvents(prevEvents => prevEvents.filter(event => event.id !== reunion.id));
+            setReunionesOrganizadas(prevMeetings => prevMeetings.filter(meeting => meeting.id !== reunion.id));
+
+            alert('La reunión se ha eliminado correctamente.');
+        } catch (error) {
+            console.error('Error al eliminar la reunión:', error);
+            alert('Hubo un error al intentar eliminar la reunión. Por favor, inténtalo de nuevo.');
+        }
+    };
+
+
+    // Efectos
+    useEffect(() => {
+        loadMeetings();
+        loadOrganizedMeetings();
+    }, [loadMeetings, loadOrganizedMeetings]);
+
+    // Modificar el useEffect para el filtrado de usuarios
+    useEffect(() => {
+        if (!searchTerm) {
+            setFilteredParticipants(availableUsers);
             return;
         }
-    
-        const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
-        const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
-    
-        const updatedEvent = {
-            id: selectedEvent.id,
-            event_title: eventName,
-            event_start_date: popupSelectedDate,
-            event_all_day: isAllDay ? 1 : 0,
-            event_time_start: isAllDay ? '00:00:00' : startingTime,
-            event_time_end: isAllDay ? '23:59:59' : endingTime,
-            event_frequency: eventFrequency === 'Personalizado' ? customFrequency : eventFrequency,
-            event_repetitions_count: eventFrequency === 'Personalizado' ? parseInt(repeatCount, 10) : (eventFrequency === 'Una vez' ? 1 : -1),
-            location_name: eventLocation,
-            observations: popupDescription,
-            invitees: selectedUsers
-        };
-    
-        try {
-            setIsLoading(true);
-            const response = await fetch(`/administrador/eventos/updateEvent/${updatedEvent.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(updatedEvent),
-            });
-    
-            if (!response.ok) throw new Error('Error al actualizar el evento');
-    
-            await loadEvents(); // Recargar los eventos después de la actualización
-            setIsPopupOpen(false);
-            setIsEditMode(false);
-            alert("[!] Se ha actualizado el evento de manera exitosa.");
-        } catch (error) {
-            console.error('Error al actualizar el evento:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };   
 
+        const filtered = availableUsers.filter(user => 
+            user.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredParticipants(filtered);
+    }, [searchTerm, availableUsers]);
 
     return (
         <>
@@ -704,23 +761,38 @@ const UserCalendarUI = () => {
                                                 <p>{reunion.title}</p>
                                             </div>
                                             <div className="meeting-actions">
-                                                <button className="action-button info-button" onClick={() => handleInfoMeeting(reunion)}>
+                                                <button className="action-button info-button" onClick={() => handleEventClick({
+                                                    event: {
+                                                        id: reunion.id,
+                                                        title: reunion.title,
+                                                        startStr: reunion.start,
+                                                        endStr: reunion.end,
+                                                        allDay: reunion.allDay,
+                                                        extendedProps: {
+                                                            locationName: reunion.extendedProps.locationName,
+                                                            observations: reunion.extendedProps.observations,
+                                                            organizerName: reunion.extendedProps.organizerName,
+                                                        }
+                                                    }
+                                                })}>
                                                     <img src={require('../media/informacion.png')} alt="Información" title='Información del Evento' />
                                                 </button>
-                                                <button className="action-reunion-button accept-button" onClick={() => handleAcceptMeeting(reunion)}>
+
+                                                <button className="action-reunion-button accept-button" onClick={() => {
+                                                    setSelectedEvent(reunion);
+                                                    setConfirmationAction('accept');
+                                                    setShowConfirmation(true);
+                                                }}>
                                                     <img src={require('../media/garrapata.png')} alt="Aceptar" title='Aceptar' />
                                                 </button>
-                                                <button className="action-reunion-button reject-button" onClick={() => handleRejectMeeting(reunion)}>
+                                                <button className="action-reunion-button reject-button" onClick={() => {
+                                                    setSelectedEvent(reunion);
+                                                    setConfirmationAction('reject');
+                                                    setShowConfirmation(true);
+                                                }}>
                                                     <img src={require('../media/cancelar.png')} alt="Rechazar" title='Rechazar' />
                                                 </button>
                                             </div>
-                                            {confirmAction && (
-                                                <VentanaConfirm
-                                                    mensaje={confirmAction.message}
-                                                    onConfirm={confirmAction.onConfirm}
-                                                    onCancel={() => setConfirmAction(null)}
-                                                />
-                                            )}
                                         </div>
                                     ))}
                                 </>
@@ -728,24 +800,71 @@ const UserCalendarUI = () => {
                         </div>
                         <h3>Reuniones Aceptadas</h3>
                         <div className="meeting-list-accepted">
-                            {reunionesAceptadas.length > 0 && (
-                                <>
-                                    {reunionesAceptadas.map((reunion) => (
-                                        <div key={reunion.meetingId} className="meeting-item accepted">
-                                            <div className="meeting-item-content">
-                                                <div className="meeting-info">
-                                                    <p>{reunion.title}</p>
-                                                </div>
-                                                <div className="meeting-buttons">
-                                                    <button className="info-button" onClick={() => handleInfoMeeting(reunion)}>
-                                                        <img src={require('../media/informacion.png')} alt="Info" />
-                                                    </button>
-                                                </div>
-                                            </div>
+                            {reunionesAceptadas.map((reunion) => (
+                                <div key={reunion.meetingId} className="meeting-item accepted">
+                                    <div className="meeting-item-content">
+                                        <div className="meeting-info">
+                                            <p>{reunion.title}</p>
                                         </div>
-                                    ))}
-                                </>
-                            )}
+                                        <div className="meeting-buttons">
+                                            <button className="info-button" onClick={() => handleEventClick({
+                                                event: {
+                                                    id: reunion.id,
+                                                    title: reunion.title,
+                                                    startStr: reunion.start,
+                                                    endStr: reunion.end,
+                                                    allDay: reunion.allDay,
+                                                    extendedProps: {
+                                                        locationName: reunion.extendedProps.locationName,
+                                                        observations: reunion.extendedProps.observations,
+                                                        organizerName: reunion.extendedProps.organizerName,
+                                                    }
+                                                }
+                                            })}>
+                                                <img src={require('../media/informacion.png')} alt="Info" />
+                                            </button>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <h3>Reuniones Organizadas</h3>
+                        <div className="meeting-list-organized">
+                            {reunionesOrganizadas.map((reunion) => (
+                                <div 
+                                    key={reunion.id} 
+                                    className={`meeting-item organized ${reunion.allRejected ? 'rejected-meeting' : 'normal-meeting'}`}
+                                >
+                                    <div className="meeting-item-content">
+                                        <div className="meeting-info">
+                                            <p>{reunion.title}</p>
+                                        </div>
+                                        <div className="meeting-buttons">
+                                            <button className="info-button" onClick={() => handleEventClick({
+                                                event: {
+                                                    id: reunion.id,
+                                                    title: reunion.title,
+                                                    startStr: reunion.start,
+                                                    endStr: reunion.end,
+                                                    allDay: reunion.allDay,
+                                                    extendedProps: reunion.extendedProps
+                                                }
+                                            })}>
+                                                <img src={require('../media/informacion.png')} alt="Info" />
+                                            </button>
+                                            {!reunion.allRejected && (
+                                                <button className="modify-event-button" onClick={() => handleModifyEvent(reunion)}>
+                                                    <img src={require('../media/mano.png')} alt="Editar" title='Editar Reunión' />
+                                                </button>
+                                            )}
+                                            <button className="delete-event-button" onClick={() => handleDeleteEvent(reunion)}>
+                                                <img src={require('../media/papelera.png')} alt="Eliminar" title='Eliminar Reunión' />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                         <div className="AdminCalendar-add-time">
                             <button className="add-button" onClick={handleAddTimeClick}>+</button>
@@ -760,49 +879,155 @@ const UserCalendarUI = () => {
                                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                                 initialView="dayGridMonth"
                                 eventSources={[
-                                    { events: regularEvents, color: 'green', textColor: 'white' },
-                                    { events: pendingMeetingsEvents, color: 'yellow', textColor: 'white' }
+                                    {
+                                        events: regularEvents,
+                                        color: '#28a745',
+                                        textColor: 'white'
+                                    },
+                                    {
+                                        events: pendingMeetingsEvents,
+                                        color: '#ffc107',
+                                        textColor: 'black'
+                                    },
+                                    {
+                                        events: organizedEvents.map(event => ({
+                                            ...event,
+                                            color: event.backgroundColor // Usar el color definido en el evento
+                                        }))
+                                    }
                                 ]}
-                                dateClick={handleDateClick}
+                                eventDidMount={(info) => {
+                                    console.log("Evento montado en el calendario:", {
+                                        id: info.event.id,
+                                        title: info.event.title,
+                                        start: info.event.start,
+                                        end: info.event.end,
+                                        source: info.event.source?.id
+                                    });
+                                }}
                                 eventClick={handleEventClick}
                                 selectable={true}
-                                businessHours={{
-                                    daysOfWeek: defaultWorkingHours.map(d => d.dayOfWeek),
-                                    startTime: defaultWorkingHours.length > 0 ? defaultWorkingHours[0].startTime : '08:00',
-                                    endTime: defaultWorkingHours.length > 0 ? defaultWorkingHours[0].endTime : '15:00',
-                                }}
                             />
                         </div>
                     </div>
-                    {/* Pop-up para Añadir Nuevo Evento */}
+
+                    {/* Pop-up de detalles del evento */}
+                    {isEventDetailPopupOpen && selectedEvent && (
+                        <div className="popup-overlay">
+                            <div className="popup-container">
+                                <h2>Detalles de la Reunión</h2>
+                                <div className="AdminCalendar-input-group">
+                                    <label>Nombre de la Reunión:</label>
+                                    <p>{selectedEvent.title}</p>
+                                </div>
+                                <div className="AdminCalendar-input-group">
+                                    <label>Fecha:</label>
+                                    <p>{selectedEvent.start.split('T')[0]}</p>
+                                </div>
+                                {selectedEvent.allDay ? (
+                                    <div className="AdminCalendar-input-group">
+                                        <label>Esta reunión es de todo el día</label>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="AdminCalendar-input-group">
+                                            <label>Hora de inicio:</label>
+                                            <p>{selectedEvent.start.split('T')[1]}</p>
+                                        </div>
+                                        <div className="AdminCalendar-input-group">
+                                            <label>Hora de fin:</label>
+                                            <p>{selectedEvent.end.split('T')[1]}</p>
+                                        </div>
+                                    </>
+                                )}
+                                <div className="AdminCalendar-input-group">
+                                    <label>Organizador:</label>
+                                    <p>{selectedEvent.extendedProps.organizerName}</p>
+                                </div>
+                                <div className="AdminCalendar-input-group">
+                                    <label>Ubicación:</label>
+                                    <p>{selectedEvent.extendedProps.locationName}</p>
+                                </div>
+                                <div className="AdminCalendar-input-group">
+                                    <label>Observaciones:</label>
+                                    <p>{selectedEvent.extendedProps.observations}</p>
+                                </div>
+                                <div className="AdminCalendar-input-group">
+                                    <label>Lista de Invitados:</label>
+                                    <ul>
+                                        {invitees.map((invitee, index) => (
+                                            <li key={index}>
+                                                {invitee.userName} - {invitee.status}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className="popup-button-container">
+                                    <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>
+                                        Cerrar
+                                    </button>
+                                    {organizedEvents.find(event => event.id === selectedEvent.id) && (
+                                        !areAllInvitationsRejected(invitees) && (
+                                            <button className="close-button" onClick={() => handleModifyEvent(selectedEvent)}>
+                                                Modificar
+                                            </button>
+                                        )
+                                    )}
+                                    {regularEvents.find(event => event.id === selectedEvent.id) && (
+                                        <div className="attendance-button-container">
+                                            {selectedEvent.extendedProps.hasConfirmedAttendance ? (
+                                                <button className="attendance-confirmed-button">
+                                                    <img src={require('../media/garrapata.png')} alt="Attendance Confirmed" />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className="attendance-button"
+                                                    onClick={() => handleAttendanceUpdate(selectedEvent.id)}
+                                                >
+                                                    Asistencia
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Ventana de confirmación */}
+                    {showConfirmation && (
+                        <VentanaConfirm
+                            onConfirm={handleConfirmAction}
+                            onCancel={() => setShowConfirmation(false)}
+                            action={confirmationAction}
+                        />
+                    )}
+
                     {isPopupOpen && currentStep === 1 && (
                         <div className="popup-overlay">
                             <div className="popup-container">
-                                <h2>Crear nueva Reunión</h2>
+                            <h2>{isEditingEvent ? 'Modificar Reunión' : 'Crear nueva Reunión'}</h2>
                                 <div className="AdminCalendar-input-group">
-                                    <label htmlFor='eventName'>Nombre de la Reunión:</label>
+                                    <label>Nombre de la Reunión:</label>
                                     <input
                                         type="text"
-                                        id='eventName'
-                                        placeholder="Nombre del Evento"
+                                        placeholder="Nombre de la Reunión"
                                         value={eventName}
                                         onChange={(e) => setEventName(e.target.value)}
                                     />
                                 </div>
                                 <div className="AdminCalendar-input-group">
-                                    <label htmlFor='fecha'>Fecha:</label>
+                                    <label>Fecha:</label>
                                     <input
                                         type="date"
-                                        id='fecha'
                                         value={popupSelectedDate}
                                         onChange={(e) => setPopupSelectedDate(e.target.value)}
                                     />
                                 </div>
                                 <div className="AdminCalendar-input-group">
-                                    <label htmlFor='allDay'>¿Es una reunión de todo el día?</label>
+                                    <label>¿Es una reunión de todo el día?</label>
                                     <input
                                         type="checkbox"
-                                        id='allDay'
                                         checked={isAllDay}
                                         onChange={(e) => setIsAllDay(e.target.checked)}
                                     />
@@ -817,7 +1042,6 @@ const UserCalendarUI = () => {
                                                     placeholder="HH"
                                                     value={popupStartingHour}
                                                     onChange={(e) => handlePopupTimeChange(e, 'popupStartingHour')}
-                                                    className={popupHourError ? 'error' : ''}
                                                     min="0"
                                                     max="23"
                                                 />
@@ -827,7 +1051,6 @@ const UserCalendarUI = () => {
                                                     placeholder="MM"
                                                     value={popupStartingMinutes}
                                                     onChange={(e) => handlePopupTimeChange(e, 'popupStartingMinutes')}
-                                                    className={popupMinuteError ? 'error' : ''}
                                                     min="0"
                                                     max="59"
                                                 />
@@ -841,7 +1064,6 @@ const UserCalendarUI = () => {
                                                     placeholder="HH"
                                                     value={popupEndingHour}
                                                     onChange={(e) => handlePopupTimeChange(e, 'popupEndingHour')}
-                                                    className={popupHourError ? 'error' : ''}
                                                     min="0"
                                                     max="23"
                                                 />
@@ -851,7 +1073,6 @@ const UserCalendarUI = () => {
                                                     placeholder="MM"
                                                     value={popupEndingMinutes}
                                                     onChange={(e) => handlePopupTimeChange(e, 'popupEndingMinutes')}
-                                                    className={popupMinuteError ? 'error' : ''}
                                                     min="0"
                                                     max="59"
                                                 />
@@ -860,154 +1081,74 @@ const UserCalendarUI = () => {
                                     </>
                                 )}
                                 <div className="AdminCalendar-input-group">
-                                    <label htmlFor='eventLocation'>Ubicación:</label>
+                                    <label>Ubicación:</label>
                                     <select
                                         value={eventLocation}
-                                        id='eventLocation'
-                                        onChange={(e) => {
-                                            setEventLocation(e.target.value)
-                                        }}
+                                        onChange={(e) => setEventLocation(e.target.value)}
                                     >
-                                        <option value="Ciudad Real">Ciudad Real</option>
-                                        <option value="Toledo">Toledo</option>
-                                        <option value="Madrid">Madrid</option>
-                                        <option value="Málaga">Málaga</option>
-                                        <option value="Barcelona">Barcelona</option>
+                                    <option value="" disabled>Seleccione...</option>
+                                    {locations.map((location) => (
+                                        <option key={location.locationId}
+                                            value={location.locationId}>
+                                            {location.locationName}
+                                        </option>
+                                    ))}
                                     </select>
                                 </div>
-                                <div className='AdminCalendar-input-group'>
-                                    <label htmlFor='popupDescription'>Observaciones:</label>
-                                    <textarea className='areaTexto' id='popupDescription' value={popupDescription} onChange={(e) => setPopupDescription(e.target.value)} />
+                                <div className="AdminCalendar-input-group">
+                                    <label>Observaciones:</label>
+                                    <textarea
+                                        value={popupDescription}
+                                        onChange={(e) => setPopupDescription(e.target.value)}
+                                    />
                                 </div>
                                 <div className="AdminCalendar-button-group">
-                                    <button className="save-button" onClick={handleNextStep}>Siguiente</button>
-                                    <button className="close-button" onClick={handleClosePopup}>Cancelar</button>
+                                    <button onClick={handleNextStep}>Siguiente</button>
+                                    <button onClick={handleClosePopup}>Cancelar</button>
                                 </div>
                             </div>
                         </div>
                     )}
-                    {/* Pop-up para Invitar Participantes */}
                     {isPopupOpen && currentStep === 2 && (
                         <div className="popup-overlay">
-                            <div className="popup-container-participants">
+                            <div className="popup-container">
                                 <h2>Invitar Participantes</h2>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Usuarios Disponibles:</label>
-                                    <div className="search-participants-container">
-                                        <input
-                                            type="text"
-                                            className="search-participants-input"
-                                            placeholder="Buscar participantes..."
-                                            value={searchTerm}
-                                            onChange={handleSearchChange}
-                                        />
-                                    </div>
-                                    {/* Lista de participantes disponibles */}
-                                    <div className="participant-list-available">
-                                        {filteredParticipants.length > 0 ? (
-                                            filteredParticipants.map((participant) => (
-                                                <div key={participant.id} className="available-participant-item"
-                                                    onClick={() => handleSelectParticipant(participant)}
-                                                >
-                                                    {participant.nombre}
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <p>No se encontraron participantes.</p>
-                                        )}
-                                    </div>
-                                    {/* Lista de participantes seleccionados */}
-                                    <label>Usuarios Seleccionados:</label>
-                                    <div className="participant-list-selected">
-                                        {selectedUsers.map((user) => (
-                                            <div key={user.id} className={`selected-participant-item ${user.enAusencia ? 'en-ausencia' : 'disponible'}`}>
-                                                <p>{user.nombre}</p>
-                                                <button onClick={() => handleRemoveUser(user)}>
-                                                    <img className='papelera-btn' src={require('../media/papelera.png')} alt="Eliminar" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
+                                <div className="search-participants-container">
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar participantes..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                <div className="participant-list-available">
+                                    {filteredParticipants.map((participant) => (
+                                        <div
+                                            key={participant.id}
+                                            className="participant-item"
+                                            onClick={() => handleSelectParticipant(participant)}
+                                        >
+                                            {participant.nombre}
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="selected-participants">
+                                    <h3>Participantes Seleccionados:</h3>
+                                    {selectedUsers.map((user) => (
+                                        <div key={user.id} className="selected-participant"
+                                            style={user.enAusencia ? { color: 'red' } : {}}>
+                                            {user.nombre}
+                                            <button onClick={() => handleRemoveUser(user)}>X</button>
+                                        </div>
+                                    ))}
                                 </div>
                                 <div className="AdminCalendar-button-group">
-                                    <button className="save-participants-button" onClick={isEditMode ? handleUpdateEvent : handleSaveEvent}>
-                                        {isEditMode ? "Actualizar" : "Guardar"}
-                                    </button>
-                                    <button className="close-participants-button" onClick={handleClosePopup}>Cancelar</button>
+                                    <button onClick={handleSaveEvent}>Guardar</button>
+                                    <button onClick={handleClosePopup}>Cancelar</button>
                                 </div>
-                                <b style={{ color: 'red' }}>{errorEvent}</b>
+                                {errorEvent && <b style={{ color: 'red' }} className="error-message">{errorEvent}</b>}
                             </div>
                         </div>
-                    )}
-                    {isEventDetailPopupOpen && selectedEvent && (
-                        <div className="popup-overlay">
-                            <div className="popup-container">
-                                <h2>Detalles del Evento</h2>
-                                <div className="AdminCalendar-input-group">
-                                    <label htmlFor='nombreEvento'>Nombre de la Reunión:</label>
-                                    <p>{selectedEvent.title}</p>
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label htmlFor='fechaInicio'>Fecha:</label>
-                                    <p>{selectedEvent.start ? selectedEvent.start.split('T')[0] : 'No definida'}</p>
-                                </div>
-                                {selectedEvent.allDay ? (
-                                    <div className="AdminCalendar-input-group">
-                                        <label htmlFor='allDayEvent'>Esta reunión es de todo el día</label>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="AdminCalendar-input-group">
-                                            <label htmlFor='horaInicio'>Hora de inicio:</label>
-                                            <p>{selectedEvent.start ? selectedEvent.start.split('T')[1].split('+')[0] : 'No definida'}</p>
-                                        </div>
-                                        <div className="AdminCalendar-input-group">
-                                            <label htmlFor='horaFin'>Hora de fin:</label>
-                                            <p>{selectedEvent.end ? selectedEvent.end.split('T')[1].split('+')[0] : 'No definida'}</p>
-                                        </div>
-                                    </>
-                                )}
-                                <div className="AdminCalendar-input-group">
-                                    <label htmlFor='organizadorEvento'>Organizador:</label>
-                                    <p>{selectedEvent.extendedProps?.organizerId || 'No definido'}</p>
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label htmlFor='ubicacionEvento'>Ubicación:</label>
-                                    <p>{selectedEvent.extendedProps?.locationName || 'No definida'}</p>
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label htmlFor='descripcionEvento'>Observaciones:</label>
-                                    <p>{selectedEvent.extendedProps?.observations || 'No definidas'}</p>
-                                </div>
-                                {/* Lista de Invitados */}
-                                {selectedEvent.extendedProps?.invitees && selectedEvent.extendedProps.invitees.length > 0 && (
-                                    <div className="AdminCalendar-input-group">
-                                        <label>Lista de Invitados:</label>
-                                        <ul>
-                                            {selectedEvent.extendedProps.invitees.map((invitee, index) => (
-                                                <li key={index}>
-                                                    {invitee.userName} - {invitee.invitationStatus}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                                {selectedEvent.extendedProps?.organizerId === currentUser.id && (
-                                    <button className="edit-button" onClick={handleEditMeeting}>
-                                        Modificar
-                                    </button>
-                                )}
-                                <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>Cerrar</button>
-                            </div>
-                        </div>
-                    )}
-                    {/* Ventana de confirmación */}
-                    {showConfirmation && (
-                        <VentanaConfirm
-                            onConfirm={() => handleConfirmAction()}
-                            onCancel={() => setShowConfirmation(false)}
-                            action={confirmationAction}
-                        />
                     )}
                 </div>
             )}
