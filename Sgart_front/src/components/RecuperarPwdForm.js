@@ -14,20 +14,35 @@ const RecuperarPwdForm = () => {
         }
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError('El formato del correo electrónico no es válido.');
             return;
         }
 
-        alert('Solicitud de restablecimiento de contraseña enviada.');
-        setError('');
-        // Enviar los datos al backend...
-    };
+        try {
+            // Realiza la solicitud POST al backend
+            const response = await fetch(`/auth/forgot-password?email=${encodeURIComponent(email)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
 
+            if (response.ok) {
+                setSuccessMessage('Correo enviado. Por favor, revisa tu bandeja de entrada.');
+                setError('');
+            } else {
+                const errorResponse = await response.json();
+                setError(errorResponse.error || 'Ocurrió un error al procesar tu solicitud.');
+            }
+        } catch (err) {
+            setError('No se pudo conectar con el servidor. Inténtalo más tarde.');
+        }
+    };
     const handleToggleForm = () => {
         setIsOut(true);
     };
