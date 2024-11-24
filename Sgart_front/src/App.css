@@ -1676,3 +1676,32 @@ button :hover {
   max-height: 175px;
   overflow-y: auto;
 }
+
+.reset-password-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+}
+
+.reset-password-form {
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+.update-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background-color: #4A90E2;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.update-btn:hover {
+  background-color: #357ABD;
+}

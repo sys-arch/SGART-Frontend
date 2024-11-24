@@ -15,6 +15,7 @@ import './App.css';
 import UserCalendarUI from './components/UserCalendarUI';
 import UserEdit from './components/UserEdit';
 import AdminPanel from './components/AdminPanel';
+import ActualizarPwdForm from './components/ActualizarPwdForm';
 
 const App = () => {
   return (
@@ -49,6 +50,8 @@ const App = () => {
 
           {/* Redirigir a login si la ruta no existe */}
           <Route path="*" element={<Navigate to="/" />} />
+          {/* ... Recuperar contraseña ... */}
+          <Route path="/reset-password" element={<ActualizarPwdForm />} />
         </Routes>
       </Router>
     </div>
