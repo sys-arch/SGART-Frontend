@@ -341,6 +341,7 @@ const UserCalendarUI = () => {
 
     // Añadir estas funciones para manejar la creación de reuniones
     const handleAddTimeClick = () => {
+        setIsEditing(false);
         loadLocations();
         setPopupStartingHour('');
         setPopupStartingMinutes('');
@@ -406,13 +407,20 @@ const UserCalendarUI = () => {
             let meetingId;
 
             if (isEditing) {
-                response = await fetch(`/api/meetings/${eventIdToEdit}`, {
-                    method: 'PUT',
+                response = await fetch(`/api/meetings/${eventIdToEdit}/modify`, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
-                    body: JSON.stringify(newEvent),
+                    body: JSON.stringify(newEvent)
                 });
                 meetingId = eventIdToEdit;
+
+                if (!response.ok){
+                    alert('Error al guardar el evento');
+                    return;
+                }
+
+                alert("Se ha modificado el evento de manera exitosa.");
             } else {
                 response = await fetch('/api/meetings/create', {
                     method: 'POST',
@@ -422,30 +430,31 @@ const UserCalendarUI = () => {
                 });
                 const meetingData = await response.json();
                 meetingId = meetingData.meetingId; // Assuming your backend returns the created meeting ID
+
+                if (!response.ok) throw new Error('Error al guardar el evento');
+
+                // Send invitations
+                const userIds = selectedUsers.map(user => user.id);
+                const inviteResponse = await fetch(`http://localhost:9000/invitations/${meetingId}/invite`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(userIds),
+                });
+
+                if (!inviteResponse.ok) {
+                    alert('Error al enviar las invitaciones');
+                    return;
+                }
+                alert("Se ha creado el evento de manera exitosa.");
+
             }
-
-            if (!response.ok) throw new Error('Error al guardar el evento');
-
-            // Send invitations
-            const userIds = selectedUsers.map(user => user.id);
-            const inviteResponse = await fetch(`http://localhost:9000/invitations/${meetingId}/invite`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(userIds),
-            });
-
-            if (!inviteResponse.ok) {
-                throw new Error('Error al enviar las invitaciones');
-            }
-
             await loadMeetings();
             await loadOrganizedMeetings();
             setIsPopupOpen(false);
             setCurrentStep(1);
             setIsEditing(false);
             setEventIdToEdit(null);
-            alert("Se ha guardado el evento y enviado las invitaciones de manera exitosa.");
         } catch (error) {
             console.error('Error:', error);
             setErrorEvent('Error al crear la reunión o enviar las invitaciones. Por favor, inténtalo de nuevo.');
@@ -520,6 +529,7 @@ const UserCalendarUI = () => {
     };
 
     const loadLocations = (async() => {
+        setEventLocation("");
         const response = await fetch('/api/meetings/locations');
         if (!response.ok) {
             console.log('Error al cargar las localizaciones');
@@ -672,6 +682,9 @@ const UserCalendarUI = () => {
 
 
     const handleModifyEvent = (event) => {
+        loadLocations();
+        setIsEditing(true);  // Indicamos que estamos editando un eventos
+        setEventIdToEdit(event.id);
         setIsEditingEvent(true);
         setEventName(event.title);
         setPopupSelectedDate(event.start.split('T')[0]);
@@ -691,8 +704,6 @@ const UserCalendarUI = () => {
         setPopupDescription(event.extendedProps.observations || '');
         setIsPopupOpen(true);
         setCurrentStep(1);
-        setIsEditing(true);  // Indicamos que estamos editando un evento
-        setEventIdToEdit(event.id);  // Almacenamos el ID del evento que estamos editando
     };
 
     const handleDeleteEvent = async (reunion) => {
@@ -703,7 +714,7 @@ const UserCalendarUI = () => {
             }
 
             // Hacer una petición DELETE al backend para eliminar la reunión
-            const response = await fetch(`http://localhost:9000/meetings/${reunion.id}`, {
+            const response = await fetch(`/api/deleteMeeting/${reunion.id}`, {
                 method: 'DELETE',
                 credentials: 'include',
             });
@@ -1103,7 +1114,7 @@ const UserCalendarUI = () => {
                                     />
                                 </div>
                                 <div className="AdminCalendar-button-group">
-                                    <button onClick={handleNextStep}>Siguiente</button>
+                                    <button onClick={isEditing?handleSaveEvent:handleNextStep}>{isEditing?'Guardar':'Siguiente'}</button>
                                     <button onClick={handleClosePopup}>Cancelar</button>
                                 </div>
                             </div>
