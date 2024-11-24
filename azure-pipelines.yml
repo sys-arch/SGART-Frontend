@@ -49,11 +49,7 @@ stages:
             - agent.name -equals SonarLocalPC
         steps:
           - checkout: none
-          - script: |
-              sonar-scanner \
-              -Dsonar.token=$(SQ_TOKEN) \
-              -Dproject.settings=sgart.backend/sonar-project.properties \
-              -Dsonar.coverage.jacoco.xmlReportPaths=sgart.backend/target/site/jacoco/jacoco.xml
+          - script: sonar-scanner -Dsonar.token=$(SQ_TOKEN) -Dproject.settings=Sgart_front/sonar-project.properties
             displayName: 'SonarQube analysis'
           - script: echo "SonarQube OK"
             displayName: 'Confirm SonarQube'
