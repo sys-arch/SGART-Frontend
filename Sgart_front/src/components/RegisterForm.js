@@ -236,11 +236,11 @@ const RegisterForm = () => {
                         <div className={errorPerfil === '' ? "input-group" : "input-group-error"}>
                             <select className="perfil-select" id="perfil_desplegable" name="perfil_desplegable" value={perfil_desplegable} onChange={handleChange} required>
                                 <option value="" disabled hidden></option>
-                                <option value="usuario">Desarrollador</option>
-                                <option value="usuario">Tester</option>
-                                <option value="usuario">Becario</option>
-                                <option value="usuario">RRHH</option>
-                                <option value="usuario">Contabilidad</option>
+                                <option value="Desarrollador">Desarrollador</option>
+                                <option value="Tester">Tester</option>
+                                <option value="Becario">Becario</option>
+                                <option value="RRHH">RRHH</option>
+                                <option value="Contabilidad">Contabilidad</option>
                             </select>
                             <label htmlFor="perfil_desplegable">Perfil</label>
                             <button type="button" className="select-toggle-btn" value={perfil_desplegable}>

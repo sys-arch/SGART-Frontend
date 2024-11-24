@@ -19,14 +19,15 @@ const UserEdit = () => {
 
     const loadUser = async () => {
         try {
-            const response = await fetch('/users/current/user', {
+            const response = await fetch('https://sgart-backend.onrender.com/users/modificar', {
                 credentials: 'include'
             });
             if (!response.ok) {
                 throw new Error('No se pudo obtener el usuario');
             }
             const data = await response.json();
-            console.log("Usuario obtenido:", {id:data.email});
+            console.log("Datos completos del usuario:", data);
+            
             setId(data.id)
             setName(data.name);
             setEmail(data.email);
