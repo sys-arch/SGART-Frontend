@@ -42,37 +42,37 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
         <div className="user-edit-form">
             <div className="user-content">
             <h2>Modificar Usuario</h2>
-            <div className="input-group-register">
+            <div className="input-group">
                 <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} />
                 <label htmlFor="name">Nombre:</label>
             </div>
-            <div className="input-group-register">
+            <div className="input-group">
                 <input type="text" id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                 <label htmlFor="lastName">Apellidos:</label>
             </div>
-            <div className="input-group-register">
-                <select className="profile-select" id="profile" value={profile} onChange={(e) => setProfile(e.target.value)}>
+            <div className="input-group">
+                <select className="perfil-select" id="profile" value={profile} onChange={(e) => setProfile(e.target.value)}>
                     <option value="" disabled hidden></option>
-                    <option value="usuario">Desarrollador</option>
-                    <option value="usuario">Tester</option>
-                    <option value="usuario">Becario</option>
-                    <option value="usuario">RRHH</option>
-                    <option value="usuario">Contabilidad</option>
+                    <option value="desarrollador">Desarrollador</option>
+                    <option value="tester">Tester</option>
+                    <option value="becario">Becario</option>
+                    <option value="rrhh">RRHH</option>
+                    <option value="contabilidad">Contabilidad</option>
                 </select>
                 <label htmlFor="profile">Perfil:</label>
                 <button type="button" className="select-toggle-btn" value={profile}>
                     <img src={require('../media/flecha.png')} alt="Desplegable"/>
                 </button>
             </div>
-            <div className="input-group-register">
+            <div className="input-group">
                 <input type="text" id="department" value={department} onChange={(e) => setDepartment(e.target.value)} />
                 <label htmlFor="department">Departamento:</label>
             </div>
-            <div className="input-group-register">
+            <div className="input-group">
                 <input type="date" id="fecha" value={hiringDate} onChange={(e) => setHiringDate(e.target.value)} />
                 <label htmlFor="fecha">Fecha de Alta:</label>
             </div>
-            <div className="input-group-register">
+            <div className="input-group">
                 <input type="text" id="center" value={center} onChange={(e) => setCenter(e.target.value)} />
                 <label htmlFor="center">Centro:</label>
             </div>
