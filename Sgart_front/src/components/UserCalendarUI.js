@@ -341,6 +341,7 @@ const UserCalendarUI = () => {
 
     // Añadir estas funciones para manejar la creación de reuniones
     const handleAddTimeClick = () => {
+        setEventLocation("");
         setIsEditing(false);
         loadLocations();
         setPopupStartingHour('');
@@ -391,7 +392,6 @@ const UserCalendarUI = () => {
         try {
             setIsLoading(true);
             const currentUserId = await getUserId();
-            const eventloc = eventLocation;
             const newEvent = {
                 organizerId: currentUserId,
                 meetingTitle: eventName,
@@ -529,7 +529,6 @@ const UserCalendarUI = () => {
     };
 
     const loadLocations = (async() => {
-        setEventLocation("");
         const response = await fetch('/api/meetings/locations');
         if (!response.ok) {
             console.log('Error al cargar las localizaciones');
@@ -687,6 +686,8 @@ const UserCalendarUI = () => {
         setEventIdToEdit(event.id);
         setIsEditingEvent(true);
         setEventName(event.title);
+        setEventLocation(event.extendedProps.locationId);
+        setPopupDescription(event.extendedProps.observations);
         setPopupSelectedDate(event.start.split('T')[0]);
         if (event.allDay) {
             setIsAllDay(true);
@@ -700,8 +701,6 @@ const UserCalendarUI = () => {
             setPopupEndingHour(endHour);
             setPopupEndingMinutes(endMinutes);
         }
-        setEventLocation(event.extendedProps.locationName || '');
-        setPopupDescription(event.extendedProps.observations || '');
         setIsPopupOpen(true);
         setCurrentStep(1);
     };
