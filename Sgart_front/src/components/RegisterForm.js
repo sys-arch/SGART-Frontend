@@ -157,7 +157,7 @@ const RegisterForm = () => {
             twoFactorAuthCode: '',
         };
         setIsLoading(true);
-        fetch('http://localhost:9000/users/verificar-email', {
+        fetch('https://sgart-backend.onrender.com/users/verificar-email', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -30,7 +30,7 @@ const AdminAusenciasUI = () => {
         const fetchEmpleados = async () => {
             try {
                 setIsLoading(true);
-                const response = await axios.get('http://localhost:9000/users/cargarUsuarios');
+                const response = await axios.get('https://sgart-backend.onrender.com/users/cargarUsuarios');
                 const empleadosData = response.data.map(user => ({
                     id: user.id,
                     nombre: user.firstName,
