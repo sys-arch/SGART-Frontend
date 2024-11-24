@@ -407,7 +407,7 @@ const UserCalendarUI = () => {
             let meetingId;
 
             if (isEditing) {
-                response = await fetch(`/api/meetings/${eventIdToEdit}/modify`, {
+                response = await fetch(`https://sgart-backend.onrender.com/api/meetings/${eventIdToEdit}/modify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -422,7 +422,7 @@ const UserCalendarUI = () => {
 
                 alert("Se ha modificado el evento de manera exitosa.");
             } else {
-                response = await fetch('/api/meetings/create', {
+                response = await fetch('https://sgart-backend.onrender.com/api/meetings/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -497,7 +497,7 @@ const UserCalendarUI = () => {
             const currentUserId = await getUserId();
             console.log('ID del usuario actual:', currentUserId);
             
-            const response = await fetch('/api/meetings/available-users');
+            const response = await fetch('https://sgart-backend.onrender.com/api/meetings/available-users');
             if (!response.ok) {
                 throw new Error('Error al cargar los usuarios');
             }
@@ -529,7 +529,7 @@ const UserCalendarUI = () => {
     };
 
     const loadLocations = (async() => {
-        const response = await fetch('/api/meetings/locations');
+        const response = await fetch('https://sgart-backend.onrender.com/api/meetings/locations');
         if (!response.ok) {
             console.log('Error al cargar las localizaciones');
             return;
@@ -543,7 +543,7 @@ const UserCalendarUI = () => {
     })
 
     const loadAbsences = (async () => {
-        const response = await fetch('/administrador/ausencias/loadAbsences');
+        const response = await fetch('https://sgart-backend.onrender.com/administrador/ausencias/loadAbsences');
         if (!response.ok) {
             console.log('Error al cargar las ausencias');
             return;
