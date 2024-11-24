@@ -6,10 +6,14 @@ const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
         switch (action) {
             case 'save':
                 return 'Confirmar Cambios';
+            case 'edit':
+                return 'Confirmar Cambios';
             case 'delete':
                 return 'Confirmar Eliminación';
             case 'add':
                 return 'Confirmar Ausencia';
+            case 'logout':
+                return 'Cerrar Sesión';
             default:
                 return '';
         }
@@ -19,10 +23,18 @@ const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
         switch (action) {
             case 'save':
                 return '¿Está seguro de que desea guardar los cambios?';
+            case 'edit':
+                return '¿Está seguro de que desea guardar los cambios?';
             case 'delete':
                 return '¿Está seguro de que desea eliminar este usuario?';
             case 'add':
                 return '¿Está seguro de que desea añadir esta ausencia?';
+            case 'accept':
+                return '¿Está seguro de que desea asistir?';
+            case 'reject':
+                return '¿Está seguro de que desea rechazar esta reunión?';
+            case 'logout':
+                return '¿Está seguro de que desea cerrar sesión?';
             default:
                 return '';
         }

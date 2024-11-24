@@ -2,7 +2,7 @@
   "name": "sgart",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:9000/",
+  "proxy": "https://sgart-backend.onrender.com/",
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",
     "@fullcalendar/daygrid": "^6.1.15",
@@ -16,8 +16,10 @@
     "fullcalendar": "^6.1.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-loader-spinner": "^6.1.6",
     "react-router-dom": "^6.27.0",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
+    "sgart": "file:",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

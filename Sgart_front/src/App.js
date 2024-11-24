@@ -7,10 +7,14 @@ import GoogleAuth from './components/GoogleAuth';
 import GoogleAuthLogin from './components/GoogleAuthLogin';
 import AdminAusenciasUI from './components/AdminAusenciasUI';
 import UserValidationUI from './components/UserValidationUI';
-import AdminWorkingHours from './components/AdminWorkingHours';
+import AdminVisualizarCalendario from './components/AdminVisualizarCalendario';
+import AdminGestionarHorariosDeTrabajo from './components/AdminGestionarHorariosDeTrabajo';
 import UserOptions from './components/UserOptions';
 import UnderConstruction from './components/UnderConstruction';
 import './App.css';
+import UserCalendarUI from './components/UserCalendarUI';
+import UserEdit from './components/UserEdit';
+import AdminPanel from './components/AdminPanel';
 
 const App = () => {
   return (
@@ -27,13 +31,19 @@ const App = () => {
           <Route path="/google-auth-login" element={<GoogleAuthLogin />} />
 
           {/* Ruta para el Dashboard del Administrador */}
-          <Route path="/admin-working-hours" element={<AdminWorkingHours />} />
+          <Route path="/admin-working-hours" element={<AdminGestionarHorariosDeTrabajo />} />
+          <Route path="/admin-calendar-view" element={<AdminVisualizarCalendario/>} />
+          <Route path="/admin-management" element={<AdminPanel />} />
 
-          {/* Ruta para el Usuario -> Under Construction */}
-          <Route path="/under-construction" element={<UnderConstruction />} />
+          {/* Ruta para el Usuario -> Calendario */}        
+          <Route path="/user-calendar" element={<UserCalendarUI />} />
 
-          {/* Rutas para gestionar usuarios y ausencias */}
+          {/* Ruta para el Usuario -> Visualizar Datos Perfil */}
+          <Route path="/user-profile" element={<UserEdit />} />
+
+          {/* Rutas para gestionar usuarios, administradores y ausencias */}
           <Route path="/user-options" element={<UserOptions />} />
+          <Route path="/admin-panel" element={<AdminPanel />} />
           <Route path="/admin-ausencias" element={<AdminAusenciasUI />} />
           <Route path="/user-validation" element={<UserValidationUI />} />
 
