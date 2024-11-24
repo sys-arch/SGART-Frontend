@@ -712,21 +712,22 @@ const UserCalendarUI = () => {
             if (!window.confirm(`¿Estás seguro de que quieres eliminar la reunión "${reunion.title}"?`)) {
                 return;
             }
-
+    
             // Hacer una petición DELETE al backend para eliminar la reunión
-            const response = await fetch(`/api/deleteMeeting/${reunion.id}`, {
+            const response = await fetch(`http://localhost:9000/api/meetings/${reunion.id}/cancel`, {
                 method: 'DELETE',
                 credentials: 'include',
             });
-
+    
             if (!response.ok) {
-                throw new Error('Error al eliminar la reunión');
+                const errorData = await response.text();
+                throw new Error(errorData || 'Error al eliminar la reunión');
             }
-
+    
             // Actualizar las reuniones organizadas para eliminar la reunión eliminada
             setOrganizedEvents(prevEvents => prevEvents.filter(event => event.id !== reunion.id));
             setReunionesOrganizadas(prevMeetings => prevMeetings.filter(meeting => meeting.id !== reunion.id));
-
+    
             alert('La reunión se ha eliminado correctamente.');
         } catch (error) {
             console.error('Error al eliminar la reunión:', error);
