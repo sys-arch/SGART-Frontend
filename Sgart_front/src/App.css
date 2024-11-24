@@ -1669,3 +1669,10 @@ button :hover {
 .meeting-item.organized.rejected-meeting:hover {
     background-color: #ffb3b3;
 }
+
+.meeting-list-organized {
+  margin-top: 5px;
+  padding: 5px;
+  max-height: 175px;
+  overflow-y: auto;
+}
