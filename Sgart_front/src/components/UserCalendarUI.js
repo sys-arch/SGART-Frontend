@@ -505,12 +505,12 @@ const UserCalendarUI = () => {
             const backendUsers = await response.json();
             console.log('Usuarios recibidos del backend:', backendUsers);
 
-            // Filtrar excluyendo al usuario actual (ambos IDs)
+            // Filtrar excluyendo al usuario actual
             const transformedUsers = backendUsers
                 .filter(user => {
-                    // Excluir ambos IDs del usuario actual que aparecen en los logs
-                    return user.id !== 'f9c13ac1-e8e2-4338-861e-19557d2a7f5d' && 
-                           user.id !== '496da65e-4a7d-44cf-9514-bad0cba4a473';
+                    const isCurrentUser = user.id === currentUserId;
+                    console.log(`Comparando usuario ${user.name} (${user.id}) con usuario actual (${currentUserId}): ${isCurrentUser ? 'Es el mismo' : 'Es diferente'}`);
+                    return !isCurrentUser;
                 })
                 .map(user => ({
                     id: user.id,
