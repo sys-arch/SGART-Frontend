@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
 import RecuperarPwdForm from './components/RecuperarPwdForm';
@@ -22,6 +22,9 @@ const App = () => {
     <div className="App"> {/* Contenedor general con estilos */}
       <Router>
         <Routes>
+          {/* Mover la ruta de reset-password antes de la ruta catch-all */}
+          <Route path="/reset-password" element={<ActualizarPwdForm />} />
+          
           {/* Rutas de autenticación */}
           <Route path="/" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
@@ -50,8 +53,6 @@ const App = () => {
 
           {/* Redirigir a login si la ruta no existe */}
           <Route path="*" element={<Navigate to="/" />} />
-          {/* ... Recuperar contraseña ... */}
-          <Route path="/reset-password" element={<ActualizarPwdForm />} />
         </Routes>
       </Router>
     </div>
