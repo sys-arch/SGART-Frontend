@@ -110,7 +110,7 @@ const GoogleAuth = () => {
                 twoFactorAuthCode: secretKeySend // Actualiza el campo twoFactorAuthCode
             };
 
-            const response = await fetch('admin/crearAdmin', {
+            const response = await fetch('https://sgart-backend.onrender.com/admin/crearAdmin', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
