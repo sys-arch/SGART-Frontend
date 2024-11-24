@@ -20,13 +20,14 @@ const ActualizarPwdForm = () => {
         }
 
         try {
-            const response = await fetch(`https://sgart-backend.onrender.com/users/reset-password?token=${token}`, {
+            const response = await fetch('https://sgart-backend.onrender.com/auth/reset-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    password: newPassword,
+                    token: token,
+                    newPassword: newPassword
                 }),
             });
 
