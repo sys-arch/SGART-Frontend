@@ -101,7 +101,7 @@ const AdminAusenciasUI = () => {
 
             console.log('Datos de ausencia a enviar:', nuevaAusencia);
 
-            const response = await axios.post('administrador/ausencias/newAbsence', nuevaAusencia);
+            const response = await axios.post('https://sgart-backend.onrender.com/administrador/ausencias/newAbsence', nuevaAusencia);
             console.log('Respuesta del servidor:', response.data);
 
             alert('Ausencia guardada correctamente.');
@@ -183,7 +183,7 @@ const AdminAusenciasUI = () => {
                     apellidos: empleado.apellidos
                 });
 
-                const response = await axios.get(`administrador/ausencias/loadAbsences/${empleado.id}`);
+                const response = await axios.get(`https://sgart-backend.onrender.com/administrador/ausencias/loadAbsences/${empleado.id}`);
                 console.log('Ausencias cargadas:', response.data);
 
                 setEmpleadoAusencias(response.data);
