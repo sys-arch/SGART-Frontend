@@ -80,12 +80,14 @@ const AdminPanel = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(adminToSave),
+            body: adminToSave.email,
         });
         if(response.ok){
             alert('Correo verificado. Pasando a la autenticación con doble factor...');
             console.log(JSON.stringify(adminToSave));
             navigate('/google-auth', { state: { usuario : adminToSave, esAdmin:true}});
+        }else{
+            alert('El correo ya está registrado');
         }
     };
 

@@ -5,7 +5,7 @@ import '../App.css';
 const GoogleAuth = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { usuario } = location.state; // Extraemos el usuario de la ubicación
+    const { usuario, esAdmin } = location.state; // Extraemos el usuario de la ubicación
     const [inputCode, setInputCode] = useState('');
     const [message, setMessage] = useState('');
     const [qrCode, setQrCode] = useState('');
@@ -51,11 +51,18 @@ const GoogleAuth = () => {
             }
 
             const data = await response.json();
-            if (data.status === 'valid') {
-                // Registro del usuario después de la validación exitosa
-                await registrarUsuario(usuario.email); // Llama a la función para registrar al usuario
-                setMessage("Autenticación exitosa. Redirigiendo...");
-                navigate('/under-construction');
+            if (data.status === 'valid' ) {
+                if(!esAdmin){
+                    // Registro del usuario después de la validación exitosa
+                    await registrarUsuario(usuario.email); // Llama a la función para registrar al usuario
+                    setMessage("Autenticación exitosa. Redirigiendo...");
+                    navigate('/user-calendar');
+                }else{
+                    // Registro del usuario después de la validación exitosa
+                    await registrarAdmin(usuario.email); // Llama a la función para registrar al usuario
+                    setMessage("Autenticación exitosa. Redirigiendo...");
+                    navigate('/admin-panel')
+                }
             } else {
                 setMessage("Código inválido. Por favor, intenta nuevamente.");
             }
@@ -94,6 +101,35 @@ const GoogleAuth = () => {
             console.error("Error en el registro:", error);
         }
     };
+
+    const registrarAdmin = async (email) =>{
+        try {
+            const secretKeySend = secretKey;
+            const adminActualizado = {
+                ...usuario, // Copia todos los campos del usuario original
+                twoFactorAuthCode: secretKeySend // Actualiza el campo twoFactorAuthCode
+            };
+
+            const response = await fetch('admin/crearAdmin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(adminActualizado), // Envía el correo y la secret key
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al registrar el admin');
+            }
+
+            const result = await response.json();
+            console.log('Admin registrado:', result);
+            setMessage("Admin registrado con éxito.");
+        } catch (error) {
+            setMessage("Error al registrar al admin.");
+            console.error("Error en el registro:", error);
+        }
+    }
 
     return (
         <div className="login-container">
