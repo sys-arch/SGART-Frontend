@@ -304,7 +304,14 @@ h2 {
   appearance: none;
   -webkit-appearance: none; 
   -moz-appearance: none;
-  position: relative;
+  background-color: #fff;
+}
+
+.perfil-select:focus + slct-label,
+.perfil-select:not(:placeholder-shown) + label {
+  top: -10px; /* Ajuste del label al enfocar */
+  font-size: 12px; /* Cambia el tamaño */
+  color: #4A90E2; /* Cambia el color */
 }
 
 .select-toggle-btn {
@@ -441,6 +448,10 @@ button {
   justify-content: center;
   align-items: center;
   z-index: 1500;
+}
+
+.user-edit-form{
+  margin-top: 60px;
 }
 
 .user-content{
