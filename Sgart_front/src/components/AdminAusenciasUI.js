@@ -101,7 +101,7 @@ const AdminAusenciasUI = () => {
 
             console.log('Datos de ausencia a enviar:', nuevaAusencia);
 
-            const response = await axios.post('http://localhost:9000/administrador/ausencias/newAbsence', nuevaAusencia);
+            const response = await axios.post('administrador/ausencias/newAbsence', nuevaAusencia);
             console.log('Respuesta del servidor:', response.data);
 
             alert('Ausencia guardada correctamente.');
@@ -183,7 +183,7 @@ const AdminAusenciasUI = () => {
                     apellidos: empleado.apellidos
                 });
 
-                const response = await axios.get(`http://localhost:9000/administrador/ausencias/loadAbsences/${empleado.id}`);
+                const response = await axios.get(`administrador/ausencias/loadAbsences/${empleado.id}`);
                 console.log('Ausencias cargadas:', response.data);
 
                 setEmpleadoAusencias(response.data);
