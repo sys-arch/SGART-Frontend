@@ -48,12 +48,14 @@ stages:
           demands:
             - agent.name -equals SonarLocalPC
         steps:
-          - checkout: none
+          - checkout: self
           - script: |
-              sonar-scanner \
-              -Dsonar.token=$(SQ_TOKEN) \
-              -Dproject.settings=sgart.backend/sonar-project.properties \
-              -Dsonar.coverage.jacoco.xmlReportPaths=sgart.backend/target/site/jacoco/jacoco.xml
+              echo "Cambiando a la rama develop"
+              git fetch origin fix_Pruebas
+              git checkout fix_Pruebas
+              git pull origin fix_Pruebas
+            displayName: 'Checkout develop branch'
+          - script: sonar-scanner -Dsonar.token=$(SQ_TOKEN) -Dproject.settings=Sgart_front/sonar-project.properties -X
             displayName: 'SonarQube analysis'
           - script: echo "SonarQube OK"
             displayName: 'Confirm SonarQube'
