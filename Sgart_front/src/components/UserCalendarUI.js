@@ -369,6 +369,23 @@ const UserCalendarUI = () => {
                 alert("El formato de horas que se ha establecido es incorrecto. Revíselo por favor.");
                 return;
             }
+            if (!popupEndingHour || !popupEndingMinutes || !popupStartingHour || !popupStartingMinutes) {
+                alert("Por favor, completa todos los campos antes de continuar.");
+                return;
+            }
+
+            // Añadir validación de horario laboral
+            const startTimeValid = isTimeWithinWorkSchedule(parseInt(popupStartingHour), parseInt(popupStartingMinutes));
+            const endTimeValid = isTimeWithinWorkSchedule(parseInt(popupEndingHour), parseInt(popupEndingMinutes));
+            
+            if (!startTimeValid || !endTimeValid) {
+                const errorMsg = 'Las horas seleccionadas deben estar dentro del horario laboral establecido:' +
+                    workSchedules.map(schedule => 
+                        `\n${schedule.startingTime.slice(0, -3)} - ${schedule.endingTime.slice(0, -3)}`
+                    ).join('');
+                alert(errorMsg);
+                return;
+            }
         }
 
         setErrorEvent('');
@@ -410,10 +427,13 @@ const UserCalendarUI = () => {
         console.log(`\nValidando tiempo: ${hour}:${minute} (${timeInMinutes} minutos)`);
         
         for (const schedule of workSchedules) {
-            console.log(`\nComprobando bloque horario: ${schedule.startTime} - ${schedule.endTime}`);
+            console.log(`\nComprobando bloque horario: ${schedule.startingTime} - ${schedule.endingTime}`);
             
-            const [startHour, startMinute] = schedule.startTime.split(':').map(Number);
-            const [endHour, endMinute] = schedule.endTime.split(':').map(Number);
+            const startTime = schedule.startingTime.split(':').slice(0, 2).join(':');
+            const endTime = schedule.endingTime.split(':').slice(0, 2).join(':');
+            
+            const [startHour, startMinute] = startTime.split(':').map(Number);
+            const [endHour, endMinute] = endTime.split(':').map(Number);
             
             const scheduleStartMinutes = startHour * 60 + startMinute;
             const scheduleEndMinutes = endHour * 60 + endMinute;
@@ -455,16 +475,20 @@ const UserCalendarUI = () => {
             
             if (!startTimeValid || !endTimeValid) {
                 const errorMsg = 'Las horas seleccionadas deben estar dentro del horario laboral establecido:' +
-                    workSchedules.map(schedule => `\n${schedule.startTime} - ${schedule.endTime}`).join('');
+                    workSchedules.map(schedule => 
+                        `\n${schedule.startingTime.slice(0, -3)} - ${schedule.endingTime.slice(0, -3)}`
+                    ).join('');
                 console.log('Error:', errorMsg);
                 setErrorEvent(errorMsg);
                 return;
             }
             
-            // ... resto de las validaciones existentes ...
+            if (!popupEndingHour || !popupEndingMinutes || !popupStartingHour || !popupStartingMinutes) {
+                alert("Por favor, completa todos los campos antes de continuar.");
+                return;
+            }
         }
         
-        // ... resto del código existente de handleSaveEvent ...
     };
 
     // Función para validar el formato de tiempo
@@ -1057,7 +1081,7 @@ const UserCalendarUI = () => {
                                                 {workSchedules.length > 0 ? (
                                                     workSchedules.map((schedule, index) => (
                                                         <div key={index} style={{ marginBottom: '5px' }}>
-                                                            Bloque {index + 1}: {schedule.startTime} - {schedule.endTime}
+                                                            Bloque {index + 1}: {schedule.startingTime} - {schedule.endingTime}
                                                         </div>
                                                     ))
                                                 ) : (
