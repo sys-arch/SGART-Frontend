@@ -454,35 +454,43 @@ const UserCalendarUI = () => {
     // Modificar handleSaveEvent para incluir la validación
     const handleSaveEvent = async () => {
         setErrorEvent('');
-        
+
+        // Validación inicial de campos obligatorios para todos los casos
+        if (!eventName || !popupSelectedDate || !eventLocation.length) {
+            alert("Por favor, completa todos los campos obligatorios antes de continuar.");
+            return;
+        }
+
         if (!isAllDay) {
-            console.log('\n=== Validando horarios de la reunión ===');
-            
-            // Validar que los campos no estén vacíos
-            if (!popupEndingHour || !popupEndingMinutes || !popupStartingHour || !popupStartingMinutes) {
-                alert("Por favor, completa todos los campos de hora antes de continuar.");
+            // Validación de formato de hora existente
+            if (!validateTimeInput(popupStartingHour, popupStartingMinutes, setPopupHourError, setPopupMinuteError) ||
+                !validateTimeInput(popupEndingHour, popupEndingMinutes, setPopupHourError, setPopupMinuteError)) {
+                alert("Por favor, corrige los campos de hora antes de guardar el evento.");
                 return;
             }
 
-            const startHour = parseInt(popupStartingHour);
-            const startMinute = parseInt(popupStartingMinutes);
-            const endHour = parseInt(popupEndingHour);
-            const endMinute = parseInt(popupEndingMinutes);
+            // Validación de campos de hora vacíos
+            if (!popupEndingHour || !popupEndingMinutes || !popupStartingHour || !popupStartingMinutes) {
+                alert("Por favor, completa todos los campos antes de continuar.");
+                return;
+            }
 
-            // Validar formato de horas
-            if (startMinute > 59 || startHour > 23 || endHour > 23 || endMinute > 59) {
+            // Validación de hora inicio > fin
+            if(parseInt(popupStartingMinutes)+parseInt(popupStartingHour)*60 > parseInt(popupEndingHour)*60+parseInt(popupEndingMinutes)){
+                alert("La fecha de inicio no puede ser mayor que la fecha de fin.");
+                return;
+            }
+
+            // Validación de formato de horas
+            if(parseInt(popupStartingMinutes)>59 || parseInt(popupStartingHour)>23 || 
+               parseInt(popupEndingHour)>23 || parseInt(popupEndingMinutes)>59){
                 alert("El formato de horas que se ha establecido es incorrecto. Revíselo por favor.");
                 return;
             }
 
-            // Validar que la hora de inicio no sea mayor que la de fin
-            if (startHour * 60 + startMinute > endHour * 60 + endMinute) {
-                alert("La hora de inicio no puede ser mayor que la hora de fin.");
-                return;
-            }
-            
-            const startTimeValid = isTimeWithinWorkSchedule(startHour, startMinute);
-            const endTimeValid = isTimeWithinWorkSchedule(endHour, endMinute);
+            // Añadir validación de horario laboral
+            const startTimeValid = isTimeWithinWorkSchedule(parseInt(popupStartingHour), parseInt(popupStartingMinutes));
+            const endTimeValid = isTimeWithinWorkSchedule(parseInt(popupEndingHour), parseInt(popupEndingMinutes));
             
             if (!startTimeValid || !endTimeValid) {
                 const errorMsg = 'Las horas seleccionadas deben estar dentro del horario laboral establecido:' +
@@ -493,56 +501,106 @@ const UserCalendarUI = () => {
                 return;
             }
         }
-        
-        try {
-            const startTime = isAllDay ? "00:00:00" : 
-                `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
-            const endTime = isAllDay ? "23:59:00" : 
-                `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
 
-            const meetingData = {
-                title: eventName,
+        // Validación de usuarios ausentes
+        if (selectedUsers.filter((user) => user.enAusencia === true).length > 0) {
+            setErrorEvent("Error al crear la reunión. Se está intentando crear una reunión con participantes ausentes.");
+            return;
+        }
+
+        const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
+        const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
+
+        try {
+            setIsLoading(true);
+            const currentUserId = await getUserId();
+            const newEvent = {
+                organizerId: currentUserId,
+                meetingTitle: eventName,
                 meetingDate: popupSelectedDate,
-                startTime: startTime,
-                endTime: endTime,
-                allDay: isAllDay,
+                meetingAllDay: isAllDay ? 1 : 0,
+                meetingStartTime: isAllDay ? '00:00:00' : startingTime,
+                meetingEndTime: isAllDay ? '23:59:59' : endingTime,
                 locationId: eventLocation,
-                observations: popupDescription,
-                invitees: selectedUsers.map(user => user.id)
+                meetingObservations: popupDescription,
             };
 
-            const url = isEditing 
-                ? `https://sgart-backend.onrender.com/api/meetings/${eventIdToEdit}`
-                : 'https://sgart-backend.onrender.com/api/meetings';
+            let response;
+            let meetingId;
 
-            const response = await fetch(url, {
-                method: isEditing ? 'PUT' : 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(meetingData),
-            });
+            if (isEditing) {
+                if (!eventName || !popupSelectedDate || !eventLocation.length) {
+                    alert("Por favor, completa todos los campos obligatorios antes de continuar.");
+                    return;
+                }
+        
+                if(!isAllDay){
+                    if (!popupEndingHour || !popupEndingMinutes || !popupStartingHour || !popupStartingMinutes) {
+                        alert("Por favor, completa todos los campos antes de continuar.");
+                        return;
+                    }
+                    if(parseInt(popupStartingMinutes)+parseInt(popupStartingHour)*60>parseInt(popupEndingHour)*60+parseInt(popupEndingMinutes)){
+                        alert("La fecha de inicio no puede ser mayor que la fecha de fin.");
+                        return;
+                    }
+                    if(parseInt(popupStartingMinutes)>59||parseInt(popupStartingHour)>23||parseInt(popupEndingHour)>23||parseInt(popupEndingMinutes)>59){
+                        alert("El formato de horas que se ha establecido es incorrecto. Revíselo por favor.");
+                        return;
+                    }
+                }
+                response = await fetch(`https://sgart-backend.onrender.com/api/meetings/${eventIdToEdit}/modify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(newEvent)
+                });
+                meetingId = eventIdToEdit;
 
-            if (!response.ok) {
-                throw new Error('Error al guardar la reunión');
+                if (!response.ok){
+                    alert('Error al guardar el evento');
+                    return;
+                }
+
+                alert("Se ha modificado el evento de manera exitosa.");
+            } else {
+                response = await fetch('https://sgart-backend.onrender.com/api/meetings/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(newEvent),
+                });
+                const meetingData = await response.json();
+                meetingId = meetingData.meetingId; // Assuming your backend returns the created meeting ID
+
+                if (!response.ok) throw new Error('Error al guardar el evento');
+
+                // Send invitations
+                const userIds = selectedUsers.map(user => user.id);
+                const inviteResponse = await fetch(`https://sgart-backend.onrender.com/invitations/${meetingId}/invite`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(userIds),
+                });
+
+                if (!inviteResponse.ok) {
+                    alert('Error al enviar las invitaciones');
+                    return;
+                }
+                alert("Se ha creado el evento de manera exitosa.");
+
             }
-
-            // Recargar las reuniones después de guardar
             await loadMeetings();
             await loadOrganizedMeetings();
-            
-            // Cerrar el popup y resetear el estado
             setIsPopupOpen(false);
             setCurrentStep(1);
-            setIsEditingEvent(false);
-            
-            // Mostrar mensaje de éxito
-            alert(isEditing ? 'Reunión modificada con éxito' : 'Reunión creada con éxito');
-
+            setIsEditing(false);
+            setEventIdToEdit(null);
         } catch (error) {
             console.error('Error:', error);
-            setErrorEvent('Error al guardar la reunión. Por favor, inténtelo de nuevo.');
+            setErrorEvent('Error al crear la reunión o enviar las invitaciones. Por favor, inténtalo de nuevo.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
