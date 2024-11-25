@@ -360,6 +360,17 @@ const UserCalendarUI = () => {
             alert("Por favor, completa todos los campos obligatorios antes de continuar.");
             return;
         }
+        if(!isAllDay){
+            if(parseInt(popupStartingMinutes)+parseInt(popupStartingHour)*60>parseInt(popupEndingHour)*60+parseInt(popupEndingMinutes)){
+                alert("La fecha de inicio no puede ser mayor que la fecha de fin.");
+                return;
+            }
+            if(parseInt(popupStartingMinutes)>59||parseInt(popupStartingHour)>23||parseInt(popupEndingHour)>23||parseInt(popupEndingMinutes)>59){
+                alert("El formato de horas que se ha establecido es incorrecto. Revíselo por favor.");
+                return;
+            }
+        }
+
         setErrorEvent('');
         setSelectedUsers([]);
         loadUsers();
@@ -407,6 +418,21 @@ const UserCalendarUI = () => {
             let meetingId;
 
             if (isEditing) {
+                if (!eventName || !popupSelectedDate || !eventLocation.length) {
+                    alert("Por favor, completa todos los campos obligatorios antes de continuar.");
+                    return;
+                }
+        
+                if(!isAllDay){
+                    if(parseInt(popupStartingMinutes)+parseInt(popupStartingHour)*60>parseInt(popupEndingHour)*60+parseInt(popupEndingMinutes)){
+                        alert("La fecha de inicio no puede ser mayor que la fecha de fin.");
+                        return;
+                    }
+                    if(parseInt(popupStartingMinutes)>59||parseInt(popupStartingHour)>23||parseInt(popupEndingHour)>23||parseInt(popupEndingMinutes)>59){
+                        alert("El formato de horas que se ha establecido es incorrecto. Revíselo por favor.");
+                        return;
+                    }
+                }
                 response = await fetch(`https://sgart-backend.onrender.com/api/meetings/${eventIdToEdit}/modify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -504,13 +530,14 @@ const UserCalendarUI = () => {
             
             const backendUsers = await response.json();
             console.log('Usuarios recibidos del backend:', backendUsers);
+            const userId=await getUserId();
 
             // Filtrar excluyendo al usuario actual
             const transformedUsers = backendUsers
                 .filter(user => {
                     const isCurrentUser = user.id === currentUserId;
                     console.log(`Comparando usuario ${user.name} (${user.id}) con usuario actual (${currentUserId}): ${isCurrentUser ? 'Es el mismo' : 'Es diferente'}`);
-                    return !isCurrentUser;
+                    return user.id !== userId;
                 })
                 .map(user => ({
                     id: user.id,

@@ -12,7 +12,6 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
     const handleSave = () => {
         // Guardar los cambios realizados al usuario
         const updatedUser = {
-            ...user,
             name: name,
             lastName: lastName,
             profile: profile,
