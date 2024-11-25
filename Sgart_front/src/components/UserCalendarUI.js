@@ -502,8 +502,8 @@ const UserCalendarUI = () => {
             }
         }
 
-        // Validación de usuarios ausentes
-        if (selectedUsers.filter((user) => user.enAusencia === true).length > 0) {
+        // Validación de usuarios ausentes solo si no estamos editando
+        if (!isEditing && selectedUsers && selectedUsers.filter((user) => user.enAusencia === true).length > 0) {
             setErrorEvent("Error al crear la reunión. Se está intentando crear una reunión con participantes ausentes.");
             return;
         }
