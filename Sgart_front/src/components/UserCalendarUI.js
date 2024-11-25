@@ -458,10 +458,28 @@ const UserCalendarUI = () => {
         if (!isAllDay) {
             console.log('\n=== Validando horarios de la reunión ===');
             
+            // Validar que los campos no estén vacíos
+            if (!popupEndingHour || !popupEndingMinutes || !popupStartingHour || !popupStartingMinutes) {
+                alert("Por favor, completa todos los campos de hora antes de continuar.");
+                return;
+            }
+
             const startHour = parseInt(popupStartingHour);
             const startMinute = parseInt(popupStartingMinutes);
             const endHour = parseInt(popupEndingHour);
             const endMinute = parseInt(popupEndingMinutes);
+
+            // Validar formato de horas
+            if (startMinute > 59 || startHour > 23 || endHour > 23 || endMinute > 59) {
+                alert("El formato de horas que se ha establecido es incorrecto. Revíselo por favor.");
+                return;
+            }
+
+            // Validar que la hora de inicio no sea mayor que la de fin
+            if (startHour * 60 + startMinute > endHour * 60 + endMinute) {
+                alert("La hora de inicio no puede ser mayor que la hora de fin.");
+                return;
+            }
             
             console.log(`Hora de inicio: ${startHour}:${startMinute}`);
             console.log(`Hora de fin: ${endHour}:${endMinute}`);
@@ -478,13 +496,7 @@ const UserCalendarUI = () => {
                     workSchedules.map(schedule => 
                         `\n${schedule.startingTime.slice(0, -3)} - ${schedule.endingTime.slice(0, -3)}`
                     ).join('');
-                console.log('Error:', errorMsg);
-                setErrorEvent(errorMsg);
-                return;
-            }
-            
-            if (!popupEndingHour || !popupEndingMinutes || !popupStartingHour || !popupStartingMinutes) {
-                alert("Por favor, completa todos los campos antes de continuar.");
+                alert(errorMsg);
                 return;
             }
         }
@@ -1077,11 +1089,21 @@ const UserCalendarUI = () => {
                                     <>
                                         <div className="AdminCalendar-input-group">
                                             <label>Horarios laborales disponibles:</label>
-                                            <div className="work-schedules" style={{ marginBottom: '10px', color: '#666' }}>
+                                            <div className="work-schedules" style={{ 
+                                                marginBottom: '10px', 
+                                                color: '#666',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '5px'
+                                            }}>
                                                 {workSchedules.length > 0 ? (
                                                     workSchedules.map((schedule, index) => (
-                                                        <div key={index} style={{ marginBottom: '5px' }}>
-                                                            Bloque {index + 1}: {schedule.startingTime} - {schedule.endingTime}
+                                                        <div key={index} style={{ 
+                                                            padding: '5px',
+                                                            backgroundColor: '#f5f5f5',
+                                                            borderRadius: '4px'
+                                                        }}>
+                                                            Bloque {index + 1}: {schedule.startingTime.slice(0, -3)} - {schedule.endingTime.slice(0, -3)}
                                                         </div>
                                                     ))
                                                 ) : (
