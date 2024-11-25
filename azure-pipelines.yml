@@ -51,9 +51,9 @@ stages:
           - checkout: self
           - script: |
               echo "Cambiando a la rama develop"
-              git fetch origin fix_Pruebas
-              git checkout fix_Pruebas
-              git pull origin fix_Pruebas
+              git fetch origin main
+              git checkout main
+              git pull origin main
             displayName: 'Checkout develop branch'
           - script: sonar-scanner -Dsonar.token=$(SQ_TOKEN) -Dproject.settings=Sgart_front/sonar-project.properties -X
             displayName: 'SonarQube analysis'
