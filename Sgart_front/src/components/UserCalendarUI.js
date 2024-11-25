@@ -502,10 +502,13 @@ const UserCalendarUI = () => {
             }
         }
 
-        // Validación de usuarios ausentes solo si no estamos editando
-        if (!isEditing && selectedUsers && selectedUsers.filter((user) => user.enAusencia === true).length > 0) {
-            setErrorEvent("Error al crear la reunión. Se está intentando crear una reunión con participantes ausentes.");
-            return;
+        // Validación de usuarios ausentes solo si hay usuarios seleccionados
+        if (selectedUsers?.length > 0) {
+            const ausentes = selectedUsers.filter((user) => user.enAusencia === true);
+            if (ausentes.length > 0) {
+                setErrorEvent("Error al crear la reunión. Se está intentando crear una reunión con participantes ausentes.");
+                return;
+            }
         }
 
         const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
