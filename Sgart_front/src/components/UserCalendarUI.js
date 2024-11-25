@@ -481,15 +481,8 @@ const UserCalendarUI = () => {
                 return;
             }
             
-            console.log(`Hora de inicio: ${startHour}:${startMinute}`);
-            console.log(`Hora de fin: ${endHour}:${endMinute}`);
-            
             const startTimeValid = isTimeWithinWorkSchedule(startHour, startMinute);
             const endTimeValid = isTimeWithinWorkSchedule(endHour, endMinute);
-            
-            console.log('\nResultado de la validación:');
-            console.log('Hora de inicio válida:', startTimeValid);
-            console.log('Hora de fin válida:', endTimeValid);
             
             if (!startTimeValid || !endTimeValid) {
                 const errorMsg = 'Las horas seleccionadas deben estar dentro del horario laboral establecido:' +
@@ -501,6 +494,56 @@ const UserCalendarUI = () => {
             }
         }
         
+        try {
+            const startTime = isAllDay ? "00:00:00" : 
+                `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
+            const endTime = isAllDay ? "23:59:00" : 
+                `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
+
+            const meetingData = {
+                title: eventName,
+                meetingDate: popupSelectedDate,
+                startTime: startTime,
+                endTime: endTime,
+                allDay: isAllDay,
+                locationId: eventLocation,
+                observations: popupDescription,
+                invitees: selectedUsers.map(user => user.id)
+            };
+
+            const url = isEditing 
+                ? `https://sgart-backend.onrender.com/api/meetings/${eventIdToEdit}`
+                : 'https://sgart-backend.onrender.com/api/meetings';
+
+            const response = await fetch(url, {
+                method: isEditing ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(meetingData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al guardar la reunión');
+            }
+
+            // Recargar las reuniones después de guardar
+            await loadMeetings();
+            await loadOrganizedMeetings();
+            
+            // Cerrar el popup y resetear el estado
+            setIsPopupOpen(false);
+            setCurrentStep(1);
+            setIsEditingEvent(false);
+            
+            // Mostrar mensaje de éxito
+            alert(isEditing ? 'Reunión modificada con éxito' : 'Reunión creada con éxito');
+
+        } catch (error) {
+            console.error('Error:', error);
+            setErrorEvent('Error al guardar la reunión. Por favor, inténtelo de nuevo.');
+        }
     };
 
     // Función para validar el formato de tiempo
