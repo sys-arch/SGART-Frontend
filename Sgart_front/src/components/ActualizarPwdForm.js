@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 const ActualizarPwdForm = () => {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
+    const email = searchParams.get('email');
     const navigate = useNavigate();
     
     const [newPassword, setNewPassword] = useState('');
@@ -31,6 +32,7 @@ const ActualizarPwdForm = () => {
 
         console.log('Iniciando validación de datos:', {
             tokenExists: !!token,
+            emailExists: !!email,
             passwordsMatch: newPassword === confirmPassword,
             passwordLength: newPassword.length
         });
@@ -50,6 +52,7 @@ const ActualizarPwdForm = () => {
         }
 
         console.log('Datos a enviar al servidor:', {
+            email: email,
             token: token,
             newPassword: newPassword.substring(0, 3) + '***'
         });
@@ -62,6 +65,7 @@ const ActualizarPwdForm = () => {
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
+                    email: email,
                     token: token,
                     newPassword: newPassword
                 })

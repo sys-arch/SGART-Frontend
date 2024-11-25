@@ -22,13 +22,13 @@ const App = () => {
     <div className="App"> {/* Contenedor general con estilos */}
       <Router>
         <Routes>
-          {/* Mover la ruta de reset-password antes de la ruta catch-all */}
-          <Route path="/reset-password" element={<ActualizarPwdForm />} />
+          {/* La ruta debe coincidir exactamente con la URL generada por el backend */}
+          <Route path="reset-password" element={<ActualizarPwdForm />} />
           
           {/* Rutas de autenticación */}
           <Route path="/" element={<LoginForm />} />
-          <Route path="/register" element={<RegisterForm />} />
-          <Route path="/recover-password" element={<RecuperarPwdForm />} />
+          <Route path="register" element={<RegisterForm />} />
+          <Route path="recover-password" element={<RecuperarPwdForm />} />
           
           {/* Rutas para Google Auth */}
           <Route path="/google-auth" element={<GoogleAuth />} />
