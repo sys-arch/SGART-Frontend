@@ -455,62 +455,6 @@ const UserCalendarUI = () => {
     const handleSaveEvent = async () => {
         setErrorEvent('');
 
-        // Validación inicial de campos obligatorios para todos los casos
-        if (!eventName || !popupSelectedDate || !eventLocation.length) {
-            alert("Por favor, completa todos los campos obligatorios antes de continuar.");
-            return;
-        }
-
-        if (!isAllDay) {
-            // Validación de formato de hora existente
-            if (!validateTimeInput(popupStartingHour, popupStartingMinutes, setPopupHourError, setPopupMinuteError) ||
-                !validateTimeInput(popupEndingHour, popupEndingMinutes, setPopupHourError, setPopupMinuteError)) {
-                alert("Por favor, corrige los campos de hora antes de guardar el evento.");
-                return;
-            }
-
-            // Validación de campos de hora vacíos
-            if (!popupEndingHour || !popupEndingMinutes || !popupStartingHour || !popupStartingMinutes) {
-                alert("Por favor, completa todos los campos antes de continuar.");
-                return;
-            }
-
-            // Validación de hora inicio > fin
-            if(parseInt(popupStartingMinutes)+parseInt(popupStartingHour)*60 > parseInt(popupEndingHour)*60+parseInt(popupEndingMinutes)){
-                alert("La fecha de inicio no puede ser mayor que la fecha de fin.");
-                return;
-            }
-
-            // Validación de formato de horas
-            if(parseInt(popupStartingMinutes)>59 || parseInt(popupStartingHour)>23 || 
-               parseInt(popupEndingHour)>23 || parseInt(popupEndingMinutes)>59){
-                alert("El formato de horas que se ha establecido es incorrecto. Revíselo por favor.");
-                return;
-            }
-
-            // Añadir validación de horario laboral
-            const startTimeValid = isTimeWithinWorkSchedule(parseInt(popupStartingHour), parseInt(popupStartingMinutes));
-            const endTimeValid = isTimeWithinWorkSchedule(parseInt(popupEndingHour), parseInt(popupEndingMinutes));
-            
-            if (!startTimeValid || !endTimeValid) {
-                const errorMsg = 'Las horas seleccionadas deben estar dentro del horario laboral establecido:' +
-                    workSchedules.map(schedule => 
-                        `\n${schedule.startingTime.slice(0, -3)} - ${schedule.endingTime.slice(0, -3)}`
-                    ).join('');
-                alert(errorMsg);
-                return;
-            }
-        }
-
-        // Validación de usuarios ausentes solo si hay usuarios seleccionados
-        if (selectedUsers?.length > 0) {
-            const ausentes = selectedUsers.filter((user) => user.enAusencia === true);
-            if (ausentes.length > 0) {
-                setErrorEvent("Error al crear la reunión. Se está intentando crear una reunión con participantes ausentes.");
-                return;
-            }
-        }
-
         const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
         const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
 
@@ -538,16 +482,42 @@ const UserCalendarUI = () => {
                 }
         
                 if(!isAllDay){
+                     // Validación de formato de hora existente
+                    if (!validateTimeInput(popupStartingHour, popupStartingMinutes, setPopupHourError, setPopupMinuteError) ||
+                        !validateTimeInput(popupEndingHour, popupEndingMinutes, setPopupHourError, setPopupMinuteError)) {
+                        alert("Por favor, corrige los campos de hora antes de guardar el evento.");
+                        return;
+                    }
+
+                    // Validación de campos de hora vacíos
                     if (!popupEndingHour || !popupEndingMinutes || !popupStartingHour || !popupStartingMinutes) {
                         alert("Por favor, completa todos los campos antes de continuar.");
                         return;
                     }
-                    if(parseInt(popupStartingMinutes)+parseInt(popupStartingHour)*60>parseInt(popupEndingHour)*60+parseInt(popupEndingMinutes)){
+
+                    // Validación de hora inicio > fin
+                    if(parseInt(popupStartingMinutes)+parseInt(popupStartingHour)*60 > parseInt(popupEndingHour)*60+parseInt(popupEndingMinutes)){
                         alert("La fecha de inicio no puede ser mayor que la fecha de fin.");
                         return;
                     }
-                    if(parseInt(popupStartingMinutes)>59||parseInt(popupStartingHour)>23||parseInt(popupEndingHour)>23||parseInt(popupEndingMinutes)>59){
+
+                    // Validación de formato de horas
+                    if(parseInt(popupStartingMinutes)>59 || parseInt(popupStartingHour)>23 || 
+                    parseInt(popupEndingHour)>23 || parseInt(popupEndingMinutes)>59){
                         alert("El formato de horas que se ha establecido es incorrecto. Revíselo por favor.");
+                        return;
+                    }
+
+                    // Añadir validación de horario laboral
+                    const startTimeValid = isTimeWithinWorkSchedule(parseInt(popupStartingHour), parseInt(popupStartingMinutes));
+                    const endTimeValid = isTimeWithinWorkSchedule(parseInt(popupEndingHour), parseInt(popupEndingMinutes));
+                    
+                    if (!startTimeValid || !endTimeValid) {
+                        const errorMsg = 'Las horas seleccionadas deben estar dentro del horario laboral establecido:' +
+                            workSchedules.map(schedule => 
+                                `\n${schedule.startingTime.slice(0, -3)} - ${schedule.endingTime.slice(0, -3)}`
+                            ).join('');
+                        alert(errorMsg);
                         return;
                     }
                 }
@@ -566,6 +536,12 @@ const UserCalendarUI = () => {
 
                 alert("Se ha modificado el evento de manera exitosa.");
             } else {
+                // Validación de usuarios ausentes solo si no estamos editando
+                const usersEnAusencia=selectedUsers.filter((user) => user.enAusencia === true);
+                if (selectedUsers && usersEnAusencia.length > 0) {
+                    setErrorEvent("Error al crear la reunión. Se está intentando crear una reunión con participantes ausentes.");
+                    return;
+                }
                 response = await fetch('https://sgart-backend.onrender.com/api/meetings/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -831,7 +807,7 @@ const UserCalendarUI = () => {
         setEventIdToEdit(event.id);
         setIsEditingEvent(true);
         setEventName(event.title);
-        setEventLocation(event.extendedProps.locationId);
+        setEventLocation(event.extendedProps.locationName);
         setPopupDescription(event.extendedProps.observations);
         setPopupSelectedDate(event.start.split('T')[0]);
         if (event.allDay) {
@@ -1270,7 +1246,7 @@ const UserCalendarUI = () => {
                                     <option value="" disabled>Seleccione...</option>
                                     {locations.map((location) => (
                                         <option key={location.locationId}
-                                            value={location.locationId}>
+                                            value={location.locationName}>
                                             {location.locationName}
                                         </option>
                                     ))}
