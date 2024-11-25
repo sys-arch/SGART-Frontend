@@ -393,27 +393,42 @@ const UserCalendarUI = () => {
                 throw new Error('Error al cargar los horarios laborales');
             }
             const schedules = await response.json();
+            console.log('Horarios laborales cargados:', schedules);
             setWorkSchedules(schedules);
         } catch (error) {
             console.error('Error cargando horarios:', error);
         }
     };
 
-    // Función auxiliar para validar si una hora está dentro del horario laboral
     const isTimeWithinWorkSchedule = (hour, minute) => {
-        if (!workSchedules.length) return true; // Si no hay horarios definidos, permitir cualquier hora
+        if (!workSchedules.length) {
+            console.log('No hay horarios laborales definidos, permitiendo cualquier hora');
+            return true;
+        }
 
         const timeInMinutes = hour * 60 + parseInt(minute);
+        console.log(`\nValidando tiempo: ${hour}:${minute} (${timeInMinutes} minutos)`);
         
-        return workSchedules.some(schedule => {
+        for (const schedule of workSchedules) {
+            console.log(`\nComprobando bloque horario: ${schedule.startTime} - ${schedule.endTime}`);
+            
             const [startHour, startMinute] = schedule.startTime.split(':').map(Number);
             const [endHour, endMinute] = schedule.endTime.split(':').map(Number);
             
             const scheduleStartMinutes = startHour * 60 + startMinute;
             const scheduleEndMinutes = endHour * 60 + endMinute;
             
-            return timeInMinutes >= scheduleStartMinutes && timeInMinutes <= scheduleEndMinutes;
-        });
+            console.log(`Bloque en minutos: ${scheduleStartMinutes} - ${scheduleEndMinutes}`);
+            console.log(`Tiempo a validar en minutos: ${timeInMinutes}`);
+            
+            if (timeInMinutes >= scheduleStartMinutes && timeInMinutes <= scheduleEndMinutes) {
+                console.log('¡Tiempo válido! Está dentro de este bloque horario');
+                return true;
+            }
+        }
+
+        console.log('Tiempo no válido: No está dentro de ningún bloque horario');
+        return false;
     };
 
     // Modificar handleSaveEvent para incluir la validación
@@ -421,11 +436,28 @@ const UserCalendarUI = () => {
         setErrorEvent('');
         
         if (!isAllDay) {
-            const startTimeValid = isTimeWithinWorkSchedule(parseInt(popupStartingHour), parseInt(popupStartingMinutes));
-            const endTimeValid = isTimeWithinWorkSchedule(parseInt(popupEndingHour), parseInt(popupEndingMinutes));
+            console.log('\n=== Validando horarios de la reunión ===');
+            
+            const startHour = parseInt(popupStartingHour);
+            const startMinute = parseInt(popupStartingMinutes);
+            const endHour = parseInt(popupEndingHour);
+            const endMinute = parseInt(popupEndingMinutes);
+            
+            console.log(`Hora de inicio: ${startHour}:${startMinute}`);
+            console.log(`Hora de fin: ${endHour}:${endMinute}`);
+            
+            const startTimeValid = isTimeWithinWorkSchedule(startHour, startMinute);
+            const endTimeValid = isTimeWithinWorkSchedule(endHour, endMinute);
+            
+            console.log('\nResultado de la validación:');
+            console.log('Hora de inicio válida:', startTimeValid);
+            console.log('Hora de fin válida:', endTimeValid);
             
             if (!startTimeValid || !endTimeValid) {
-                setErrorEvent('Las horas seleccionadas deben estar dentro del horario laboral establecido.');
+                const errorMsg = 'Las horas seleccionadas deben estar dentro del horario laboral establecido:' +
+                    workSchedules.map(schedule => `\n${schedule.startTime} - ${schedule.endTime}`).join('');
+                console.log('Error:', errorMsg);
+                setErrorEvent(errorMsg);
                 return;
             }
             
@@ -1019,6 +1051,20 @@ const UserCalendarUI = () => {
                                 </div>
                                 {!isAllDay && (
                                     <>
+                                        <div className="AdminCalendar-input-group">
+                                            <label>Horarios laborales disponibles:</label>
+                                            <div className="work-schedules" style={{ marginBottom: '10px', color: '#666' }}>
+                                                {workSchedules.length > 0 ? (
+                                                    workSchedules.map((schedule, index) => (
+                                                        <div key={index} style={{ marginBottom: '5px' }}>
+                                                            Bloque {index + 1}: {schedule.startTime} - {schedule.endTime}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div>No hay horarios laborales definidos</div>
+                                                )}
+                                            </div>
+                                        </div>
                                         <div className="AdminCalendar-input-group">
                                             <label>Hora de inicio:</label>
                                             <div>
