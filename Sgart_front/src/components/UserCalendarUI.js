@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import React, { useCallback, useEffect, useState } from 'react';
 import '../App.css';
-import VentanaConfirm from './VentanaConfirm';
-import NavBar from './NavBar';
+import '../styles/styles.css';
 import LoadingSpinner from './LoadingSpinner';
+import NavBar from './NavBar';
+import VentanaConfirm from './VentanaConfirm';
+
 
 const UserCalendarUI = () => {
     // Estados esenciales para reuniones
@@ -860,12 +862,45 @@ const UserCalendarUI = () => {
     };
 
 
-    // Efectos
+    /* Efectos
     useEffect(() => {
         loadMeetings();
         loadOrganizedMeetings();
         loadWorkSchedules();
-    }, [loadMeetings, loadOrganizedMeetings]);
+    }, [loadMeetings, loadOrganizedMeetings]);*/
+    //Quietar esto
+    useEffect(() => {
+        const mockEvents = [
+            {
+                id: "mock-event-1",
+                title: "Reunión de Prueba 1",
+                start: "2024-12-08T10:00:00",
+                end: "2024-12-08T11:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Juntas 1",
+                    observations: "Primera reunión de prueba.",
+                    organizerName: "Luis Fernández",
+                },
+            },
+            {
+                id: "mock-event-2",
+                title: "Reunión de Prueba 2",
+                start: "2024-12-09T15:00:00",
+                end: "2024-12-09T16:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Conferencias",
+                    observations: "Segunda reunión de prueba.",
+                    organizerName: "María Domínguez",
+                },
+            },
+        ];
+        
+    
+        setRegularEvents(mockEvents);
+        setReunionesAceptadas(mockEvents);
+    }, []);
 
     // Modificar el useEffect para el filtrado de usuarios
     useEffect(() => {
