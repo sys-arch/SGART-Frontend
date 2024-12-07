@@ -466,6 +466,12 @@ const UserCalendarUI = () => {
             }
         }
 
+        
+        if (selectedUsers.length === 0) {
+            setErrorEvent('Debes invitar al menos a un participante');
+            return;
+        }
+
         const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
         const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
 
