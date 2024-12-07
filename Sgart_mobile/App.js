@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet } from 'react-native';
 import LoginForm from './components/LoginForm';
+import RegisterForm from './components/RegisterForm';
 
 const Stack = createStackNavigator();
 
@@ -13,8 +14,9 @@ export default function App() {
         <Stack.Screen 
           name="Login" 
           component={LoginForm} 
-          options={{ headerShown: false }} // Opcional: Ocultar el encabezado
+          options={{ headerShown: false }}
         />
+        <Stack.Screen name="Register" component={RegisterForm} />
       </Stack.Navigator>
     </NavigationContainer>
   );
