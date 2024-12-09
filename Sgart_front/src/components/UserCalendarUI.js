@@ -62,7 +62,7 @@ const UserCalendarUI = () => {
     const loadInvitees = useCallback(async (meetingId) => {
         try {
             console.log(`Cargando invitados para la reunión ID: ${meetingId}`);
-            const response = await fetch(`https://sgart-backend.onrender.com/administrador/calendarios/invitados`, {
+            const response = await fetch(`http://localhost:3000/administrador/calendarios/invitados`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ const UserCalendarUI = () => {
     // Función para obtener el userId del usuario actual
     const getUserId = async () => {
         try {
-            const response = await fetch('https://sgart-backend.onrender.com/users/current/userId', {
+            const response = await fetch('http://localhost:3000/users/current/userId', {
                 credentials: 'include'
             });
             if (!response.ok) {
@@ -116,7 +116,7 @@ const UserCalendarUI = () => {
                 throw new Error('No se pudo obtener el ID del usuario');
             }
 
-            const response = await fetch('https://sgart-backend.onrender.com/administrador/calendarios/loadMeetings');
+            const response = await fetch('http://localhost:3000/administrador/calendarios/loadMeetings');
             if (!response.ok) {
                 throw new Error(`Error al cargar los meetings: ${response.statusText}`);
             }
@@ -201,7 +201,7 @@ const UserCalendarUI = () => {
     const loadOrganizedMeetings = useCallback(async () => {
         try {
             console.log("Iniciando carga de reuniones organizadas...");
-            const response = await fetch('https://sgart-backend.onrender.com/usuarios/calendarios/organized-meetings', {
+            const response = await fetch('http://localhost:3000/usuarios/calendarios/organized-meetings', {
                 credentials: 'include'
             });
 
@@ -256,7 +256,7 @@ const UserCalendarUI = () => {
     // Add this new function to check attendance status
     const checkAttendanceStatus = async (meetingId) => {
         try {
-            const response = await fetch(`https://sgart-backend.onrender.com/invitations/${meetingId}/attendance`, {
+            const response = await fetch(`http://localhost:3000/invitations/${meetingId}/attendance`, {
                 credentials: 'include'
             });
 
@@ -306,7 +306,7 @@ const UserCalendarUI = () => {
             console.log('Iniciando actualización de estado para evento:', selectedEvent);
             console.log('Acción seleccionada:', confirmationAction);
 
-            const url = `https://sgart-backend.onrender.com/invitations/${selectedEvent.id}/status`;
+            const url = `http://localhost:3000/invitations/${selectedEvent.id}/status`;
             console.log('URL de la petición:', url);
 
             const requestBody = {
@@ -407,7 +407,7 @@ const UserCalendarUI = () => {
 
     const loadWorkSchedules = async () => {
         try {
-            const response = await fetch('https://sgart-backend.onrender.com/administrador/horarios');
+            const response = await fetch('http://localhost:3000/administrador/horarios');
             if (!response.ok) {
                 throw new Error('Error al cargar los horarios laborales');
             }
@@ -539,7 +539,7 @@ const UserCalendarUI = () => {
                         return;
                     }
                 }
-                response = await fetch(`https://sgart-backend.onrender.com/api/meetings/${eventIdToEdit}/modify`, {
+                response = await fetch(`http://localhost:3000/api/meetings/${eventIdToEdit}/modify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -554,7 +554,7 @@ const UserCalendarUI = () => {
 
                 alert("Se ha modificado el evento de manera exitosa.");
             } else {
-                response = await fetch('https://sgart-backend.onrender.com/api/meetings/create', {
+                response = await fetch('http://localhost:3000/api/meetings/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -567,7 +567,7 @@ const UserCalendarUI = () => {
 
                 // Send invitations
                 const userIds = selectedUsers.map(user => user.id);
-                const inviteResponse = await fetch(`https://sgart-backend.onrender.com/invitations/${meetingId}/invite`, {
+                const inviteResponse = await fetch(`http://localhost:3000/invitations/${meetingId}/invite`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -629,7 +629,7 @@ const UserCalendarUI = () => {
             const currentUserId = await getUserId();
             console.log('ID del usuario actual:', currentUserId);
             
-            const response = await fetch('https://sgart-backend.onrender.com/api/meetings/available-users');
+            const response = await fetch('http://localhost:3000/api/meetings/available-users');
             if (!response.ok) {
                 throw new Error('Error al cargar los usuarios');
             }
@@ -662,7 +662,7 @@ const UserCalendarUI = () => {
     };
 
     const loadLocations = (async() => {
-        const response = await fetch('https://sgart-backend.onrender.com/api/meetings/locations');
+        const response = await fetch('http://localhost:3000/api/meetings/locations');
         if (!response.ok) {
             console.log('Error al cargar las localizaciones');
             return;
@@ -676,7 +676,7 @@ const UserCalendarUI = () => {
     })
 
     const loadAbsences = (async () => {
-        const response = await fetch('https://sgart-backend.onrender.com/administrador/ausencias/loadAbsences');
+        const response = await fetch('http://localhost:3000/administrador/ausencias/loadAbsences');
         if (!response.ok) {
             console.log('Error al cargar las ausencias');
             return;
@@ -777,7 +777,7 @@ const UserCalendarUI = () => {
     // Add this new function near other handler functions
     const handleAttendanceUpdate = async (meetingId) => {
         try {
-            const response = await fetch(`https://sgart-backend.onrender.com/invitations/${meetingId}/attendance`, {
+            const response = await fetch(`http://localhost:3000/invitations/${meetingId}/attendance`, {
                 method: 'PUT',
                 credentials: 'include',
             });
@@ -846,7 +846,7 @@ const UserCalendarUI = () => {
             }
     
             // Hacer una petición DELETE al backend para eliminar la reunión
-            const response = await fetch(`https://sgart-backend.onrender.com/api/meetings/${reunion.id}/cancel`, {
+            const response = await fetch(`http://localhost:3000/api/meetings/${reunion.id}/cancel`, {
                 method: 'DELETE',
                 credentials: 'include',
             });
