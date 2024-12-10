@@ -107,7 +107,7 @@ const RegisterForm = ({ navigation }) => {
       Alert.alert(
         'Registro exitoso',
         'Correo verificado. Pasando a la autenticación con doble factor...',
-        [{ text: 'OK', onPress: () => navigation.navigate('GoogleAuth', { data }) }]
+     //   [{ text: 'OK', onPress: () => navigation.navigate('GoogleAuth', { data }) }]
       );
     } catch (error) {
       Alert.alert('Error', error.message || 'Hubo un error durante el registro.');
@@ -134,6 +134,10 @@ const RegisterForm = ({ navigation }) => {
   return (
     <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
       <View style={styles.container}>
+          <Image
+            source={require('../media/logo_sgart-sinfondo.png')}
+            style={styles.sgartLogo}
+          />
         <Text style={styles.title}>Registro de usuario</Text>
         <TextInput
           style={styles.input}
@@ -315,6 +319,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  sgartLogo: {
+    width: 180,
+    height: 180,
+    resizeMode: 'contain',
+    marginBottom: -50,
+    top: -20,
   },
 });
 
