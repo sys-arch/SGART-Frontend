@@ -146,7 +146,7 @@ const LoginForm = ({ navigation }) => {
             <TouchableOpacity>
               <Text style={styles.optionText}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
               <Text style={styles.optionText}>Regístrate</Text>
             </TouchableOpacity>
           </View>
