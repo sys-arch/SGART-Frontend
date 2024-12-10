@@ -149,7 +149,7 @@ const LoginForm = ({ navigation }) => {
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
               <Text style={styles.optionText}>Regístrate</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Calendar')}>
+            <TouchableOpacity onPress={() => navigation.navigate('calendar')}>
               <Text style={styles.optionText}>Calendario</Text>
             </TouchableOpacity>
           </View>
