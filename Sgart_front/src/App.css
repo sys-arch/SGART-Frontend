@@ -54,18 +54,19 @@ body, html {
   left: 200px;
 }
 
-.login-container {
+.login-container { 
   width: 100%;
   max-width: 400px;
   padding: 20px;
 }
 
 .login-box {
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.7);
   padding: 40px;
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
+
 
 .title {
   text-align: center;
