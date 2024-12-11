@@ -1,32 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import UserEditForm from './UserEditForm';
-import VentanaConfirm from './VentanaConfirm';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import config from '../config.js';
 import AdminCreateForm from './AdminCreateForm';
 import AdminEditForm from './AdminEditForm';
 import NavBar from './NavBar';
-import { useNavigate } from 'react-router-dom';
-import LoadingSpinner from './LoadingSpinner';
+import VentanaConfirm from './VentanaConfirm';
+
 
 const AdminPanel = () => {
     const navigate = useNavigate();
     // Estado que contiene los datos de la tabla
     const [datosAdmin, setDatosAdmin] = useState([]);
+    const getToken = () => sessionStorage.getItem('authToken');
 
     useEffect(() => {
         actualizarAdministradores();
     }, []);
-    const actualizarAdministradores = () =>{
-        fetch('http://localhost:3000/admin/getAdmins')
+    const actualizarAdministradores = () => {
+        fetch(`${config.BACKEND_URL}/admin/getAdmins`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+            },
+        })
+
             .then(async response => {
                 const result = await response.json();
                 const adminsTable = result.map(admin => ({
-                    id: admin.id,
-                    name: admin.name,
-                    lastName: admin.lastName,
-                    email: admin.email,
-                    center: admin.center,
-                    blocked: admin.blocked
-            }));
+                    id: admin.id || '',
+                    name: admin.name || '',
+                    lastName: admin.lastName || '',
+                    email: admin.email || '',
+                    center: admin.center || '',
+                    blocked: admin.blocked || false,
+                }));
                 setDatosAdmin(adminsTable);
             })
             .catch(error => {
@@ -35,10 +41,11 @@ const AdminPanel = () => {
     }
 
     const toggleUserStatus = (email) => {
-        fetch('http://localhost:3000/admin/cambiarHabilitacion/' + email, {
+        fetch(`${config.BACKEND_URL}/admin/cambiarHabilitacion/${email}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`,
             },
         })
             .then(response => {
@@ -57,12 +64,12 @@ const AdminPanel = () => {
     // Crear administradores
     const [creatingAdmin, setCreatingAdmin] = useState(false);
     const [adminToSave, setAdminToSave] = useState(null);
-
     const defaultAdmin = {
-        email: "email@email.com",
-        name: "name",
-        lastName: "lastName",
-        center: "center"
+        name: '',
+        lastName: '',
+        email: '',
+        password: '',
+        center: '',
     };
     const handleCreateAdmin = () => {
         setCreatingAdmin(true);
@@ -75,12 +82,13 @@ const AdminPanel = () => {
     };
 
     const handleConfirmSave = async () => {
-        const response= await fetch('http://localhost:3000/admin/verificarEmail', {
+        const response = await fetch(`${config.BACKEND_URL}/admin/verificarEmail`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`,
             },
-            body: adminToSave.email,
+            body: JSON.stringify({ email: adminToSave.email }),
         });
         if(response.ok){
             alert('Correo verificado. Pasando a la autenticación con doble factor...');
@@ -107,21 +115,47 @@ const AdminPanel = () => {
     }
     
     const handleUpdateAdmin = (admin) => {
-        setAdminToEdit(admin); // Establece el usuario que se está editando
-        setConfirmationAction('edit'); // Establece la acción como guardar
-        setShowConfirmation(true);
+        setAdminToEdit(admin); // Guarda temporalmente el admin que se editará
+        setConfirmationAction('edit'); // Establece la acción como 'edit'
+        setShowConfirmation(true); // Muestra el modal
     };
 
-    const handleConfirmUpdate = () => {
-        setDatosAdmin((prevAdmin) =>
-            prevAdmin.map((admin) =>
-                admin.id === adminToEdit.id ? adminToEdit : admin
-            )
-        );
-        setAdminToEdit(null);
-        setEditingAdmin(false);
-        setShowConfirmation(false);
+    const handleConfirmUpdate = async () => {
+        if (!adminToEdit) {
+            console.error("adminToEdit es null o undefined antes de ejecutar fetch.");
+            return;
+        }
+    
+        try {
+            console.log("Enviando adminToEdit al servidor:", adminToEdit);
+    
+            await fetch(`${config.BACKEND_URL}/admin/modificarAdmin`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`,
+                },
+                body: JSON.stringify(adminToEdit),
+            });
+    
+            // Actualiza la tabla de administradores
+            setDatosAdmin((prevAdmin) =>
+                prevAdmin.map((admin) =>
+                    admin.id === adminToEdit.id ? adminToEdit : admin
+                )
+            );
+        } catch (error) {
+            console.error("Error al actualizar admin:", error);
+        } finally {
+            // Mueve estas acciones al final
+            setShowConfirmation(false); // Oculta la ventana de confirmación
+            setEditingAdmin(false); // Cierra el modo de edición
+        }
     };
+    
+    
+    
+    
 
     const handleCancelEdit = () => {
         setEditingAdmin(null);
@@ -162,11 +196,12 @@ const AdminPanel = () => {
         }
     }
 
-    const deleteAdmin = (email) =>{
-        fetch('http://localhost:3000/admin/eliminar/email/'+email,{
+    const deleteAdmin = (email) => {
+        fetch(`${config.BACKEND_URL}/admin/eliminar/email/${email}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`,
             },
         })
             .then(response => {

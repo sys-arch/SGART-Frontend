@@ -49,12 +49,106 @@
     object-fit: cover; /* Asegura que la imagen se ajuste al contenedor */
     pointer-events: none; /* Evita que interfiera con la interacción del usuario */
 }
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Ocupa toda la altura de la pantalla */
+    background: rgba(255, 255, 255, 0.8); /* Fondo semitransparente */
+    padding: 20px;
+}
 
 .login-box {
-    position: relative; /* Permite que el z-index funcione */
-    z-index: 2; /* Asegura que esté por encima de la imagen de fondo */
-   
+    background: #ffffff;
+    width: 500px; /* Ancho más grande */
+    padding: 40px; /* Más espacio interno */
+    border-radius: 15px; /* Bordes redondeados */
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3); /* Sombra para resaltar la caja */
+    z-index: 2;
 }
+
+.login-title {
+    font-size: 2rem; /* Título más grande */
+    margin-top: -10px; /* Ajuste de margen */
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 25px; /* Más espacio entre los campos */
+}
+
+.input-group input {
+    width: 100%; /* Campo más ancho */
+    padding: 15px; /* Más espacio interno */
+    font-size: 1.2rem; /* Texto más grande */
+    border: 1px solid #ccc;
+    border-radius: 10px; /* Bordes redondeados */
+}
+
+.input-group label {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    color: #999;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label {
+    top: -10px;
+    left: 15px;
+    font-size: 0.9rem;
+    color: #007bff;
+}
+
+.input-group-error input {
+    border-color: red; /* Campo con borde rojo si hay error */
+}
+
+.error {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: -15px;
+    margin-bottom: 15px;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.5rem; /* Botón más grande */
+    font-weight: bold;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.login-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05); /* Efecto al pasar el mouse */
+}
+
+.login-options {
+    margin-top: 20px; /* Espacio extra encima de los enlaces */
+    font-size: 1.2rem; /* Texto más grande */
+    text-align: center;
+}
+
+.login-options a {
+    color: #007bff;
+}
+.login-logo {
+    width: 250px; /* Imagen más grande */
+    height: auto;
+    display: block; /* Asegura que el elemento se comporte como un bloque */
+    margin: 0 auto;   
+}
+
 .popup-container {
     width: 450px;
     max-height: 90%;

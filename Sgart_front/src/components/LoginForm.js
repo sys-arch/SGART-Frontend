@@ -1,12 +1,14 @@
 import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import backgroundImage from '../media/1206.png';
+import config from '../config.js';
+import backgroundImage from '../media/fondo.jpg';
 import logoSgart2 from '../media/logo_sgart-sinfondo-cortado.png';
 import logoSgart from '../media/logo_sgart-sinfondo.png';
 import '../styles/styles.css';
 import LoadingSpinner from './LoadingSpinner';
 import RecuperarPwdForm from './RecuperarPwdForm';
 import RegisterForm from './RegisterForm';
+
 
 
 
@@ -76,7 +78,8 @@ const LoginForm = () => {
             password: contrasena,
         };
 
-        fetch('http://localhost:9000/users/login', {
+        fetch(`${config.BACKEND_URL}/users/login`, {
+
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -99,15 +102,19 @@ const LoginForm = () => {
                 return response.json();
             })
             .then((data) => {
+                if (data.success) {
+                    // Guarda el token en sessionStorage
+                    sessionStorage.setItem('authToken', data.token);
+                    sessionStorage.setItem('userEmail', email);
 
-                if (data.user && data.user.blocked) {
-                    alert('Tu cuenta está bloqueada. Por favor, contacta al soporte.');
-                    return;
+    
+                    // Redirige a la pantalla de doble factor
+                    navigate('/google-auth-login', { state: { data: data, email: email } });
+                } else {
+                    throw new Error(data.message || 'Error al iniciar sesión.');
                 }
-
-                alert('Login exitoso. Pasando a la autentificación con doble factor...');
-                navigate('/google-auth-login', { state: { data: data, email: email } });
             })
+    
             .catch((error) => {
                 alert(error.message);
             })
