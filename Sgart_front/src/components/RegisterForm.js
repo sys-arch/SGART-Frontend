@@ -31,6 +31,9 @@ const RegisterForm = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (event) => {
+        document.cookie.split(";").forEach((cookie) => {
+            document.cookie = cookie.split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
+        });
         const { name, value } = event.target;
         switch (name) {
             case 'nombre':
@@ -66,7 +69,8 @@ const RegisterForm = () => {
     };
 
     const handleRegister = async () => {
-        var errorBool = false;
+        let errorBool = false;
+       
         setErrorNombre('');
         setErrorApellidos('');
         setErrorDepartamento('');
@@ -76,20 +80,21 @@ const RegisterForm = () => {
         setErrorContrasena('');
         setErrorFechaAlta('');
         setErrorEmail('');
-        setErrorContrasena('');
-
+    
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setErrorEmail('El formato del correo electrónico no es válido.');
             errorBool = true;
         }
-
+    
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    
+        
         if (!passwordRegex.test(contrasena)) {
-            setErrorRepetirContrasena('La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial (@, $, !, %, *, ?, &).');
+            setErrorContrasena('La contraseña debe cumplir con los requisitos.');
             errorBool = true;
         }
-
+    
         if (nombre === '') {
             setErrorNombre('Campo vacío');
             errorBool = true;
@@ -122,18 +127,18 @@ const RegisterForm = () => {
             setErrorRepetirContrasena('Las contraseñas no coinciden.');
             errorBool = true;
         }
-
+    
         const fechaSeleccionada = new Date(fechaAlta);
         const fechaActual = new Date();
         if (fechaSeleccionada > fechaActual) {
             setErrorFechaAlta('La fecha de alta no puede ser una fecha futura.');
             errorBool = true;
         }
-
+    
         if (errorBool) {
             return;
         }
-
+    
         const usuario = {
             name: nombre,
             lastName: apellidos,
@@ -148,23 +153,31 @@ const RegisterForm = () => {
             verified: false,
             twoFactorAuthCode: '',
         };
-        setIsLoading(true);
-        fetch('http://localhost:3000/users/verificar-email', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(usuario),
-        })
-        .then(response => response.text())
-        .then((data) => {
-            alert('Correo verificado. Pasando a la autenticación con doble factor...');
-            console.log(JSON.stringify(usuario));
-            navigate('/google-auth', { state: { usuario : usuario, esAdmin:false}});
-        })
-        .catch(error => {
-            alert('Hubo un error:', error);
-        });
+    
+        try {
+            const response = await fetch('http://localhost:9000/users/registro', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(usuario),
+            });
+            
+            
+    
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+    
+            const data = await response.text();
+            console.log('Registro exitoso:', data);
+    
+            // Navegar a otra página después del registro exitoso
+            navigate('/login');
+        } catch (error) {
+            console.error('Error en el registro:', error);
+            alert('Hubo un error al registrar el usuario. Por favor, inténtelo de nuevo.');
+        }
     };
 
     const togglePasswordVisibility = () => {
