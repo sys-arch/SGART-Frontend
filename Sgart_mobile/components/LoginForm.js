@@ -75,7 +75,7 @@ const LoginForm = ({ navigation }) => {
       Alert.alert(
         'Login exitoso',
         'Pasando a la autentificación con doble factor...',
-        [{ text: 'OK', onPress: () => navigation.navigate('GoogleAuth', { data, email }) }]
+       // [{ text: 'OK', onPress: () => navigation.navigate('GoogleAuth', { data, email }) }]
       );
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -94,6 +94,18 @@ const LoginForm = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+
+   { /* Esto es para pasar de strangis no tener que login cada vez probar cosas*/}
+ 
+      <TouchableOpacity
+        style={styles.passStrangisButton}
+        onPress={() => navigation.navigate('UserCalendar')}
+        >
+        <Text style={styles.passStrangisText}>Pasar Strangis</Text>
+      </TouchableOpacity>
+
+
+
       {/* Background */}
       <Image
         source={require('../media/1206.png')}
@@ -268,6 +280,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+    /* QUITAR LUEGO */
+  passStrangisButton: {
+    position: 'absolute',
+    top: 80,
+    right: 10,
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+    zIndex: 10,
+  },
+  passStrangisText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });
 

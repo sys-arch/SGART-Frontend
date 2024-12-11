@@ -3,6 +3,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet } from 'react-native';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
+import UserCalendar from './components/UserCalendar';
+import GoogleAuth from './components/GoogleAuth';
 
 const Stack = createStackNavigator();
 
@@ -17,6 +19,8 @@ export default function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen name="Register" component={RegisterForm} />
+        <Stack.Screen name="UserCalendar" component={UserCalendar} />
+        <Stack.Screen name="GoogleAuth" component={GoogleAuth} />
       </Stack.Navigator>
     </NavigationContainer>
   );

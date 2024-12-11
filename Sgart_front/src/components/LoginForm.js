@@ -79,6 +79,7 @@ const LoginForm = () => {
         };
 
         fetch(`${config.BACKEND_URL}/users/login`, {
+
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
