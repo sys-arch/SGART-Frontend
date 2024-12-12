@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
+import config from '../config';
 
 const GoogleAuth = () => {
     const location = useLocation();
@@ -11,10 +12,20 @@ const GoogleAuth = () => {
     const [qrCode, setQrCode] = useState('');
     const [secretKey, setSecretKey] = useState('');
 
+    const getToken = () => sessionStorage.getItem('authToken');
+
     useEffect(() => {
         const fetchQRCode = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/auth/generate-qr?email=${usuario.email}`);
+                const response = await fetch(
+                    `${config.BACKEND_URL}/auth/generate-qr?email=${usuario.email}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${getToken()}`,
+                        },
+                    }
+                );
+
                 if (!response.ok) {
                     throw new Error('Error al generar el código QR');
                 }
@@ -38,10 +49,11 @@ const GoogleAuth = () => {
         event.preventDefault();
 
         try {
-            const response = await fetch('http://localhost:3000/auth/validate-totp', {
+            const response = await fetch(`${config.BACKEND_URL}/auth/validate-totp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`,
                 },
                 body: JSON.stringify({ mail: usuario.email, code: inputCode }),
             });
@@ -51,17 +63,15 @@ const GoogleAuth = () => {
             }
 
             const data = await response.json();
-            if (data.status === 'valid' ) {
-                if(!esAdmin){
-                    // Registro del usuario después de la validación exitosa
-                    await registrarUsuario(usuario.email); // Llama a la función para registrar al usuario
+            if (data.status === 'valid') {
+                if (!esAdmin) {
+                    await registrarUsuario(usuario.email);
                     setMessage("Autenticación exitosa. Redirigiendo...");
                     navigate('/user-calendar');
-                }else{
-                    // Registro del usuario después de la validación exitosa
-                    await registrarAdmin(usuario.email); // Llama a la función para registrar al usuario
+                } else {
+                    await registrarAdmin(usuario.email);
                     setMessage("Autenticación exitosa. Redirigiendo...");
-                    navigate('/admin-panel')
+                    navigate('/admin-panel');
                 }
             } else {
                 setMessage("Código inválido. Por favor, intenta nuevamente.");
@@ -74,19 +84,18 @@ const GoogleAuth = () => {
 
     const registrarUsuario = async (email) => {
         try {
-            const secretKeySend = secretKey;
             const usuarioActualizado = {
-                ...usuario, // Copia todos los campos del usuario original
-                twoFactorAuthCode: secretKeySend // Actualiza el campo twoFactorAuthCode
+                ...usuario,
+                twoFactorAuthCode: secretKey,
             };
 
-            console.log(usuarioActualizado);
-            const response = await fetch('http://localhost:3000/users/registro', {
+            const response = await fetch(`${config.BACKEND_URL}/users/registro`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`,
                 },
-                body: JSON.stringify(usuarioActualizado), // Envía el correo y la secret key
+                body: JSON.stringify(usuarioActualizado),
             });
 
             if (!response.ok) {
@@ -102,20 +111,20 @@ const GoogleAuth = () => {
         }
     };
 
-    const registrarAdmin = async (email) =>{
+    const registrarAdmin = async (email) => {
         try {
-            const secretKeySend = secretKey;
             const adminActualizado = {
-                ...usuario, // Copia todos los campos del usuario original
-                twoFactorAuthCode: secretKeySend // Actualiza el campo twoFactorAuthCode
+                ...usuario,
+                twoFactorAuthCode: secretKey,
             };
 
-            const response = await fetch('http://localhost:3000/admin/crearAdmin', {
+            const response = await fetch(`${config.BACKEND_URL}/admin/crearAdmin`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`,
                 },
-                body: JSON.stringify(adminActualizado), // Envía el correo y la secret key
+                body: JSON.stringify(adminActualizado),
             });
 
             if (!response.ok) {
@@ -129,7 +138,7 @@ const GoogleAuth = () => {
             setMessage("Error al registrar al admin.");
             console.error("Error en el registro:", error);
         }
-    }
+    };
 
     return (
         <div className="login-container">

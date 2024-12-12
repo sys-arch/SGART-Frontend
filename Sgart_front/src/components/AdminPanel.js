@@ -153,10 +153,6 @@ const AdminPanel = () => {
         }
     };
     
-    
-    
-    
-
     const handleCancelEdit = () => {
         setEditingAdmin(null);
         setCreatingAdmin(false);
