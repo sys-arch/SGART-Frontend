@@ -609,6 +609,7 @@ const UserCalendarUI = () => {
                     },
                     body: JSON.stringify(userIds),
                 });
+                console.log('token:', sessionStorage.getItem('authToken'));
     
 
                 if (!inviteResponse.ok) {
