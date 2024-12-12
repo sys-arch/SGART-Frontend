@@ -34,9 +34,9 @@
 // import FullCalendar from "@fullcalendar/react";
 // import timeGridPlugin from "@fullcalendar/timegrid";
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Modal, Switch } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 
-import '../App.css';
 // import LoadingSpinner from './LoadingSpinner';
 // import NavBar from './NavBar';
 // import VentanaConfirm from '.VentanaConfirm';
@@ -62,6 +62,7 @@ const Calendar = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [eventName, setEventName] = useState('');
     const [popupSelectedDate, setPopupSelectedDate] = useState('');
+    const [eventFrequency, setEventFrequency] = useState('Una vez');
     const [isAllDay, setIsAllDay] = useState(false);
     const [popupStartingHour, setPopupStartingHour] = useState('');
     const [popupStartingMinutes, setPopupStartingMinutes] = useState('');
@@ -1141,11 +1142,11 @@ const Calendar = () => {
 							))}
 						</View>
 						<View style={styles['AdminCalendar-add-time']}>
-							<TouchableOpacity style={styles['add-button']} onPress={handleAddTimeClick}>
-								<Text style={styles['add-button-text']}>+</Text>
-							</TouchableOpacity>
-							<Text style={styles['AdminCalendar-add-time-text']}>Crear nueva reunión</Text>
-						</View>
+                            <TouchableOpacity style={styles['add-button']} onPress={handleAddTimeClick}>
+                                <Text style={styles['add-button-text']}>+</Text>
+                            </TouchableOpacity>
+                            <Text style={styles['AdminCalendar-add-time-text']}>Crear nueva reunión</Text>
+                        </View>
                     </View>
 
                     {/* <div className="AdminCalendar-calendar-container">
@@ -1188,90 +1189,101 @@ const Calendar = () => {
                     </div> */}
 
                     {/* Pop-up de detalles del evento */}
-                    {/* {isEventDetailPopupOpen && selectedEvent && (
-                        <div className="popup-overlay">
-                            <div className="popup-container">
-                                <h2>Detalles de la Reunión</h2>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Nombre de la Reunión:</label>
-                                    <p>{selectedEvent.title}</p>
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Fecha:</label>
-                                    <p>{selectedEvent.start.split('T')[0]}</p>
-                                </div>
-                                {selectedEvent.allDay ? (
+                    {isEventDetailPopupOpen && selectedEvent && (
+                        <Modal
+                        visible={isEventDetailPopupOpen}
+                        transparent={true}
+                        animationType="fade"
+                        onRequestClose= {() => setIsEventDetailPopupOpen(false)}
+                        >
+                            <View style={styles['popup-overlay']}>
+                                <View style={styles['popup-container']}>
+                                    <Text style={styles['popup-title']}>Detalles de la Reunión</Text>
+
+                                    <View style={styles['AdminCalendar-input-group']}>
+                                        <Text style={styles['label']}>Nombre de la Reunión:</Text>
+                                        <Text style={styles['value']}>{selectedEvent.title}</Text>
+                                    </View>
+
+                                    <View style={styles['AdminCalendar-input-group']}>
+                                        <Text style={styles['label']}>Fecha:</Text>
+                                        <Text style={styles['value']}>
+                                            {selectedEvent.start.split('T')[0]}
+                                        </Text>
+                                    </View>
+                                    {/*{selectedEvent.allDay ? (
+                                        <div className="AdminCalendar-input-group">
+                                            <label>Esta reunión es de all día</label>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="AdminCalendar-input-group">
+                                                <label>Hora de inicio:</label>
+                                                <p>{selectedEvent.start.split('T')[1]}</p>
+                                            </div>
+                                            <div className="AdminCalendar-input-group">
+                                                <label>Hora de fin:</label>
+                                                <p>{selectedEvent.end.split('T')[1]}</p>
+                                            </div>
+                                        </>
+                                    )}
                                     <div className="AdminCalendar-input-group">
-                                        <label>Esta reunión es de todo el día</label>
+                                        <label>Organizador:</label>
+                                        <p>{selectedEvent.extendedProps.organizerName}</p>
                                     </div>
-                                ) : (
-                                    <>
-                                        <div className="AdminCalendar-input-group">
-                                            <label>Hora de inicio:</label>
-                                            <p>{selectedEvent.start.split('T')[1]}</p>
-                                        </div>
-                                        <div className="AdminCalendar-input-group">
-                                            <label>Hora de fin:</label>
-                                            <p>{selectedEvent.end.split('T')[1]}</p>
-                                        </div>
-                                    </>
-                                )}
-                                <div className="AdminCalendar-input-group">
-                                    <label>Organizador:</label>
-                                    <p>{selectedEvent.extendedProps.organizerName}</p>
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Ubicación:</label>
-                                    <p>{selectedEvent.extendedProps.locationName}</p>
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Observaciones:</label>
-                                    <p>{selectedEvent.extendedProps.observations}</p>
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Lista de Invitados:</label>
-                                    <ul>
-                                        {invitees.map((invitee, index) => (
-                                            <li key={index}>
-                                                {invitee.userName} - {invitee.status}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <div className="popup-button-container">
-                                    <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>
-                                        Cerrar
-                                    </button>
-                                    {organizedEvents.find(event => event.id === selectedEvent.id) && (
-                                        !areAllInvitationsRejected(invitees) && (
-                                            <button className="close-button" onClick={() => handleModifyEvent(selectedEvent)}>
-                                                Modificar
-                                            </button>
-                                        )
-                                    )}
-                                    {regularEvents.find(event => event.id === selectedEvent.id) && (
-                                        <div className="attendance-button-container">
-                                            {selectedEvent.extendedProps.hasConfirmedAttendance ? (
-                                                <button className="attendance-confirmed-button">
-                                                    <img src={require('../media/garrapata.png')} alt="Attendance Confirmed" />
+                                    <div className="AdminCalendar-input-group">
+                                        <label>Ubicación:</label>
+                                        <p>{selectedEvent.extendedProps.locationName}</p>
+                                    </div>
+                                    <div className="AdminCalendar-input-group">
+                                        <label>Observaciones:</label>
+                                        <p>{selectedEvent.extendedProps.observations}</p>
+                                    </div>
+                                    <div className="AdminCalendar-input-group">
+                                        <label>Lista de Invitados:</label>
+                                        <ul>
+                                            {invitees.map((invitee, index) => (
+                                                <li key={index}>
+                                                    {invitee.userName} - {invitee.status}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div className="popup-button-container">
+                                        <button className="close-button" onClick={() => setIsEventDetailPopupOpen(false)}>
+                                            Cerrar
+                                        </button>
+                                        {organizedEvents.find(event => event.id === selectedEvent.id) && (
+                                            !areAllInvitationsRejected(invitees) && (
+                                                <button className="close-button" onClick={() => handleModifyEvent(selectedEvent)}>
+                                                    Modificar
                                                 </button>
-                                            ) : (
-                                                <button
-                                                    className="attendance-button"
-                                                    onClick={() => handleAttendanceUpdate(selectedEvent.id)}
-                                                >
-                                                    Asistencia
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                                            )
+                                        )}
+                                        {regularEvents.find(event => event.id === selectedEvent.id) && (
+                                            <div className="attendance-button-container">
+                                                {selectedEvent.extendedProps.hasConfirmedAttendance ? (
+                                                    <button className="attendance-confirmed-button">
+                                                        <img src={require('../media/garrapata.png')} alt="Attendance Confirmed" />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        className="attendance-button"
+                                                        onClick={() => handleAttendanceUpdate(selectedEvent.id)}
+                                                    >
+                                                        Asistencia
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div> */}
+                                </View>
+                            </View>
+                        </Modal>
                     )}
 
                     {/* Ventana de confirmación */}
-                    {/* {showConfirmation && (
+                    {showConfirmation && (
                         <VentanaConfirm
                             onConfirm={handleConfirmAction}
                             onCancel={() => setShowConfirmation(false)}
@@ -1280,176 +1292,235 @@ const Calendar = () => {
                     )}
 
                     {isPopupOpen && currentStep === 1 && (
-                        <div className="popup-overlay">
-                            <div className="popup-container">
-                            <h2>{isEditingEvent ? 'Modificar Reunión' : 'Crear nueva Reunión'}</h2>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Nombre de la Reunión:</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Nombre de la Reunión"
-                                        value={eventName}
-                                        onChange={(e) => setEventName(e.target.value)}
-                                    />
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Fecha:</label>
-                                    <input
-                                        type="date"
-                                        value={popupSelectedDate}
-                                        onChange={(e) => setPopupSelectedDate(e.target.value)}
-                                    />
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label>¿Es una reunión de todo el día?</label>
-                                    <input
-                                        type="checkbox"
-                                        checked={isAllDay}
-                                        onChange={(e) => setIsAllDay(e.target.checked)}
-                                    />
-                                </div>
-                                {!isAllDay && (
+                        <Modal
+                            visible={isPopupOpen}
+                            transparent={true}
+                            animationType="fade"
+                            onRequestClose={handleClosePopup}
+                        >
+                            <View style={styles['popup-overlay']}>
+                                <View style={styles['popup-container']}>
+                                    <Text style={styles['popup-title']}>
+                                        {isEditingEvent ? 'Modificar Reunión' : 'Crear Nueva Reunión'}
+                                    </Text>
+
+                                    {/* Campo: Nombre de la Reunión */}
+                                    <View style={styles['AdminCalendar-input-group']}>
+                                        <Text style={styles['label']}>Nombre de la Reunión:</Text>
+                                        <TextInput
+                                            style={styles['text-input']}
+                                            placeholder="Nombre de la Reunión"
+                                            value={eventName}
+                                            onChangeText={(text) => setEventName(text)}
+                                        />
+                                    </View>
+
+                                    {/* Campo: Fecha */}
+                                    <View style={styles['AdminCalendar-input-group']}>
+                                        <Text style={styles['label']}>Fecha:</Text>
+                                        <TextInput
+                                            style={styles['text-input']}
+                                            placeholder="YYYY-MM-DD"
+                                            value={popupSelectedDate}
+                                            onChangeText={(text) => setPopupSelectedDate(text)}
+                                        />
+                                    </View>
+
+                                    {/* Campo: ¿Es una reunión de el día? */}
+                                    <View style={styles['AdminCalendar-input-group']}>
+                                        <Text style={styles['label']}>¿Es una reunión de todo el día?</Text>
+                                        <Switch
+                                            value={isAllDay}
+                                            onValueChange={(value) => setIsAllDay(value)}
+                                        />
+                                    </View>
+                                
+                                    {!isAllDay && (
                                     <>
-                                        <div className="AdminCalendar-input-group">
-                                            <label>Horarios laborales disponibles:</label>
-                                            <div className="work-schedules" style={{ 
-                                                marginBottom: '10px', 
-                                                color: '#666',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '5px'
-                                            }}>
+                                        <View style={styles['AdminCalendar-input-group']}>
+                                            <Text style={styles['label']}>Horarios laborales disponibles:</Text>
+                                            <View style={styles['work-schedules']}>
                                                 {workSchedules.length > 0 ? (
                                                     workSchedules.map((schedule, index) => (
-                                                        <div key={index} style={{ 
-                                                            padding: '5px',
-                                                            backgroundColor: '#f5f5f5',
-                                                            borderRadius: '4px'
-                                                        }}>
-                                                            Bloque {index + 1}: {schedule.startingTime.slice(0, -3)} - {schedule.endingTime.slice(0, -3)}
-                                                        </div>
+                                                        <View key={index} style={styles['work-schedule-item']}>
+                                                            <Text>
+                                                                Bloque {index + 1}: {schedule.startingTime.slice(0, -3)} - {schedule.endingTime.slice(0, -3)}
+                                                            </Text>
+                                                        </View>
                                                     ))
                                                 ) : (
-                                                    <div>No hay horarios laborales definidos</div>
+                                                    <Text>No hay horarios laborales definidos</Text>
                                                 )}
-                                            </div>
-                                        </div>
-                                        <div className="AdminCalendar-input-group">
-                                            <label>Hora de inicio:</label>
-                                            <div>
-                                                <input
-                                                    type="number"
+                                            </View>
+                                        </View>
+
+                                        {/* Hora de Inicio */}
+                                        <View style={styles['AdminCalendar-input-group']}>
+                                            <Text style={styles['label']}>Hora de inicio:</Text>
+                                            <View style={styles['time-input-container']}>
+                                                <TextInput
+                                                    style={styles['time-input']}
                                                     placeholder="HH"
+                                                    keyboardType="numeric"
                                                     value={popupStartingHour}
-                                                    onChange={(e) => handlePopupTimeChange(e, 'popupStartingHour')}
-                                                    min="0"
-                                                    max="23"
+                                                    onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupStartingHour')}
+                                                    maxLength={2}
                                                 />
-                                                :
-                                                <input
-                                                    type="number"
+                                                <Text style={styles['time-separator']}>:</Text>
+                                                <TextInput
+                                                    style={styles['time-input']}
                                                     placeholder="MM"
+                                                    keyboardType="numeric"
                                                     value={popupStartingMinutes}
-                                                    onChange={(e) => handlePopupTimeChange(e, 'popupStartingMinutes')}
-                                                    min="0"
-                                                    max="59"
+                                                    onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupStartingMinutes')}
+                                                    maxLength={2}
                                                 />
-                                            </div>
-                                        </div>
-                                        <div className="AdminCalendar-input-group">
-                                            <label>Hora de fin:</label>
-                                            <div>
-                                                <input
-                                                    type="number"
+                                            </View>
+                                        </View>
+
+                                        {/* Hora de Fin */}
+                                        <View style={styles['AdminCalendar-input-group']}>
+                                            <Text style={styles['label']}>Hora de fin:</Text>
+                                            <View style={styles['time-input-container']}>
+                                                <TextInput
+                                                    style={styles['time-input']}
                                                     placeholder="HH"
+                                                    keyboardType="numeric"
                                                     value={popupEndingHour}
-                                                    onChange={(e) => handlePopupTimeChange(e, 'popupEndingHour')}
-                                                    min="0"
-                                                    max="23"
+                                                    onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupEndingHour')}
+                                                    maxLength={2}
                                                 />
-                                                :
-                                                <input
-                                                    type="number"
+                                                <Text style={styles['time-separator']}>:</Text>
+                                                <TextInput
+                                                    style={styles['time-input']}
                                                     placeholder="MM"
+                                                    keyboardType="numeric"
                                                     value={popupEndingMinutes}
-                                                    onChange={(e) => handlePopupTimeChange(e, 'popupEndingMinutes')}
-                                                    min="0"
-                                                    max="59"
+                                                    onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupEndingMinutes')}
+                                                    maxLength={2}
                                                 />
-                                            </div>
-                                        </div>
+                                            </View>
+                                        </View>
                                     </>
                                 )}
-                                <div className="AdminCalendar-input-group">
-                                    <label>Ubicación:</label>
-                                    <select
-                                        value={eventLocation}
-                                        onChange={(e) => setEventLocation(e.target.value)}
-                                    >
-                                    <option value="" disabled>Seleccione...</option>
-                                    {locations.map((location) => (
-                                        <option key={location.locationId}
-                                            value={location.locationId}>
-                                            {location.locationName}
-                                        </option>
-                                    ))}
-                                    </select>
-                                </div>
-                                <div className="AdminCalendar-input-group">
-                                    <label>Observaciones:</label>
-                                    <textarea
+
+                                {/* Ubicación */}
+                                <View style={styles['AdminCalendar-input-group']}>
+                                    <Text style={styles['label']}>Ubicación:</Text>
+                                    <View style={styles['select-container']}>
+                                        <Picker
+                                            selectedValue={eventLocation}
+                                            onValueChange={(itemValue) => setEventLocation(itemValue)}
+                                            style={styles['select']}
+                                        >
+                                            <Picker.Item label="Seleccione..." value="" />
+                                            {locations.map((location) => (
+                                                <Picker.Item
+                                                    key={location.locationId}
+                                                    label={location.locationName}
+                                                    value={location.locationId}
+                                                />
+                                            ))}
+                                        </Picker>
+                                    </View>
+                                </View>
+
+                                {/* Observaciones */}
+                                <View style={styles['AdminCalendar-input-group']}>
+                                    <Text style={styles['label']}>Observaciones:</Text>
+                                    <TextInput
+                                        style={styles['textarea']}
+                                        placeholder="Añadir observaciones"
                                         value={popupDescription}
-                                        onChange={(e) => setPopupDescription(e.target.value)}
+                                        onChangeText={(text) => setPopupDescription(text)}
+                                        multiline
+                                        numberOfLines={4}
                                     />
-                                </div>
-                                <div className="AdminCalendar-button-group">
-                                    <button onClick={isEditing?handleSaveEvent:handleNextStep}>{isEditing?'Guardar':'Siguiente'}</button>
-                                    <button onClick={handleClosePopup}>Cancelar</button>
-                                </div>
-                            </div>
-                        </div>
+                                </View>
+
+                                {/* Botones */}
+                                <View style={styles['AdminCalendar-button-group']}>
+                                    <TouchableOpacity style={styles['save-button']} onPress={isEditing ? handleSaveEvent : handleNextStep}>
+                                        <Text style={styles['save-button-text']}>{isEditing ? 'Guardar' : 'Siguiente'}</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles['cancel-button']} onPress={handleClosePopup}>
+                                        <Text style={styles['cancel-button-text']}>Cancelar</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                </View> 
+                            </View>
+                        </Modal>
                     )}
                     {isPopupOpen && currentStep === 2 && (
-                        <div className="popup-overlay">
-                            <div className="popup-container">
-                                <h2>Invitar Participantes</h2>
-                                <div className="search-participants-container">
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar participantes..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                </div>
-                                <div className="participant-list-available">
-                                    {filteredParticipants.map((participant) => (
-                                        <div
-                                            key={participant.id}
-                                            className="participant-item"
-                                            onClick={() => handleSelectParticipant(participant)}
-                                        >
-                                            {participant.nombre}
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="selected-participants">
-                                    <h3>Participantes Seleccionados:</h3>
-                                    {selectedUsers.map((user) => (
-                                        <div key={user.id} className="selected-participant"
-                                            style={user.enAusencia ? { color: 'red' } : {}}>
-                                            {user.nombre}
-                                            <button onClick={() => handleRemoveUser(user)}>X</button>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="AdminCalendar-button-group">
-                                    <button onClick={handleSaveEvent}>Guardar</button>
-                                    <button onClick={handleClosePopup}>Cancelar</button>
-                                </div>
-                                {errorEvent && <b style={{ color: 'red' }} className="error-message">{errorEvent}</b>}
-                            </div>
-                        </div>
-                    )} } */}
+                        <Modal
+                            visible={isPopupOpen}
+                            transparent={true}
+                            animationType="fade"
+                            onRequestClose={handleClosePopup}
+                        >
+                            <View style={styles['popup-overlay']}>
+                                <View style={styles['popup-container']}>
+                                    <Text style={styles['popup-title']}>Invitar Participantes</Text>
+
+                                    {/* Campo de búsqueda */}
+                                    <View style={styles['search-participants-container']}>
+                                        <TextInput
+                                            style={styles['text-input']}
+                                            placeholder="Buscar participantes..."
+                                            value={searchTerm}
+                                            onChangeText={(text) => setSearchTerm(text)}
+                                        />
+                                    </View>
+
+                                    {/* Lista de participantes disponibles */}
+                                    <View style={styles['participant-list-available']}>
+                                        {filteredParticipants.map((participant) => (
+                                            <TouchableOpacity
+                                                key={participant.id}
+                                                style={styles['participant-item']}
+                                                onPress={() => handleSelectParticipant(participant)}
+                                            >
+                                                <Text style={styles['participant-text']}>{participant.nombre}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+
+                                    {/* Lista de participantes seleccionados */}
+                                    <View style={styles['selected-participants']}>
+                                        <Text style={styles['selected-participants-title']}>Participantes Seleccionados:</Text>
+                                        {selectedUsers.map((user) => (
+                                            <View
+                                                key={user.id}
+                                                style={[
+                                                    styles['selected-participant'],
+                                                    user.enAusencia && styles['selected-participant-absent']
+                                                ]}
+                                            >
+                                                <Text>{user.nombre}</Text>
+                                                <TouchableOpacity onPress={() => handleRemoveUser(user)}>
+                                                    <Text style={styles['remove-button']}>X</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        ))}
+                                    </View>
+
+                                    {/* Botones */}
+                                    <View style={styles['AdminCalendar-button-group']}>
+                                        <TouchableOpacity style={styles['save-button']} onPress={handleSaveEvent}>
+                                            <Text style={styles['save-button-text']}>Guardar</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles['cancel-button']} onPress={handleClosePopup}>
+                                            <Text style={styles['cancel-button-text']}>Cancelar</Text>
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    {/* Mensaje de error */}
+                                    {errorEvent && <Text style={styles['error-message']}>{errorEvent}</Text>}
+                                </View>
+                            </View>
+                        </Modal>
+                    )}
                 </View>
             )}
         </>
@@ -1510,12 +1581,12 @@ const styles = StyleSheet.create({
     'accept-button': {
         width: 24,
         height: 24,
-        backgroundColor: '#28a745', // Verde
+        backgroundColor: '#28a745',
     },
     'reject-button': {
         width: 24,
         height: 24,
-        backgroundColor: '#dc3545', // Rojo
+        backgroundColor: '#dc3545',
     },
     'action-reunion-button': {
         width: 22,
@@ -1568,15 +1639,15 @@ const styles = StyleSheet.create({
         transition: 'background-color 0.2s',
     },
     'meeting-item-rejected-meeting': {
-        backgroundColor: '#ffcccc', // Rojo claro
+        backgroundColor: '#ffcccc',
         borderLeftColor: '#e57373',
     },
     'meeting-item-normal-meeting': {
-        backgroundColor: '#ce93d8', // Morado claro
+        backgroundColor: '#ce93d8',
         borderLeftColor: '#9c27b0',
     },
     'modify-event-button': {
-        backgroundColor: '#e4e734', // Amarillo
+        backgroundColor: '#e4e734',
         borderRadius: 4,
         cursor: 'pointer',
         width: 34,
@@ -1591,7 +1662,7 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     'delete-event-button': {
-        backgroundColor: '#eb5151', // Rojo
+        backgroundColor: '#eb5151',
         borderRadius: 4,
         cursor: 'pointer',
         width: 34,
@@ -1613,8 +1684,8 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     'add-button': {
-        backgroundColor: '#1e3a8a', // Azul
-        borderRadius: 50, // Botón circular
+        backgroundColor: '#1e3a8a',
+        borderRadius: 50,
         width: 50,
         height: 50,
         alignItems: 'center',
@@ -1624,7 +1695,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
-        elevation: 3, // Sombra en Android
+        elevation: 3,
     },
     'add-button-text': {
         fontSize: 24,
@@ -1634,7 +1705,7 @@ const styles = StyleSheet.create({
     'AdminCalendar-add-time-text': {
         marginTop: 10,
         fontSize: 16,
-        color: '#1e3a8a', // Azul
+        color: '#1e3a8a',
         textAlign: 'center',
     },
 	'AdminCalendar-left-panel': {
@@ -1647,24 +1718,195 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 4,
-        elevation: 3, // Sombra para Android
+        elevation: 3,
         display: 'flex',
         flexDirection: 'column',
-        gap: 15, // Espacio entre elementos
+        gap: 15,
         marginTop: 100,
     },
 	'AdminCalendarapp-container': {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100%', // Ocupa todo el alto
-        width: '100%', // Ocupa todo el ancho
+        height: '100%',
+        width: '100%',
         padding: 20,
-        gap: 20, // Espaciado entre elementos
-        maxWidth: 1200, // Ancho máximo
+        gap: 20,
+        maxWidth: 1200,
         marginBottom: 70,
     },
     'main-content': {
-        marginTop: 120, // Espaciado debajo de la barra de navegación
+        marginTop: 120,
+    },
+    'popup-overlay': {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    'popup-container': {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 8,
+        maxWidth: 400,
+        width: '90%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    'popup-title': {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        textAlign: 'center',
+        color: '#333',
+    },
+    'AdminCalendar-input-group': {
+        marginBottom: 15,
+    },
+    'label': {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#555',
+    },
+    'value': {
+        fontSize: 14,
+        color: '#333',
+    },
+    'text-input': {
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 4,
+        padding: 10,
+        fontSize: 14,
+        color: '#333',
+    },
+    'AdminCalendar-button-group': {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20,
+    },
+    'save-button': {
+        flex: 1,
+        backgroundColor: '#28a745',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginRight: 5,
+    },
+    'save-button-text': {
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    'cancel-button': {
+        flex: 1,
+        backgroundColor: '#dc3545',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginLeft: 5,
+    },
+    'cancel-button-text': {
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    'work-schedules': {
+        marginBottom: 10,
+        color: '#666',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 5,
+    },
+    'work-schedule-item': {
+        padding: 5,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 4,
+        marginBottom: 5,
+    },
+    'time-input-container': {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    'time-input': {
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 4,
+        padding: 10,
+        fontSize: 14,
+        width: 60,
+        textAlign: 'center',
+    },
+    'time-separator': {
+        marginHorizontal: 5,
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    'select-container': {
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 4,
+        padding: 5,
+    },
+    'select': {
+        fontSize: 14,
+        color: '#333',
+    },
+    'textarea': {
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 4,
+        padding: 10,
+        fontSize: 14,
+        textAlignVertical: 'top',
+        minHeight: 80,
+    },
+    'search-participants-container': {
+        marginBottom: 15,
+    },
+    'participant-list-available': {
+        maxHeight: 150,
+        marginBottom: 15,
+    },
+    'participant-item': {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    'participant-text': {
+        fontSize: 14,
+        color: '#333',
+    },
+    'selected-participants': {
+        marginBottom: 15,
+    },
+    'selected-participants-title': {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    'selected-participant': {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 10,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 4,
+        marginBottom: 5,
+    },
+    'selected-participant-absent': {
+        backgroundColor: '#ffe5e5',
+    },
+    'remove-button': {
+        color: '#dc3545',
+        fontWeight: 'bold',
+        marginLeft: 10,
+    },
+    'error-message': {
+        color: 'red',
+        fontSize: 14,
+        marginTop: 10,
+        textAlign: 'center',
     },
 });
