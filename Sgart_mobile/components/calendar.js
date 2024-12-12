@@ -907,6 +907,47 @@ const Calendar = () => {
     };
 
 
+//items INTRODUCIR POR ANTONIO BORRAR LUEGO???????
+    // Transforma los eventos del formato de FullCalendar al formato de Agenda
+    const transformEventsForAgenda = (eventSources) => {
+        const agendaItems = {};
+        eventSources.forEach((source) => {
+          source.events.forEach((event) => {
+            const dateKey = new Date(event.start).toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
+            if (!agendaItems[dateKey]) {
+              agendaItems[dateKey] = [];
+            }
+            agendaItems[dateKey].push({
+              id: event.id,
+              name: event.title,
+              data: `Desde: ${new Date(event.start).toLocaleTimeString()} - Hasta: ${new Date(event.end).toLocaleTimeString()}`,
+              color: source.color || 'lightblue',
+            });
+          });
+        });
+        return agendaItems;
+      };
+
+  
+  // Usar los datos de eventSources
+    const items = transformEventsForAgenda([
+        {
+        events: regularEvents,
+        color: '#28a745',
+        },
+        {
+        events: pendingMeetingsEvents,
+        color: '#ffc107',
+        },
+        {
+        events: organizedEvents.map((event) => ({
+            ...event,
+            color: event.backgroundColor,
+        })),
+        },
+    ]);
+
+
     /* Efectos
     useEffect(() => {
         loadMeetings();
@@ -970,18 +1011,20 @@ const Calendar = () => {
                     {/* Calendario en la parte superior */}
                     <SafeAreaView style={styles.calendarContainer}>
                         <Agenda
-                            items={{
-                                
-                            }}
+                            items={items}
                             renderItem={(item) => (
                                 <TouchableOpacity key={item.id} style={styles.item}>
                                     <Text style={styles.itemText}>{item.name}</Text>
                                     <Text style={styles.itemSubText}>{item.data}</Text>
                                 </TouchableOpacity>
                             )}
-                            style={{ flex: 3 }} // Asegura que ocupe todo el espacio disponible
+                            style={{ flex: 1 }} // Asegura que ocupe todo el espacio disponible
                         />
                     </SafeAreaView>
+
+
+
+
 
 
                     <View style={styles['AdminCalendar-left-panel']}>
@@ -1928,14 +1971,14 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     calendarContainer: {
-        flex: 3, // Asegura que el contenedor ocupe todo el espacio disponible
+        flex: 1, // Asegura que el contenedor ocupe todo el espacio disponible
         backgroundColor: 'white', // Fondo blanco para claridad
         width: '100%', // Usa todo el ancho disponible
-        height: '40%', // Ajusta la altura del calendario (puedes personalizar este valor)
+        //height: '40%', // Ajusta la altura del calendario (puedes personalizar este valor)
+        top: -100,
     },
     item: {
         backgroundColor: 'lightblue',
-        flex: 1,
         borderRadius: 5,
         padding: 10,
         marginHorizontal: 10,
@@ -1945,5 +1988,9 @@ const styles = StyleSheet.create({
         color: 'bold',
         fontSize: 16,
     },
+    itemSubText: {
+        fontSize: 14,
+        color: 'white',
+      },
     
 });
