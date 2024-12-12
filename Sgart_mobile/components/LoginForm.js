@@ -94,18 +94,6 @@ const LoginForm = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-
-   { /* Esto es para pasar de strangis no tener que login cada vez probar cosas*/}
- 
-      <TouchableOpacity
-        style={styles.passStrangisButton}
-        onPress={() => navigation.navigate('UserCalendar')}
-        >
-        <Text style={styles.passStrangisText}>Pasar Strangis</Text>
-      </TouchableOpacity>
-
-
-
       {/* Background */}
       <Image
         source={require('../media/1206.png')}
@@ -160,6 +148,9 @@ const LoginForm = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
               <Text style={styles.optionText}>Regístrate</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Calendar')}>
+              <Text style={styles.optionText}>Calendario</Text>
             </TouchableOpacity>
           </View>
         </View>
