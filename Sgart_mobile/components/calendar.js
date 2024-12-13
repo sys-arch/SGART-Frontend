@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Modal, Switch, SafeAreaView, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Agenda } from 'react-native-calendars';
+import { useNavigation } from '@react-navigation/native';
 
 const Calendar = () => {
     // Estados esenciales para reuniones
@@ -55,11 +56,7 @@ const Calendar = () => {
 
     const [activeContent, setActiveContent] = useState('calendar');
 
-    // ! BOTÓN PARA IRSE AL PERFIL DEL USUARIO
-    const navigateToProfile = () => {
-        console.log("Navegando al perfil...");
-        // Aquí implementa la navegación al perfil usando tu sistema de navegación
-    };
+    const navigation = useNavigation();
 
 
     // ! CARGAR INVITADOS	
@@ -1622,7 +1619,7 @@ const Calendar = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.menuButton}
-                    onPress={navigateToProfile}
+                    onPress={() => navigation.navigate('Profile')}
                 >
                     <Image
                         source={require('../media/user_icon.png')}
@@ -2081,6 +2078,7 @@ const styles = StyleSheet.create({
         height: 30,
         resizeMode: 'contain',
     },
+    
     menuButtonText: {
         color: '#1e3a8a',
         fontWeight: 'bold',
