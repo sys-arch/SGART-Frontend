@@ -89,6 +89,9 @@ const UserCalendar =  ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
+
+
+
           <Calendar
             markedDates={{
               ...regularEvents.reduce((acc, event) => {
@@ -99,6 +102,9 @@ const UserCalendar =  ({ navigation }) => {
             }}
             onDayPress={handleDayPress}
           />
+
+
+
 
           <ScrollView style={styles.eventsContainer}>
             <Text style={styles.sectionTitle}>Reuniones Aceptadas</Text>
