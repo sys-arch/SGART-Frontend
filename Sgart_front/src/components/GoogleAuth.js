@@ -67,7 +67,7 @@ const GoogleAuth = () => {
                 if (!esAdmin) {
                     await registrarUsuario(usuario.email);
                     setMessage("Autenticación exitosa. Redirigiendo...");
-                    navigate('/user-calendar');
+                    navigate('/');
                 } else {
                     await registrarAdmin(usuario.email);
                     setMessage("Autenticación exitosa. Redirigiendo...");
@@ -88,7 +88,7 @@ const GoogleAuth = () => {
                 ...usuario,
                 twoFactorAuthCode: secretKey,
             };
-
+    
             const response = await fetch(`${config.BACKEND_URL}/users/registro`, {
                 method: 'POST',
                 headers: {
@@ -97,12 +97,19 @@ const GoogleAuth = () => {
                 },
                 body: JSON.stringify(usuarioActualizado),
             });
-
+    
             if (!response.ok) {
-                throw new Error('Error al registrar el usuario');
+                throw new Error(`Error al registrar el usuario: ${response.statusText}`);
             }
-
-            const result = await response.json();
+    
+            let result;
+            const contentType = response.headers.get('Content-Type');
+            if (contentType && contentType.includes('application/json')) {
+                result = await response.json();
+            } else {
+                result = await response.text(); // Maneja texto plano
+            }
+    
             console.log('Usuario registrado:', result);
             setMessage("Usuario registrado con éxito.");
         } catch (error) {
@@ -110,6 +117,7 @@ const GoogleAuth = () => {
             console.error("Error en el registro:", error);
         }
     };
+    
 
     const registrarAdmin = async (email) => {
         try {

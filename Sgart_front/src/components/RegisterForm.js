@@ -29,6 +29,9 @@ const RegisterForm = () => {
     const [errorRepetirContrasena, setErrorRepetirContrasena] = useState('');
     const [errorEmail, setErrorEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const getToken = () => {
+        return sessionStorage.getItem('authToken');
+    };
 
     const handleChange = (event) => {
         document.cookie.split(";").forEach((cookie) => {
@@ -154,30 +157,7 @@ const RegisterForm = () => {
             twoFactorAuthCode: '',
         };
     
-        try {
-            const response = await fetch('http://localhost:9000/users/registro', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(usuario),
-            });
-            
-            
-    
-            if (!response.ok) {
-                throw new Error(`Error ${response.status}: ${response.statusText}`);
-            }
-    
-            const data = await response.text();
-            console.log('Registro exitoso:', data);
-    
-            // Navegar a otra página después del registro exitoso
-            navigate('/login');
-        } catch (error) {
-            console.error('Error en el registro:', error);
-            alert('Hubo un error al registrar el usuario. Por favor, inténtelo de nuevo.');
-        }
+        navigate('/google-auth', { state: { usuario, esAdmin: false } });
     };
 
     const togglePasswordVisibility = () => {
