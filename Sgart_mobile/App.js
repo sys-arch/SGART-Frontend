@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
-import Calendar from './components/Calendar';
+import Calendar from './components/calendar';
 
 const Stack = createStackNavigator();
 
@@ -26,8 +26,6 @@ export default function App() {
           component={Calendar} 
           options={{ title: 'Calendario' }}
         />
-        
-        
       </Stack.Navigator>
     </NavigationContainer>
   );
