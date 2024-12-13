@@ -7,7 +7,7 @@ const AdminCreateForm = ({ admin = {}, onSave, onCancel }) => {
     const [email, setEmail] = useState(admin?.email || '');
     const [password, setPassword] = useState('');
     const [center, setCenter] = useState(admin?.center || '');
-    
+
     const [errorName, setErrorName] = useState('');
     const [errorLastName, setErrorLastName] = useState('');
     const [errorCenter, setErrorCenter] = useState('');
@@ -15,6 +15,9 @@ const AdminCreateForm = ({ admin = {}, onSave, onCancel }) => {
     const [errorEmail, setErrorEmail] = useState('');
 
     const [showPassword, setShowPassword] = useState(false);
+    if (!admin) {
+        admin = {}; // Si `admin` es `null` o `undefined`, se define como un objeto vacío
+    }
 
     const handleChange = (event) => {
         const { name, value } = event.target;
