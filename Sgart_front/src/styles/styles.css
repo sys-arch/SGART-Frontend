@@ -29,7 +29,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 30px; /* Aumenta el padding para dar espacio */
-    background-color: rgba(255, 255, 255, 0);    border-bottom: 1px solid #ddd;
+    background-color: rgba(255, 255, 255, 0);    
     position: fixed; /* Fijar en la parte superior */
     border-bottom: 1px solid rgba(221, 221, 221, 0.0);
     top: 0;
@@ -44,7 +44,7 @@
     left: 0; /* Asegura que comienza desde la izquierda */
     width: 100%; /* Ocupa todo el ancho de la ventana */
     height: 100%; /* Ocupa toda la altura de la ventana */
-    opacity: 1admins; /* Ajusta la transparencia */
+    opacity: 1; /* Ajusta la transparencia */
     z-index: 1; /* Colócala detrás de los demás elementos */
     object-fit: cover; /* Asegura que la imagen se ajuste al contenedor */
     pointer-events: none; /* Evita que interfiera con la interacción del usuario */
