@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Modal, Switch, SafeAreaView, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { Agenda } from 'react-native-calendars';
+import { Calendar } from 'react-native-calendars';
 import { useNavigation } from '@react-navigation/native';
 
-const Calendar = () => {
+const CalendarComponent = () => {
     // Estados esenciales para reuniones
     const [isLoading, setIsLoading] = useState(false);
     const [regularEvents, setRegularEvents] = useState([]);
@@ -57,6 +57,8 @@ const Calendar = () => {
     const [activeContent, setActiveContent] = useState('calendar');
 
     const navigation = useNavigation();
+
+    const [events, setEvents] = useState({});
 
 
     // ! CARGAR INVITADOS	
@@ -456,6 +458,8 @@ const Calendar = () => {
         console.log('Tiempo no válido: No está dentro de ningún bloque horario');
         return false;
     };
+
+    
 
     // ! COMPRUEBA SI HAY ASISTENTES AL CREAR LA REUNIÓN
     const handleSaveEvent = async () => {
@@ -878,8 +882,8 @@ const Calendar = () => {
     };
 
 
-//items INTRODUCIR POR ANTONIO BORRAR LUEGO???????
-    // Transforma los eventos del formato de FullCalendar al formato de Agenda
+
+    //cosas
     const transformEventsForAgenda = (eventSources) => {
         const agendaItems = {};
         eventSources.forEach((source) => {
@@ -972,6 +976,27 @@ const Calendar = () => {
         setFilteredParticipants(filtered);
     }, [searchTerm, availableUsers]);
 
+
+    const transformedEvents = {};
+        regularEvents.forEach(event => {
+            const dateKey = event.start.split('T')[0]; // Extraer la fecha en formato YYYY-MM-DD
+            if (!transformedEvents[dateKey]) {
+                transformedEvents[dateKey] = { marked: true, dots: [] };
+            }
+            transformedEvents[dateKey].dots.push({
+                color: '#00aced', // Cambia el color si lo deseas
+                key: event.id,
+            });
+    });
+    
+
+    const handleDayPress = (day) => {
+        alert(`Día seleccionado: ${day.dateString}\nEventos: ${
+            events[day.dateString]?.dots.map(dot => dot.key).join(', ') || 'Ninguno'
+        }`);
+    };
+
+
     return (
         <>
             {/* <NavBar isAdmin={false} /> */}
@@ -986,18 +1011,39 @@ const Calendar = () => {
                     {activeContent === 'calendar' &&(
                         // Calendario en la parte superior
                         <SafeAreaView style={styles.calendarContainer}>
-                            <Agenda
-                                items={items}
-                                renderItem={(item) => (
-                                    <TouchableOpacity key={item.id} style={styles.item}>
-                                        <Text style={styles.itemText}>{item.name}</Text>
-                                        <Text style={styles.itemSubText}>{item.data}</Text>
-                                    </TouchableOpacity>
-                                )}
-                                style={{ flex: 1 }} // Asegura que ocupe todo el espacio disponible
+                            <Calendar style={styles.calendar}
+                            // Días marcados con eventos
+                                markingType={'multi-dot'}
+                                markedDates={events}
+
+                                // Evento cuando se selecciona un día
+                                onDayPress={handleDayPress}
+
+                                // Opciones de estilo
+                                theme={{
+                                    selectedDayBackgroundColor: '#00aced',
+                                    todayTextColor: '#00aced',
+                                    dayTextColor: '#2d4150',
+                                    arrowColor: '#00aced',
+                                    monthTextColor: '#00aced',
+                                    textDayFontWeight: '300',
+                                    textMonthFontWeight: 'bold',
+                                    textDayHeaderFontWeight: '300',
+                                }}
                             />
                         </SafeAreaView>
                     )}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1216,6 +1262,16 @@ const Calendar = () => {
                                 </View>
                             </View>
 
+
+
+
+
+
+
+
+
+
+
                             {/* <div className="AdminCalendar-calendar-container">
                                 <h2>Calendario de Trabajo</h2>
                                 <div className="calendar-wrapper">
@@ -1254,7 +1310,6 @@ const Calendar = () => {
                                     />
                                 </div>
                             </div> */}
-
                             {/* Pop-up de detalles del evento */}
                             {isEventDetailPopupOpen && selectedEvent && (
                                 <Modal
@@ -1633,7 +1688,7 @@ const Calendar = () => {
     );
 };
 
-export default Calendar;
+export default CalendarComponent;
 
 const styles = StyleSheet.create({
     'meeting-list-pending': {
@@ -2104,6 +2159,29 @@ const styles = StyleSheet.create({
     'itemSubText': {
         fontSize: 14,
         color: 'white',
+    },
+
+    calendarContainer: {
+        flex: 0, // Ajusta el tamaño según el contenido
+        backgroundColor: 'white', // Fondo blanco para claridad
+        width: '120%', // Ajusta el ancho para que no ocupe todo el espacio
+        marginTop: -500, // Ajusta el margen superior para separarlo del encabezado
+        padding: 10, // Añade espaciado interno
+        alignSelf: 'center', // Centra el contenedor horizontalmente
+        borderRadius: 15, // Bordes redondeados para un diseño más moderno
+        shadowColor: '#000', // Sombra para darle profundidad
+        shadowOffset: { width: 0, height: 2 }, // Desplazamiento de la sombra
+        shadowOpacity: 0.2, // Opacidad de la sombra
+        shadowRadius: 5, // Difuminado de la sombra
+        elevation: 3, // Elevación para dispositivos Android
+    },
+    calendar: {
+        borderWidth: 1, // Borde del calendario
+        borderColor: '#ddd', // Color del borde
+        borderRadius: 10, // Bordes redondeados
+        padding: 10, // Espaciado interno
+        fontSize: 16, // Tamaño del texto
+        height: 350, // Ajusta la altura del calendario
     },
     
 });
