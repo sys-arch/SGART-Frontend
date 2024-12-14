@@ -882,47 +882,6 @@ const CalendarComponent = () => {
     };
 
 
-
-    //cosas
-    const transformEventsForAgenda = (eventSources) => {
-        const agendaItems = {};
-        eventSources.forEach((source) => {
-          source.events.forEach((event) => {
-            const dateKey = new Date(event.start).toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
-            if (!agendaItems[dateKey]) {
-              agendaItems[dateKey] = [];
-            }
-            agendaItems[dateKey].push({
-              id: event.id,
-              name: event.title,
-              data: `Desde: ${new Date(event.start).toLocaleTimeString()} - Hasta: ${new Date(event.end).toLocaleTimeString()}`,
-              color: source.color || 'lightblue',
-            });
-          });
-        });
-        return agendaItems;
-      };
-
-  
-  // Usar los datos de eventSources
-    const items = transformEventsForAgenda([
-        {
-        events: regularEvents,
-        color: '#28a745',
-        },
-        {
-        events: pendingMeetingsEvents,
-        color: '#ffc107',
-        },
-        {
-        events: organizedEvents.map((event) => ({
-            ...event,
-            color: event.backgroundColor,
-        })),
-        },
-    ]);
-
-
     /* Efectos
     useEffect(() => {
         loadMeetings();
@@ -1007,8 +966,12 @@ const CalendarComponent = () => {
                     style={styles.scrollContainer} 
                     contentContainerStyle={styles.scrollContent}
                 >
+
+                    <Text style={styles.subtitleCalend}>Selecciona una fecha para ver tus eventos</Text>
                     <View style={[styles['AdminCalendarapp-container'], styles['main-content']]}>
                     {activeContent === 'calendar' &&(
+
+                        
                         // Calendario en la parte superior
                         <SafeAreaView style={styles.calendarContainer}>
                             <Calendar style={styles.calendar}
@@ -2165,7 +2128,7 @@ const styles = StyleSheet.create({
         flex: 0, // Ajusta el tamaño según el contenido
         backgroundColor: 'white', // Fondo blanco para claridad
         width: '120%', // Ajusta el ancho para que no ocupe todo el espacio
-        marginTop: -500, // Ajusta el margen superior para separarlo del encabezado
+        marginTop: -520, // Ajusta el margen superior para separarlo del encabezado
         padding: 10, // Añade espaciado interno
         alignSelf: 'center', // Centra el contenedor horizontalmente
         borderRadius: 15, // Bordes redondeados para un diseño más moderno
@@ -2183,5 +2146,11 @@ const styles = StyleSheet.create({
         fontSize: 16, // Tamaño del texto
         height: 350, // Ajusta la altura del calendario
     },
-    
+    subtitleCalend: {
+        fontSize: 16,
+        color: '#555',
+        marginBottom: 10,
+        top: 55,
+        fontWeight: 'bold',
+    },
 });
