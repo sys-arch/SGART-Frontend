@@ -58,8 +58,6 @@ const CalendarComponent = () => {
 
     const navigation = useNavigation();
 
-    const [events, setEvents] = useState({});
-
 
     // ! CARGAR INVITADOS	
     const loadInvitees = useCallback(async (meetingId) => {
@@ -918,8 +916,11 @@ const CalendarComponent = () => {
         ];
         
     
+       
         setRegularEvents(mockEvents);
         setReunionesAceptadas(mockEvents);
+        //setReunionesPendientes(mockEvents);
+        //setPendingMeetingsEvents(mockEvents);
     }, []);
 
     // Modificar el useEffect para el filtrado de usuarios
@@ -936,24 +937,44 @@ const CalendarComponent = () => {
     }, [searchTerm, availableUsers]);
 
 
-    const transformedEvents = {};
-        regularEvents.forEach(event => {
-            const dateKey = event.start.split('T')[0]; // Extraer la fecha en formato YYYY-MM-DD
-            if (!transformedEvents[dateKey]) {
-                transformedEvents[dateKey] = { marked: true, dots: [] };
-            }
-            transformedEvents[dateKey].dots.push({
-                color: '#00aced', // Cambia el color si lo deseas
-                key: event.id,
-            });
-    });
-    
-
-    const handleDayPress = (day) => {
-        alert(`Día seleccionado: ${day.dateString}\nEventos: ${
-            events[day.dateString]?.dots.map(dot => dot.key).join(', ') || 'Ninguno'
-        }`);
+    // Transformar eventos para `markedDates`
+    const transformEvents = (events, color) => {
+        const transformedEvents = {};
+        events.forEach((event) => {
+        const dateKey = event.start.split('T')[0]; // Extraer fecha en formato YYYY-MM-DD
+        if (!transformedEvents[dateKey]) {
+            transformedEvents[dateKey] = { marked: true, dots: [] };
+        }
+        transformedEvents[dateKey].dots.push({
+            color, // Color personalizado por tipo de evento
+            key: event.id, // Identificador único
+        });
+        });
+        return transformedEvents;
     };
+  
+    // Generar markedDates combinando todos los eventos
+    const markedDates = {
+        ...transformEvents(regularEvents, '#00aced'), // Azul para regularEvents
+        ...transformEvents(pendingMeetingsEvents, '#ffc107'), // Amarillo para pendingMeetingsEvents
+        ...transformEvents(organizedEvents, '#28a745'), // Verde para organizedEvents
+    };
+    /*
+
+  const handleDayPress = (day) => {
+        alert(`Has seleccionado el día: ${day.dateString}\nEventos: ${
+            markedDates[day.dateString]?.dots.map(dot => dot.key).join(', ') || 'Ninguno'
+        }`);
+    }; */
+    const handleDayPress = (day) => {
+        // Obtener los eventos para el día seleccionado
+       const eventos = markedDates[day.dateString]?.dots.map(dot => dot.key).join(', ') || 'Ninguno';
+    
+        // Crear un mensaje amigable
+        const mensaje = `Has seleccionado el día: ${day.dateString}\n Eventos: ${eventos}
+        `;
+        alert(mensaje);
+    }
 
 
     return (
@@ -967,17 +988,19 @@ const CalendarComponent = () => {
                     contentContainerStyle={styles.scrollContent}
                 >
 
-                    <Text style={styles.subtitleCalend}>Selecciona una fecha para ver tus eventos</Text>
+                    
                     <View style={[styles['AdminCalendarapp-container'], styles['main-content']]}>
                     {activeContent === 'calendar' &&(
 
                         
                         // Calendario en la parte superior
                         <SafeAreaView style={styles.calendarContainer}>
+                            
+                        <Text style={styles.subtitleCalend}>Selecciona una fecha para ver tus eventos</Text>
                             <Calendar style={styles.calendar}
                             // Días marcados con eventos
                                 markingType={'multi-dot'}
-                                markedDates={events}
+                                markedDates={markedDates}
 
                                 // Evento cuando se selecciona un día
                                 onDayPress={handleDayPress}
@@ -2230,10 +2253,11 @@ const styles = StyleSheet.create({
         height: 350, // Ajusta la altura del calendario
     },
     subtitleCalend: {
-        fontSize: 16,
+        //fontSize: 16,
         color: '#555',
-        marginBottom: 10,
-        top: 55,
+        //marginBottom: 10,
+        //top: 55,
         fontWeight: 'bold',
+        left: 50,
     },
 });
