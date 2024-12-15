@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
 import '../App.css';
+import config from '../config';
 import NavBar from './NavBar';
 
 const UserEdit = () => {
@@ -17,9 +17,17 @@ const UserEdit = () => {
         loadUser();
     },[]);
 
+    const getToken = () => {
+        return sessionStorage.getItem('authToken');
+    };
     const loadUser = async () => {
         try {
-            const response = await fetch('http://localhost:3000/users/current/user', {
+            const response = await fetch(`${config.BACKEND_URL}/users/current/user`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`,
+                    'Content-Type': 'application/json'
+                },
                 credentials: 'include'
             });
             if (!response.ok) {
@@ -56,13 +64,14 @@ const UserEdit = () => {
         console.log(updatedUser);
 
         // Realizar la solicitud al backend
-        fetch('http://localhost:3000/users/modificar', {
+        fetch(`${config.BACKEND_URL}/users/modificar`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updatedUser),
-        })
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedUser)
+            })
             .then(response => {
                 if (!response.ok) {
                     alert('Error al modificar los datos del usuario');

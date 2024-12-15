@@ -1,55 +1,122 @@
 import React from 'react';
-import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import LoginForm from './components/LoginForm';
-import RegisterForm from './components/RegisterForm';
-import RecuperarPwdForm from './components/RecuperarPwdForm';
+import { Navigate, Route, HashRouter as Router, Routes } from 'react-router-dom';
+import './App.css';
+import ActualizarPwdForm from './components/ActualizarPwdForm';
+import AdminAusenciasUI from './components/AdminAusenciasUI';
+import AdminGestionarHorariosDeTrabajo from './components/AdminGestionarHorariosDeTrabajo';
+import AdminPanel from './components/AdminPanel';
+import AdminVisualizarCalendario from './components/AdminVisualizarCalendario';
 import GoogleAuth from './components/GoogleAuth';
 import GoogleAuthLogin from './components/GoogleAuthLogin';
-import AdminAusenciasUI from './components/AdminAusenciasUI';
-import UserValidationUI from './components/UserValidationUI';
-import AdminVisualizarCalendario from './components/AdminVisualizarCalendario';
-import AdminGestionarHorariosDeTrabajo from './components/AdminGestionarHorariosDeTrabajo';
-import UserOptions from './components/UserOptions';
-import UnderConstruction from './components/UnderConstruction';
-import './App.css';
+import LoginForm from './components/LoginForm';
+import ProtectedRoute from './components/ProtectedRoute';
+import RecuperarPwdForm from './components/RecuperarPwdForm';
+import RegisterForm from './components/RegisterForm';
 import UserCalendarUI from './components/UserCalendarUI';
 import UserEdit from './components/UserEdit';
-import AdminPanel from './components/AdminPanel';
-import ActualizarPwdForm from './components/ActualizarPwdForm';
+import UserOptions from './components/UserOptions'; // Importa el componente UserOptions
+import UserValidationUI from './components/UserValidationUI'; // Importa el componente UserValidationUI
 
 const App = () => {
   return (
-    <div className="App"> {/* Contenedor general con estilos */}
+    <div className="App">
       <Router>
         <Routes>
-          {/* La ruta debe coincidir exactamente con la URL generada por el backend */}
+          {/* Ruta pública para cambiar contraseña */}
           <Route path="reset-password" element={<ActualizarPwdForm />} />
-          
-          {/* Rutas de autenticación */}
+
+          {/* Rutas públicas */}
           <Route path="/" element={<LoginForm />} />
           <Route path="register" element={<RegisterForm />} />
           <Route path="recover-password" element={<RecuperarPwdForm />} />
-          
-          {/* Rutas para Google Auth */}
           <Route path="/google-auth" element={<GoogleAuth />} />
           <Route path="/google-auth-login" element={<GoogleAuthLogin />} />
 
-          {/* Ruta para el Dashboard del Administrador */}
-          <Route path="/admin-working-hours" element={<AdminGestionarHorariosDeTrabajo />} />
-          <Route path="/admin-calendar-view" element={<AdminVisualizarCalendario/>} />
-          <Route path="/admin-management" element={<AdminPanel />} />
+          {/* Rutas protegidas para administradores */}
+          <Route
+            path="/admin-working-hours"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminGestionarHorariosDeTrabajo />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin-calendar-view"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminVisualizarCalendario />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin-management"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin-ausencias"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminAusenciasUI />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Ruta para el Usuario -> Calendario */}        
-          <Route path="/user-calendar" element={<UserCalendarUI />} />
+          {/* Rutas protegidas para empleados */}
+          <Route
+            path="/user-calendar"
+            element={
+              <ProtectedRoute allowedRoles={['employee']}>
+                <UserCalendarUI />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user-profile"
+            element={
+              <ProtectedRoute allowedRoles={['employee']}>
+                <UserEdit />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Ruta para el Usuario -> Visualizar Datos Perfil */}
-          <Route path="/user-profile" element={<UserEdit />} />
-
-          {/* Rutas para gestionar usuarios, administradores y ausencias */}
-          <Route path="/user-options" element={<UserOptions />} />
-          <Route path="/admin-panel" element={<AdminPanel />} />
-          <Route path="/admin-ausencias" element={<AdminAusenciasUI />} />
-          <Route path="/user-validation" element={<UserValidationUI />} />
+          {/* Nuevas rutas */}
+          <Route
+            path="/user-options"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <UserOptions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin-panel"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin-ausencias"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminAusenciasUI />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user-validation"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <UserValidationUI />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Redirigir a login si la ruta no existe */}
           <Route path="*" element={<Navigate to="/" />} />

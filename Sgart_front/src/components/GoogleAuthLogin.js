@@ -1,6 +1,7 @@
+import { jwtDecode } from 'jwt-decode';
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import config from '../config';
 
 
 const GoogleAuthLogin = () => {
@@ -16,6 +17,9 @@ const GoogleAuthLogin = () => {
     const handleInputChange = (event) => {
         setInputCode(event.target.value); // Actualiza el código ingresado
     };
+    const getToken = () => {
+        return sessionStorage.getItem('authToken');
+    };
 
     const handleButtonClick = () => {
         const request = {
@@ -23,9 +27,10 @@ const GoogleAuthLogin = () => {
             code: inputCode,
         }
 
-        fetch('http://localhost:3000/auth/validate-totp-db', {
+        fetch(`${config.BACKEND_URL}/auth/validate-totp-db`, {
             method: 'POST',
             headers: {
+                'Authorization': `Bearer ${getToken()}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(request),
@@ -37,23 +42,26 @@ const GoogleAuthLogin = () => {
             return response.json();
         })
         .then((data) => {
-            console.log(dataLogin);
             alert('Doble factor autenticado con éxito');
             setError(''); // Limpiar cualquier mensaje de error
-            switch (dataLogin.type) { // Asumiendo que el tipo está en 'type'
-                case 'admin':
-                    navigate('/admin-working-hours'); // Navegar a la página del administrador
-                    break;
-                case 'user':
-                    navigate('/user-calendar'); // Navegar a la página del usuario
-                    break;
+            const token = getToken(); // Obtener el token de sesión
+            const decodedToken = jwtDecode(token); // Decodificar el token
+            const userRole = decodedToken.role;
+            console.log('userRole:', userRole);
+            console.log('Token:', token);
+            if (userRole === 'admin') {
+                navigate('/admin-calendar-view'); // Navegar a la página del administrador
+            } else if (userRole === 'employee') {
+                navigate('/user-calendar'); // Navegar a la página del usuario
+            } else {
+                setError('Rol de usuario no reconocido');
             }
         })
         .catch((error) => {
             console.error('Hubo un error:', error);
             setError('Error al validar el código de doble factor');
         });
-    }
+};
 
     return (
         <div className="login-container">
