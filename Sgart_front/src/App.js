@@ -14,8 +14,8 @@ import RecuperarPwdForm from './components/RecuperarPwdForm';
 import RegisterForm from './components/RegisterForm';
 import UserCalendarUI from './components/UserCalendarUI';
 import UserEdit from './components/UserEdit';
-
-console.log('ProtectedRoute:', ProtectedRoute);
+import UserOptions from './components/UserOptions'; // Importa el componente UserOptions
+import UserValidationUI from './components/UserValidationUI'; // Importa el componente UserValidationUI
 
 const App = () => {
   return (
@@ -80,6 +80,40 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={['employee']}>
                 <UserEdit />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Nuevas rutas */}
+          <Route
+            path="/user-options"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <UserOptions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin-panel"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin-ausencias"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminAusenciasUI />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user-validation"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <UserValidationUI />
               </ProtectedRoute>
             }
           />

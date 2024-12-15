@@ -104,11 +104,8 @@ const LoginForm = () => {
             .then((data) => {
                 if (data.success) {
                     // Guarda el token en sessionStorage
-                    console.log('Token:', data.token); 
                     sessionStorage.setItem('authToken', data.token);
                     sessionStorage.setItem('userEmail', email);
-                    const ptoken= sessionStorage.getItem('authToken');
-                    console.log('Token de session:', ptoken);
 
     
                     // Redirige a la pantalla de doble factor
