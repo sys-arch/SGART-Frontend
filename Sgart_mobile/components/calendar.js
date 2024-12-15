@@ -4,6 +4,11 @@ import { Picker } from '@react-native-picker/picker';
 import { Agenda } from 'react-native-calendars';
 import { useNavigation } from '@react-navigation/native';
 
+/*Notificaciones*/
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, Modal, Image, StyleSheet } from 'react-native';
+import io from 'socket.io-client'; // Importación de socket.io
+
 const Calendar = () => {
     // Estados esenciales para reuniones
     const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +60,13 @@ const Calendar = () => {
     const [isOrganizedOpen, setIsOrganizedOpen] = useState(false);
 
     const [activeContent, setActiveContent] = useState('calendar');
+
+    // Estado para el control de notificaciones
+    const [isNotificationsVisible, setIsNotificationsVisible] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+
+    // Estado para manejar la conexión WebSocket
+    const [socket, setSocket] = useState(null);
 
     const navigation = useNavigation();
 
@@ -918,6 +930,45 @@ const Calendar = () => {
         },
     ]);
 
+    // Función para cargar notificaciones iniciales
+    const loadNotifications = useCallback(async () => {
+        try {
+            console.log("Cargando notificaciones iniciales...");
+            const response = await fetch('http://localhost:3000/notifications');
+            if (!response.ok) throw new Error('Error al cargar notificaciones');
+            const data = await response.json();
+            setNotifications(data);
+        } catch (error) {
+            console.error('Error al cargar notificaciones:', error);
+        }
+    }, []);
+
+    // Configuración de WebSocket en useEffect
+    useEffect(() => {
+        const socketInstance = io('http://localhost:3000'); // Dirección del servidor WebSocket
+        setSocket(socketInstance);
+
+        // Evento para recibir nuevas notificaciones
+        socketInstance.on('new-notification', (newNotification) => {
+            console.log('Nueva notificación recibida:', newNotification);
+            setNotifications((prevNotifications) => [newNotification, ...prevNotifications]);
+        });
+
+        // Cargar notificaciones iniciales
+        loadNotifications();
+
+        // Limpiar la conexión al desmontar el componente
+        return () => {
+            socketInstance.disconnect();
+        };
+    }, [loadNotifications]);
+
+    // Función para abrir/cerrar el modal de notificaciones
+    const toggleNotifications = () => {
+        setIsNotificationsVisible((prev) => !prev);
+    };
+
+
 
     /* Efectos
     useEffect(() => {
@@ -1668,8 +1719,39 @@ const Calendar = () => {
                 </TouchableOpacity>
             </View>
 
+            {/*Notificaciones*/}
+            {/* Botón de notificaciones */}
+            <TouchableOpacity style={styles.notificationButton} onPress={toggleNotifications}>
+                <Image source={require('../media/notification_icon.png')} style={styles.notificationIcon} />
+            </TouchableOpacity>
 
+            {/* Modal de notificaciones */}
+            <Modal
+                visible={isNotificationsVisible}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={toggleNotifications}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.notificationModal}>
+                        <Text style={styles.notificationTitle}>Notificaciones</Text>
+                        {notifications.length > 0 ? (
+                            notifications.map((notification, index) => (
+                                <View key={index} style={styles.notificationItem}>
+                                    <Text style={styles.notificationText}>{notification.message}</Text>
+                                </View>
+                            ))
+                        ) : (
+                            <Text style={styles.noNotificationsText}>No hay notificaciones disponibles</Text>
+                        )}
+                        <TouchableOpacity style={styles.closeButton} onPress={toggleNotifications}>
+                            <Text style={styles.closeButtonText}>Cerrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </>
+
     );
 };
 
@@ -2189,4 +2271,64 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     
+    //NOTIFICACIONES
+    notificationButton: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        backgroundColor: '#f5f5f5',
+        padding: 10,
+        borderRadius: 25,
+        elevation: 5,
+    },
+    notificationIcon: {
+        width: 24,
+        height: 24,
+        tintColor: '#1e3a8a',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    notificationModal: {
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+        elevation: 10,
+    },
+    notificationTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        textAlign: 'center',
+    },
+    notificationItem: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    notificationText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    noNotificationsText: {
+        fontSize: 16,
+        color: '#888',
+        textAlign: 'center',
+        marginVertical: 20,
+    },
+    closeButton: {
+        marginTop: 20,
+        backgroundColor: '#dc3545',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+    },
+    closeButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
 });
