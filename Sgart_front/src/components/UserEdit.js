@@ -12,7 +12,6 @@ const UserEdit = () => {
     const [department, setDepartment] = useState('');
     const [hiringDate, setHiringDate] = useState('');
     const [center, setCenter] = useState('');
-    console.log(sessionStorage.getItem('authToken'));
 
     useEffect(() => {
         loadUser();
