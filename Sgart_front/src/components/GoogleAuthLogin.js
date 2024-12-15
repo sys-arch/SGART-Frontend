@@ -42,14 +42,15 @@ const GoogleAuthLogin = () => {
             return response.json();
         })
         .then((data) => {
-            console.log(dataLogin);
             alert('Doble factor autenticado con éxito');
             setError(''); // Limpiar cualquier mensaje de error
             const token = getToken(); // Obtener el token de sesión
             const decodedToken = jwtDecode(token); // Decodificar el token
             const userRole = decodedToken.role;
+            console.log('userRole:', userRole);
+            console.log('Token:', token);
             if (userRole === 'admin') {
-                navigate('/admin-calendar'); // Navegar a la página del administrador
+                navigate('/admin-calendar-view'); // Navegar a la página del administrador
             } else if (userRole === 'employee') {
                 navigate('/user-calendar'); // Navegar a la página del usuario
             } else {
