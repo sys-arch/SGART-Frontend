@@ -4,16 +4,12 @@ import { Picker } from '@react-native-picker/picker';
 import { Calendar } from 'react-native-calendars';
 import { useNavigation } from '@react-navigation/native';
 
-<<<<<<< HEAD
 /*Notificaciones*/
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, Image, StyleSheet } from 'react-native';
 import io from 'socket.io-client'; // Importación de socket.io
 
 const Calendar = () => {
-=======
-const CalendarComponent = () => {
->>>>>>> dev
     // Estados esenciales para reuniones
     const [isLoading, setIsLoading] = useState(false);
     const [regularEvents, setRegularEvents] = useState([]);
@@ -896,7 +892,6 @@ const CalendarComponent = () => {
     };
 
 
-<<<<<<< HEAD
 //items INTRODUCIR POR ANTONIO BORRAR LUEGO???????
     // Transforma los eventos del formato de FullCalendar al formato de Agenda
     const transformEventsForAgenda = (eventSources) => {
@@ -977,8 +972,6 @@ const CalendarComponent = () => {
 
 
 
-=======
->>>>>>> dev
     /* Efectos
     useEffect(() => {
         loadMeetings();
@@ -2359,7 +2352,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: 'white',
     },
-<<<<<<< HEAD
     
     //NOTIFICACIONES
     notificationButton: {
@@ -2420,7 +2412,6 @@ const styles = StyleSheet.create({
     closeButtonText: {
         color: 'white',
         fontWeight: 'bold',
-=======
 
     calendarContainer: {
         flex: 0, // Ajusta el tamaño según el contenido
@@ -2451,6 +2442,6 @@ const styles = StyleSheet.create({
         //top: 55,
         fontWeight: 'bold',
         left: 50,
->>>>>>> dev
     },
+}
 });
