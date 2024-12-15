@@ -10,6 +10,10 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-picker/picker": "^2.10.2",
     "@react-navigation/native": "^7.0.13",
@@ -23,7 +27,8 @@
     "react-native-modal-datetime-picker": "^18.0.0",
     "react-native-reanimated": "^3.16.3",
     "react-native-safe-area-context": "^5.0.0",
-    "react-native-screens": "^4.3.0"
+    "react-native-screens": "^4.3.0",
+    "react-native-web": "^0.19.13"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
