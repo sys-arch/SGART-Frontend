@@ -609,7 +609,12 @@ const UserCalendarUI = () => {
                     },
                     body: JSON.stringify(userIds),
                 });
-                console.log('token:', sessionStorage.getItem('authToken'));
+                console.log("Datos enviados como JSON:", JSON.stringify(newEvent, null, 2));
+                console.log("Usuarios invitados (IDs):", userIds);
+console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invitations/${meetingId}/invite`);
+
+
+                
     
 
                 if (!inviteResponse.ok) {

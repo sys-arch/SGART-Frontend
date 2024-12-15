@@ -1,15 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Modal, Switch, SafeAreaView, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { Agenda } from 'react-native-calendars';
+import { Calendar } from 'react-native-calendars';
 import { useNavigation } from '@react-navigation/native';
 
+<<<<<<< HEAD
 /*Notificaciones*/
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, Image, StyleSheet } from 'react-native';
 import io from 'socket.io-client'; // Importación de socket.io
 
 const Calendar = () => {
+=======
+const CalendarComponent = () => {
+>>>>>>> dev
     // Estados esenciales para reuniones
     const [isLoading, setIsLoading] = useState(false);
     const [regularEvents, setRegularEvents] = useState([]);
@@ -469,6 +473,8 @@ const Calendar = () => {
         return false;
     };
 
+    
+
     // ! COMPRUEBA SI HAY ASISTENTES AL CREAR LA REUNIÓN
     const handleSaveEvent = async () => {
         setErrorEvent('');
@@ -890,6 +896,7 @@ const Calendar = () => {
     };
 
 
+<<<<<<< HEAD
 //items INTRODUCIR POR ANTONIO BORRAR LUEGO???????
     // Transforma los eventos del formato de FullCalendar al formato de Agenda
     const transformEventsForAgenda = (eventSources) => {
@@ -970,6 +977,8 @@ const Calendar = () => {
 
 
 
+=======
+>>>>>>> dev
     /* Efectos
     useEffect(() => {
         loadMeetings();
@@ -1006,8 +1015,11 @@ const Calendar = () => {
         ];
         
     
+       
         setRegularEvents(mockEvents);
         setReunionesAceptadas(mockEvents);
+        //setReunionesPendientes(mockEvents);
+        //setPendingMeetingsEvents(mockEvents);
     }, []);
 
     // Modificar el useEffect para el filtrado de usuarios
@@ -1023,6 +1035,47 @@ const Calendar = () => {
         setFilteredParticipants(filtered);
     }, [searchTerm, availableUsers]);
 
+
+    // Transformar eventos para `markedDates`
+    const transformEvents = (events, color) => {
+        const transformedEvents = {};
+        events.forEach((event) => {
+        const dateKey = event.start.split('T')[0]; // Extraer fecha en formato YYYY-MM-DD
+        if (!transformedEvents[dateKey]) {
+            transformedEvents[dateKey] = { marked: true, dots: [] };
+        }
+        transformedEvents[dateKey].dots.push({
+            color, // Color personalizado por tipo de evento
+            key: event.id, // Identificador único
+        });
+        });
+        return transformedEvents;
+    };
+  
+    // Generar markedDates combinando todos los eventos
+    const markedDates = {
+        ...transformEvents(regularEvents, '#00aced'), // Azul para regularEvents
+        ...transformEvents(pendingMeetingsEvents, '#ffc107'), // Amarillo para pendingMeetingsEvents
+        ...transformEvents(organizedEvents, '#28a745'), // Verde para organizedEvents
+    };
+    /*
+
+  const handleDayPress = (day) => {
+        alert(`Has seleccionado el día: ${day.dateString}\nEventos: ${
+            markedDates[day.dateString]?.dots.map(dot => dot.key).join(', ') || 'Ninguno'
+        }`);
+    }; */
+    const handleDayPress = (day) => {
+        // Obtener los eventos para el día seleccionado
+       const eventos = markedDates[day.dateString]?.dots.map(dot => dot.key).join(', ') || 'Ninguno';
+    
+        // Crear un mensaje amigable
+        const mensaje = `Has seleccionado el día: ${day.dateString}\n Eventos: ${eventos}
+        `;
+        alert(mensaje);
+    }
+
+
     return (
         <>
             {/* <NavBar isAdmin={false} /> */}
@@ -1033,22 +1086,49 @@ const Calendar = () => {
                     style={styles.scrollContainer} 
                     contentContainerStyle={styles.scrollContent}
                 >
+
+                    
                     <View style={[styles['AdminCalendarapp-container'], styles['main-content']]}>
                     {activeContent === 'calendar' &&(
+
+                        
                         // Calendario en la parte superior
                         <SafeAreaView style={styles.calendarContainer}>
-                            <Agenda
-                                items={items}
-                                renderItem={(item) => (
-                                    <TouchableOpacity key={item.id} style={styles.item}>
-                                        <Text style={styles.itemText}>{item.name}</Text>
-                                        <Text style={styles.itemSubText}>{item.data}</Text>
-                                    </TouchableOpacity>
-                                )}
-                                style={{ flex: 1 }} // Asegura que ocupe todo el espacio disponible
+                            
+                        <Text style={styles.subtitleCalend}>Selecciona una fecha para ver tus eventos</Text>
+                            <Calendar style={styles.calendar}
+                            // Días marcados con eventos
+                                markingType={'multi-dot'}
+                                markedDates={markedDates}
+
+                                // Evento cuando se selecciona un día
+                                onDayPress={handleDayPress}
+
+                                // Opciones de estilo
+                                theme={{
+                                    selectedDayBackgroundColor: '#00aced',
+                                    todayTextColor: '#00aced',
+                                    dayTextColor: '#2d4150',
+                                    arrowColor: '#00aced',
+                                    monthTextColor: '#00aced',
+                                    textDayFontWeight: '300',
+                                    textMonthFontWeight: 'bold',
+                                    textDayHeaderFontWeight: '300',
+                                }}
                             />
                         </SafeAreaView>
                     )}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1267,6 +1347,16 @@ const Calendar = () => {
                                 </View>
                             </View>
 
+
+
+
+
+
+
+
+
+
+
                             {/* <div className="AdminCalendar-calendar-container">
                                 <h2>Calendario de Trabajo</h2>
                                 <div className="calendar-wrapper">
@@ -1305,7 +1395,6 @@ const Calendar = () => {
                                     />
                                 </div>
                             </div> */}
-
                             {/* Pop-up de detalles del evento */}
                             {isEventDetailPopupOpen && selectedEvent && (
                             <Modal
@@ -1755,7 +1844,7 @@ const Calendar = () => {
     );
 };
 
-export default Calendar;
+export default CalendarComponent;
 
 const styles = StyleSheet.create({
     'meeting-list-pending': {
@@ -2270,6 +2359,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: 'white',
     },
+<<<<<<< HEAD
     
     //NOTIFICACIONES
     notificationButton: {
@@ -2330,5 +2420,37 @@ const styles = StyleSheet.create({
     closeButtonText: {
         color: 'white',
         fontWeight: 'bold',
+=======
+
+    calendarContainer: {
+        flex: 0, // Ajusta el tamaño según el contenido
+        backgroundColor: 'white', // Fondo blanco para claridad
+        width: '120%', // Ajusta el ancho para que no ocupe todo el espacio
+        marginTop: -520, // Ajusta el margen superior para separarlo del encabezado
+        padding: 10, // Añade espaciado interno
+        alignSelf: 'center', // Centra el contenedor horizontalmente
+        borderRadius: 15, // Bordes redondeados para un diseño más moderno
+        shadowColor: '#000', // Sombra para darle profundidad
+        shadowOffset: { width: 0, height: 2 }, // Desplazamiento de la sombra
+        shadowOpacity: 0.2, // Opacidad de la sombra
+        shadowRadius: 5, // Difuminado de la sombra
+        elevation: 3, // Elevación para dispositivos Android
+    },
+    calendar: {
+        borderWidth: 1, // Borde del calendario
+        borderColor: '#ddd', // Color del borde
+        borderRadius: 10, // Bordes redondeados
+        padding: 10, // Espaciado interno
+        fontSize: 16, // Tamaño del texto
+        height: 350, // Ajusta la altura del calendario
+    },
+    subtitleCalend: {
+        //fontSize: 16,
+        color: '#555',
+        //marginBottom: 10,
+        //top: 55,
+        fontWeight: 'bold',
+        left: 50,
+>>>>>>> dev
     },
 });

@@ -3,27 +3,32 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
+  console.log('ProtectedRoute se está ejecutando');
+
   const token = sessionStorage.getItem('authToken');
+  console.log('token:', token);
 
   // Si no hay token, redirigir al login
   if (!token) {
+    console.error('No hay token. Redirigiendo al login.');
     return <Navigate to="/" />;
   }
-
   try {
-    // Decodificar el token y obtener el rol
     const decodedToken = jwtDecode(token);
+    console.log('Decoded Token:', decodedToken);
+  
     const userRole = decodedToken.role;
-
-    // Verificar si el rol del usuario está en los roles permitidos
+    console.log('User Role:', userRole);
+  
     if (allowedRoles.includes(userRole)) {
       return children; // Renderiza la ruta protegida
     } else {
-      return <Navigate to="/" />; // Redirigir si no tiene acceso
+      console.error('Rol no permitido:', userRole);
+      return <Navigate to="/" />;
     }
   } catch (error) {
     console.error('Error decodificando el token:', error);
-    return <Navigate to="/" />; // Redirigir si el token es inválido
+    return <Navigate to="/" />;
   }
 };
 
