@@ -100,7 +100,14 @@ const GoogleAuth = () => {
                 throw new Error('Error al registrar el usuario');
             }
 
-            const result = await response.json();
+            let result;
+            const contentType = response.headers.get('Content-Type');
+            if (contentType?.includes('application/json')) {
+                result = await response.json();
+            } else {
+                result = await response.text(); // Maneja texto plano
+            }
+
             console.log('Usuario registrado:', result);
             setMessage("Usuario registrado con éxito.");
         } catch (error) {
