@@ -73,6 +73,9 @@ const UserCalendarUI = () => {
                 },
                 body: JSON.stringify({ meetingId }),
             });
+            console.log("Estado de respuesta:", response.status);
+            console.log("Texto de respuesta:", await response.text());
+
 
             if (!response.ok) {
                 throw new Error(`Error al cargar los invitados: ${response.statusText}`);
@@ -924,14 +927,14 @@ console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invita
     };
 
 
-    /* Efectos
+    
     useEffect(() => {
         loadMeetings();
         loadOrganizedMeetings();
         loadWorkSchedules();
-    }, [loadMeetings, loadOrganizedMeetings]);*/
+    }, [loadMeetings, loadOrganizedMeetings]);
     //Quietar esto
-    useEffect(() => {
+   /* useEffect(() => {
         const mockEvents = [
             {
                 id: "mock-event-1",
@@ -962,7 +965,7 @@ console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invita
     
         setRegularEvents(mockEvents);
         setReunionesAceptadas(mockEvents);
-    }, []);
+    }, []); */
 
     // Modificar el useEffect para el filtrado de usuarios
     useEffect(() => {
