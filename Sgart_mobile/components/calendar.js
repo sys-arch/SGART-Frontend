@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Modal, Swit
 import { Picker } from '@react-native-picker/picker';
 import { Calendar } from 'react-native-calendars';
 import { useNavigation } from '@react-navigation/native';
+import config from '../config';
 
 /*Notificaciones*/
 import NotificacionesComponent from "./Notificaciones";
@@ -69,10 +70,11 @@ const CalendarComponent = () => {
     const loadInvitees = useCallback(async (meetingId) => {
         try {
             console.log(`Cargando invitados para la reunión ID: ${meetingId}`);
-            const response = await fetch(`http://localhost:3000/administrador/calendarios/invitados`, {
+            const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/invitados`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
                 },
                 body: JSON.stringify({ meetingId }),
             });
@@ -94,8 +96,11 @@ const CalendarComponent = () => {
     // ! OBTENER USER ID ACTUAL	
     const getUserId = async () => {
         try {
-            const response = await fetch('http://localhost:3000/users/current/userId', {
-                credentials: 'include'
+            const response = await fetch(`${config.BACKEND_URL}/users/current/userId`, {
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                },
             });
             if (!response.ok) {
                 throw new Error('No se pudo obtener el ID del usuario');
@@ -123,10 +128,11 @@ const CalendarComponent = () => {
                 throw new Error('No se pudo obtener el ID del usuario');
             }
 
-            const response = await fetch('http://localhost:3000/administrador/calendarios/loadMeetings');
-            if (!response.ok) {
-                throw new Error(`Error al cargar los meetings: ${response.statusText}`);
-            }
+            const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/loadMeetings`, {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                },
+            });
 
             const backendMeetings = await response.json();
             console.log("Total de reuniones recibidas:", backendMeetings.length);
@@ -208,8 +214,11 @@ const CalendarComponent = () => {
     const loadOrganizedMeetings = useCallback(async () => {
         try {
             console.log("Iniciando carga de reuniones organizadas...");
-            const response = await fetch('http://localhost:3000/usuarios/calendarios/organized-meetings', {
-                credentials: 'include'
+            const response = await fetch(`${config.BACKEND_URL}/usuarios/calendarios/organized-meetings`, {
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                },
             });
 
             if (!response.ok) {
@@ -263,8 +272,11 @@ const CalendarComponent = () => {
     // ! OBTENER ASISTENCIAS
     const checkAttendanceStatus = async (meetingId) => {
         try {
-            const response = await fetch(`http://localhost:3000/invitations/${meetingId}/attendance`, {
-                credentials: 'include'
+            const response = await fetch(`${config.BACKEND_URL}/invitations/${meetingId}/attendance`, {
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                },
             });
 
             if (!response.ok) {
@@ -313,7 +325,7 @@ const CalendarComponent = () => {
             console.log('Iniciando actualización de estado para evento:', selectedEvent);
             console.log('Acción seleccionada:', confirmationAction);
 
-            const url = `http://localhost:3000/invitations/${selectedEvent.id}/status`;
+            const url = `${config.BACKEND_URL}/invitations/${selectedEvent.id}/status`;
             console.log('URL de la petición:', url);
 
             const requestBody = {
@@ -416,7 +428,11 @@ const CalendarComponent = () => {
 	// * NO SE ESTÁ USANDO
     const loadWorkSchedules = async () => {
         try {
-            const response = await fetch('http://localhost:3000/administrador/horarios');
+            const response = await fetch(`${config.BACKEND_URL}/administrador/horarios`, {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                },
+            });
             if (!response.ok) {
                 throw new Error('Error al cargar los horarios laborales');
             }
@@ -552,11 +568,13 @@ const CalendarComponent = () => {
                         return;
                     }
                 }
-                response = await fetch(`http://localhost:3000/api/meetings/${eventIdToEdit}/modify`, {
+                response = await fetch(`${config.BACKEND_URL}/api/meetings/${eventIdToEdit}/modify`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify(newEvent)
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify(newEvent),
                 });
                 meetingId = eventIdToEdit;
 
@@ -567,11 +585,14 @@ const CalendarComponent = () => {
 
                 alert("Se ha modificado el evento de manera exitosa.");
             } else { // ! AQUI SE CREA LA REUNIÓN
-                response = await fetch('http://localhost:3000/api/meetings/create', {
+                response = await fetch(`${config.BACKEND_URL}/api/meetings/create`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    },
                     body: JSON.stringify(newEvent),
+                    
                 });
                 const meetingData = await response.json();
                 meetingId = meetingData.meetingId; // Assuming your backend returns the created meeting ID
@@ -580,10 +601,12 @@ const CalendarComponent = () => {
 
                 // ! ENVIAR INVITACIONES
                 const userIds = selectedUsers.map(user => user.id);
-                const inviteResponse = await fetch(`http://localhost:3000/invitations/${meetingId}/invite`, {
+                const inviteResponse = await fetch(`${config.BACKEND_URL}/invitations/${meetingId}/invite`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    },
                     body: JSON.stringify(userIds),
                 });
 
@@ -642,10 +665,11 @@ const CalendarComponent = () => {
             const currentUserId = await getUserId();
             console.log('ID del usuario actual:', currentUserId);
             
-            const response = await fetch('http://localhost:3000/api/meetings/available-users');
-            if (!response.ok) {
-                throw new Error('Error al cargar los usuarios');
-            }
+            const response = await fetch(`${config.BACKEND_URL}/api/meetings/available-users`, {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                },
+            });
             
             const backendUsers = await response.json();
             console.log('Usuarios recibidos del backend:', backendUsers);
@@ -677,7 +701,11 @@ const CalendarComponent = () => {
 	// Función para cargar localizaciones
 	// ? VAYA MIERDA DE MÉTODO
     const loadLocations = (async() => {
-        const response = await fetch('http://localhost:3000/api/meetings/locations');
+        const response = await fetch(`${config.BACKEND_URL}/api/meetings/locations`, {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+            },
+        });
         if (!response.ok) {
             console.log('Error al cargar las localizaciones');
             return;
@@ -692,7 +720,11 @@ const CalendarComponent = () => {
 
 	// ! CARGAR AUSENCIAS
     const loadAbsences = (async () => {
-        const response = await fetch('http://localhost:3000/administrador/ausencias/loadAbsences');
+        const response = await fetch(`${config.BACKEND_URL}/administrador/ausencias/loadAbsences`, {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+            },
+        });
         if (!response.ok) {
             console.log('Error al cargar las ausencias');
             return;
@@ -795,9 +827,11 @@ const CalendarComponent = () => {
     // Add this new function near other handler functions
     const handleAttendanceUpdate = async (meetingId) => {
         try {
-            const response = await fetch(`http://localhost:3000/invitations/${meetingId}/attendance`, {
+            const response = await fetch(`${config.BACKEND_URL}/invitations/${meetingId}/attendance`, {
                 method: 'PUT',
-                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                },
             });
 
             if (!response.ok) {
@@ -864,9 +898,11 @@ const CalendarComponent = () => {
             }
     
             // Hacer una petición DELETE al backend para eliminar la reunión
-            const response = await fetch(`http://localhost:3000/api/meetings/${reunion.id}/cancel`, {
+            const response = await fetch(`${config.BACKEND_URL}/api/meetings/${reunion.id}/cancel`, {
                 method: 'DELETE',
-                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                },
             });
     
             if (!response.ok) {
