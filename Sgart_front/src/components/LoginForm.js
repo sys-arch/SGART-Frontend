@@ -145,7 +145,7 @@ const LoginForm = () => {
 
     return (
         <>
-         {isLoading ? (
+        {isLoading ? (
                 <LoadingSpinner />
             ) : (
             <div className="login-container">
