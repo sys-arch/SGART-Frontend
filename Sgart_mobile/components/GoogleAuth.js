@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-//import { useLocation, useNavigate } from 'react-router-dom';
-//import '../App.css';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import config from '../config';
 
 const GoogleAuth = () => {
     const location = useLocation();
@@ -14,7 +15,15 @@ const GoogleAuth = () => {
     useEffect(() => {
         const fetchQRCode = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/auth/generate-qr?email=${usuario.email}`);
+                const response = await fetch(
+                    `${config.BACKEND_URL}/auth/generate-qr?email=${usuario.email}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${getToken()}`,
+                        },
+                    }
+                );
+
                 if (!response.ok) {
                     throw new Error('Error al generar el código QR');
                 }
@@ -38,10 +47,11 @@ const GoogleAuth = () => {
         event.preventDefault();
 
         try {
-            const response = await fetch('http://localhost:3000/auth/validate-totp', {
+            const response = await fetch(`${config.BACKEND_URL}/auth/validate-totp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`,
                 },
                 body: JSON.stringify({ mail: usuario.email, code: inputCode }),
             });
@@ -58,10 +68,8 @@ const GoogleAuth = () => {
                     setMessage("Autenticación exitosa. Redirigiendo...");
                     navigate('/user-calendar');
                 }else{
-                    // Registro del usuario después de la validación exitosa
-                    await registrarAdmin(usuario.email); // Llama a la función para registrar al usuario
-                    setMessage("Autenticación exitosa. Redirigiendo...");
-                    navigate('/admin-panel')
+                    // Si es admin, no puede usar la aplicación.
+                    setMessage("Usuario no válido.");
                 }
             } else {
                 setMessage("Código inválido. Por favor, intenta nuevamente.");
@@ -74,19 +82,18 @@ const GoogleAuth = () => {
 
     const registrarUsuario = async (email) => {
         try {
-            const secretKeySend = secretKey;
             const usuarioActualizado = {
-                ...usuario, // Copia todos los campos del usuario original
-                twoFactorAuthCode: secretKeySend // Actualiza el campo twoFactorAuthCode
+                ...usuario,
+                twoFactorAuthCode: secretKey
             };
 
-            console.log(usuarioActualizado);
-            const response = await fetch('http://localhost:3000/users/registro', {
+            const response = await fetch(`${config.BACKEND_URL}/users/registro`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`,
                 },
-                body: JSON.stringify(usuarioActualizado), // Envía el correo y la secret key
+                body: JSON.stringify(usuarioActualizado),
             });
 
             if (!response.ok) {
@@ -102,68 +109,131 @@ const GoogleAuth = () => {
         }
     };
 
-    const registrarAdmin = async (email) =>{
-        try {
-            const secretKeySend = secretKey;
-            const adminActualizado = {
-                ...usuario, // Copia todos los campos del usuario original
-                twoFactorAuthCode: secretKeySend // Actualiza el campo twoFactorAuthCode
-            };
-
-            const response = await fetch('http://localhost:3000/admin/crearAdmin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(adminActualizado), // Envía el correo y la secret key
-            });
-
-            if (!response.ok) {
-                throw new Error('Error al registrar el admin');
-            }
-
-            const result = await response.json();
-            console.log('Admin registrado:', result);
-            setMessage("Admin registrado con éxito.");
-        } catch (error) {
-            setMessage("Error al registrar al admin.");
-            console.error("Error en el registro:", error);
-        }
-    }
-
     return (
-        <div className="login-container">
-            <div className="login-box">
-                <h2>Bienvenido</h2>
-                <p>Por favor escanea el código QR con tu dispositivo móvil para configurar Google Authenticator:</p>
-                <div className="qr-container">
+        <View style={styles['login-container']}>
+            <View style={styles['login-box']}>
+                <Text style={styles['login-title']}>Bienvenido</Text>
+                <Text style={styles['login-text']}>
+                    Por favor escanea el código QR con tu dispositivo móvil para configurar Google Authenticator:
+                </Text>
+                <View style={styles['qr-container']}>
                     {qrCode ? (
-                        <img src={`data:image/png;base64,${qrCode}`} alt="Código QR" />
+                        <Image
+                            source={{ uri: `data:image/png;base64,${qrCode}` }}
+                            style={styles['qr-image']}
+                        />
                     ) : (
-                        <div className='qr-placeholder'>
-                            <p>Código QR no disponible</p>
-                        </div>
+                        <View style={styles['qr-placeholder']}>
+                            <Text style={styles['qr-placeholder-text']}>Código QR no disponible</Text>
+                        </View>
                     )}
-                </div>
-                <br />
-                <h3>Introduce tu código de Google Authenticator</h3>
-                <input
-                    type="text"
-                    id="codeInput"
-                    value={inputCode}
-                    onChange={handleInputChange}
-                    className="code-input"
+                </View>
+                <Text style={styles['login-subtitle']}>Introduce tu código de Google Authenticator</Text>
+                <TextInput
+                    style={styles['code-input']}
                     placeholder="Introduce el código"
+                    value={inputCode}
+                    onChangeText={handleInputChange}
+                    keyboardType="numeric"
                 />
-                <br />
-                <br />
-                <div>
-                    <button onClick={handleSubmit} className='login-btn'>Verificar</button>
-                </div>
-                {message && <p>{message}</p>}
-            </div>
-        </div>
+                <TouchableOpacity style={styles['login-btn']} onPress={handleSubmit}>
+                    <Text style={styles['login-btn-text']}>Verificar</Text>
+                </TouchableOpacity>
+                {message && <Text style={styles['login-message']}>{message}</Text>}
+            </View>
+        </View>
     );
 };
 
 export default GoogleAuth;
+
+const styles = StyleSheet.create({
+    'login-container': {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f9f9f9',
+        paddingHorizontal: 20,
+    },
+    'login-box': {
+        width: '100%',
+        maxWidth: 400,
+        padding: 20,
+        backgroundColor: 'white',
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    'login-title': {
+        fontSize: 22,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        color: '#333',
+        textAlign: 'center',
+    },
+    'login-text': {
+        fontSize: 16,
+        marginBottom: 15,
+        color: '#555',
+        textAlign: 'center',
+    },
+    'qr-container': {
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    'qr-image': {
+        width: 200,
+        height: 200,
+        resizeMode: 'contain',
+    },
+    'qr-placeholder': {
+        width: 200,
+        height: 200,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#ececec',
+        borderRadius: 8,
+    },
+    'qr-placeholder-text': {
+        color: '#888',
+        textAlign: 'center',
+    },
+    'login-subtitle': {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        color: '#333',
+        textAlign: 'center',
+    },
+    'code-input': {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        padding: 10,
+        fontSize: 16,
+        marginBottom: 15,
+        textAlign: 'center',
+    },
+    'login-btn': {
+        backgroundColor: '#007bff',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    'login-btn-text': {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    'login-message': {
+        fontSize: 14,
+        color: '#ff3333',
+        textAlign: 'center',
+        marginTop: 10,
+    },
+});

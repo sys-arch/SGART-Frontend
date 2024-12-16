@@ -75,7 +75,7 @@ const LoginForm = ({ navigation }) => {
       Alert.alert(
         'Login exitoso',
         'Pasando a la autentificación con doble factor...',
-       // [{ text: 'OK', onPress: () => navigation.navigate('GoogleAuth', { data, email }) }]
+        [{ text: 'OK', onPress: () => navigation.navigate('GoogleAuth', { data, email }) }]
       );
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -83,14 +83,6 @@ const LoginForm = ({ navigation }) => {
       setIsLoading(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <View style={styles.spinnerContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
