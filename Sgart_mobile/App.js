@@ -5,7 +5,7 @@ import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
 import CalendarComponent from './components/calendar';
 import UserEdit from './components/UserEdit';
-import GoogleAuthLogin from './components/GoogleAuthLogin';
+import GoogleAuth from './components/GoogleAuth';
 
 const Stack = createStackNavigator();
 
@@ -24,8 +24,8 @@ export default function App() {
           options={{ title: 'Registrarse' }}
         />
         <Stack.Screen
-          name="GoogleAuthLogin"
-          component={GoogleAuthLogin}
+          name="GoogleAuth"
+          component={GoogleAuth}
           options={{ headerShown: false }}
         />
         <Stack.Screen 

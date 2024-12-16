@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
     Image,
     ScrollView,
     StyleSheet,
@@ -14,7 +12,7 @@ import config from '../config';
 
 const LoginForm = ({ navigation }) => {
   const [email, setEmail] = useState('');
-  const [contrasena, setPassword] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorEmail, setErrorEmail] = useState('');
@@ -41,7 +39,7 @@ const LoginForm = ({ navigation }) => {
       hasError = true;
     }
 
-    if (contrasena === '') {
+    if (password === '') {
       setErrorPassword('Campo vacío');
       hasError = true;
     }
@@ -52,7 +50,7 @@ const LoginForm = ({ navigation }) => {
 
     const user = { 
       email: email,
-      password: contrasena,
+      password: password,
     };
 
     fetch(`${config.BACKEND_URL}/users/login`, {
@@ -84,9 +82,8 @@ const LoginForm = ({ navigation }) => {
               sessionStorage.setItem('authToken', data.token);
               sessionStorage.setItem('userEmail', email);
 
-
               // Redirige a la pantalla de doble factor
-              navigate('GoogleAuthLogin', { state: { data: data, email: email } });
+              navigate('GoogleAuth', { state: { data: data, email: email } });
           } else {
               throw new Error(data.message || 'Error al iniciar sesión.');
           }
@@ -242,12 +239,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loginOptions: {
+    width: '90%',
     marginTop: 20,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    paddingHorizontal: 10,
+    gap: 15,
   },
   optionText: {
     color: '#007bff',
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   footer: {
     flexDirection: 'row',

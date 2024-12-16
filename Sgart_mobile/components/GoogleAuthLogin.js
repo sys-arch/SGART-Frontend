@@ -1,7 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native';
 import config from '../config';
 
