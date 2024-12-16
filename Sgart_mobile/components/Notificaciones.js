@@ -9,7 +9,7 @@ const NotificacionesComponent = () => {
     const loadNotificaciones = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch("http://localhost:3000/api/notificaciones?usuarioId=1"); // Ajusta usuarioId dinámico
+            const response = await fetch("http://localhost:3000/notificaciones?usuarioId=1"); // Ajusta usuarioId dinámico
             const data = await response.json();
             setNotificaciones(data);
         } catch (error) {
@@ -22,7 +22,7 @@ const NotificacionesComponent = () => {
     // Eliminar una notificación
     const deleteNotificacion = async (id) => {
         try {
-            await fetch(`http://localhost:3000/api/notificaciones/${id}`, {
+            await fetch(`http://localhost:3000/notificaciones/${id}`, {
                 method: "DELETE",
             });
             setNotificaciones((prev) => prev.filter((n) => n.id !== id));
