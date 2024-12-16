@@ -31,7 +31,7 @@ const UserEdit = ({ navigation }) => {
             const response = await fetch(`${config.BACKEND_URL}/users/current/user`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${getToken()}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include'
@@ -225,6 +225,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     saveButton: {
+        width: '35%',
         backgroundColor: '#28a745',
         borderRadius: 8,
         paddingVertical: 10,
@@ -236,6 +237,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     cancelButton: {
+        width: '35%',
         backgroundColor: '#dc3545',
         borderRadius: 8,
         paddingVertical: 10,

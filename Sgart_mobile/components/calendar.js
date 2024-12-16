@@ -1023,9 +1023,13 @@ const CalendarComponent = () => {
                     style={styles.scrollContainer} 
                     contentContainerStyle={styles.scrollContent}
                 >
-
                     
                     <View style={[styles['AdminCalendarapp-container'], styles['main-content']]}>
+                    <Image
+                        source={require('../media/1206.png')}
+                        style={styles['background-image']}
+                        resizeMode="cover"
+                    />
                     {activeContent === 'calendar' &&(
 
                         
@@ -1055,14 +1059,6 @@ const CalendarComponent = () => {
                             />
                         </SafeAreaView>
                     )}
-
-
-
-
-
-
-
-
 
 
 
@@ -1415,13 +1411,6 @@ const CalendarComponent = () => {
 
                                         {/* Botones */}
                                         <View style={styles['popup-button-container']}>
-                                            {/* Botón Cerrar */}
-                                            <TouchableOpacity
-                                                style={styles['close-button']}
-                                                onPress={() => setIsEventDetailPopupOpen(false)}
-                                            >
-                                                <Text style={styles['close-button-text']}>Cerrar</Text>
-                                            </TouchableOpacity>
 
                                             {/* Botón Modificar */}
                                             {organizedEvents.find((event) => event.id === selectedEvent.id) &&
@@ -1459,6 +1448,13 @@ const CalendarComponent = () => {
                                                     )}
                                                 </View>
                                             )}
+                                            {/* Botón Cerrar */}
+                                            <TouchableOpacity
+                                                style={styles['close-button']}
+                                                onPress={() => setIsEventDetailPopupOpen(false)}
+                                            >
+                                                <Text style={styles['close-button-text']}>Cerrar</Text>
+                                            </TouchableOpacity>
                                         </View>
                                     </View>
                                 </View>
@@ -1753,6 +1749,15 @@ const CalendarComponent = () => {
 export default CalendarComponent;
 
 const styles = StyleSheet.create({
+    'background-image': {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: 60,
+        right: -30,
+        opacity: 0.3,
+        zIndex: -1,
+    },
     'meeting-list-pending': {
         marginTop: 5,
         padding: 5,
@@ -1900,11 +1905,12 @@ const styles = StyleSheet.create({
         height: '100%',
     },
 	'AdminCalendar-add-time': {
-        display: 'flex',
+        display: 'fixed',
+        width: '50%',
         alignItems: 'center',
         justifyContent: 'center',
-        flexDirection: 'column',
-        marginTop: 20,
+        marginTop: 1,
+        marginLeft: '25%',
     },
     'add-button': {
         backgroundColor: '#1e3a8a',
@@ -1927,6 +1933,7 @@ const styles = StyleSheet.create({
     },
     'AdminCalendar-add-time-text': {
         marginTop: 10,
+        marginBottom: 10,
         fontSize: 16,
         color: '#1e3a8a',
         textAlign: 'center',
@@ -1941,11 +1948,10 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 4,
-        elevation: 3,
+        elevation: 10,
         display: 'flex',
         flexDirection: 'column',
         gap: 15,
-        marginTop: 100,
     },
 	'AdminCalendarapp-container': {
         display: 'flex',
@@ -2139,13 +2145,12 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     'popup-button-container': {
-        flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 20,
+        marginTop: 10,
     },
     'close-button': {
         backgroundColor: '#dc3545',
-        padding: 10,
+        padding: 8,
         borderRadius: 8,
     },
     'close-button-text': {
@@ -2159,7 +2164,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     'attendance-button-container': {
-        marginTop: 10,
+        marginTop: 1,
+        marginBottom: 10,
     },
     'attendance-button': {
         backgroundColor: '#28a745',
