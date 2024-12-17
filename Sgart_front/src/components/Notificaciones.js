@@ -8,7 +8,7 @@ const Notificaciones = () => {
     const loadNotificaciones = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch("http://localhost:3000/api/notificaciones", {
+            const response = await fetch("http://localhost:3000/notificaciones", {
                 credentials: "include",
             });
 
@@ -28,7 +28,7 @@ const Notificaciones = () => {
     // Eliminar una notificación individual
     const deleteNotificacion = async (id) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/notificaciones/${id}`, {
+            const response = await fetch(`http://localhost:3000/notificaciones/${id}`, {
                 method: "DELETE",
                 credentials: "include",
             });
@@ -46,7 +46,7 @@ const Notificaciones = () => {
     // Eliminar todas las notificaciones
     const deleteAllNotificaciones = async () => {
         try {
-            const response = await fetch("http://localhost:3000/api/notificaciones", {
+            const response = await fetch("http://localhost:3000/notificaciones", {
                 method: "DELETE",
                 credentials: "include",
             });
