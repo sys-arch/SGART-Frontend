@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
     Image,
     ScrollView,
     StyleSheet,
@@ -10,6 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import config from '../config';
 
 const LoginForm = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -49,39 +48,53 @@ const LoginForm = ({ navigation }) => {
       return;
     }
 
-    const user = { email, password };
+    const user = { 
+      email: email,
+      password: password,
+    };
 
-    try {
-      setIsLoading(true);
-      const response = await fetch('https://sgart-backend.onrender.com/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user),
-        credentials: 'include',
-      });
+    fetch(`${config.BACKEND_URL}/users/login`, {
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Error al iniciar sesión.');
-      }
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(user),
+      credentials: 'include', // Enviar y recibir cookies de sesión
+  })
+      .then((response) => {
+          setIsLoading(true);
+          if (!response.ok) {
+              return response.json().then((data) => {
+                  if (response.status === 403) {
+                      throw new Error('Los inicios de sesión están bloqueados temporalmente.');
+                  } else if (response.status === 401) {
+                      throw new Error(data.message || 'Error al iniciar sesión. Correo y/o contraseña incorrectos');
+                  }
+                  throw new Error(data.message || 'Error al iniciar sesión.');
+              });
+          }
+          return response.json();
+      })
+      .then((data) => {
+          if (data.success) {
+              // Guarda el token en sessionStorage
+              sessionStorage.setItem('authToken', data.token);
+              sessionStorage.setItem('userEmail', email);
 
-      const data = await response.json();
+              // Redirige a la pantalla de doble factor
+              navigate('GoogleAuth', { state: { data: data, email: email } });
+          } else {
+              throw new Error(data.message || 'Error al iniciar sesión.');
+          }
+      })
 
-      if (data.user && data.user.blocked) {
-        Alert.alert('Cuenta bloqueada', 'Por favor, contacta al soporte.');
-        return;
-      }
-
-      Alert.alert(
-        'Login exitoso',
-        'Pasando a la autentificación con doble factor...',
-        [{ text: 'OK', onPress: () => navigation.navigate('GoogleAuth', { data, email }) }]
-      );
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    } finally {
-      setIsLoading(false);
-    }
+      .catch((error) => {
+          alert(error.message);
+      })
+      .finally(() => {
+          setIsLoading(false);
+      }); 
   };
 
   return (
@@ -226,12 +239,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loginOptions: {
+    width: '90%',
     marginTop: 20,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    paddingHorizontal: 10,
+    gap: 15,
   },
   optionText: {
     color: '#007bff',
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   footer: {
     flexDirection: 'row',

@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import config from '../config';
 
 const GoogleAuth = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
     const { usuario, esAdmin } = location.state; // Extraemos el usuario de la ubicación
     const [inputCode, setInputCode] = useState('');
     const [message, setMessage] = useState('');
