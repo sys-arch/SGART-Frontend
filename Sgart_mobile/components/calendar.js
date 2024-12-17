@@ -1063,8 +1063,6 @@ const CalendarComponent = () => {
 
 
 
-
-
                     {activeContent === 'reuniones' && (
                         <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9f9' }}>
                             <View style={styles['AdminCalendar-left-panel']}>

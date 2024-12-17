@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'reac
 import config from '../config';
 
 const GoogleAuth = () => {
-    const { usuario, esAdmin } = location.state; // Extraemos el usuario de la ubicación
+    const { usuario, esAdmin } = location.state;
     const [inputCode, setInputCode] = useState('');
     const [message, setMessage] = useState('');
     const [qrCode, setQrCode] = useState('');
