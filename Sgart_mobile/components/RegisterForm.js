@@ -1,332 +1,486 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-  Image,
-} from 'react-native';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { useNavigation } from '@react-navigation/native';
+import { Text, TextInput, TouchableOpacity, View, Image , StyleSheet, ScrollView} from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import LoginForm from './LoginForm';
 
-const RegisterForm = ({ navigation }) => {
-  const [nombre, setNombre] = useState('');
-  const [apellidos, setApellidos] = useState('');
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [departamento, setDepartamento] = useState('');
-  const [centro, setCentro] = useState('');
-  const [fechaAlta, setFechaAlta] = useState(null);
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [contrasena, setContrasena] = useState('');
-  const [contrasenaError, setContrasenaError] = useState('');
-  const [repetirContrasena, setRepetirContrasena] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+const RegisterForm = () => {
+    const navigation = useNavigation();
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+    const [nombre, setNombre] = useState('');
+    const [apellidos, setApellidos] = useState('');
+    const [email, setEmail] = useState('');
+    const [departamento, setDepartamento] = useState('');
+    const [centro, setCentro] = useState('');
+    const [fechaAlta, setFechaAlta] = useState('');
+    const [perfil_desplegable, setPerfil_desplegable] = useState('');
+    const [contrasena, setContrasena] = useState('');
+    const [repetirContrasena, setRepetirContrasena] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+    const [isLoged, setIsLoged] = useState(false);
 
-  const toggleRepeatPasswordVisibility = () => {
-    setShowRepeatPassword(!showRepeatPassword);
-  };
-
-  const validateEmail = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setEmailError('El email debe tener un formato válido (ejemplo@example).');
-      return false;
-    }
-    setEmailError('');
-    return true;
-  };
-
-  const validatePassword = () => {
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[-_*\/=&!])[A-Za-z\d\-_*\/=&!]{8,}$/;
-    if (!passwordRegex.test(contrasena)) {
-      setContrasenaError(
-        'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial (-, _, *, /, =, &, !).'
-      );
-      return false;
-    }
-    setContrasenaError('');
-    return true;
-  };
-
-
-  const handleRegister = async () => {
-    if (!validateEmail() || !validatePassword()) {
-      return;
-    }
-  
-    if (!nombre || !apellidos || !email || !centro || !fechaAlta || !contrasena || !repetirContrasena) {
-      Alert.alert('Error', 'Por favor, completa todos los campos obligatorios.');
-      return;
-    }
-  
-    if (contrasena !== repetirContrasena) {
-      Alert.alert('Error', 'Las contraseñas no coinciden.');
-      return;
-    }
-  
-    const usuario = {
-      name: nombre,
-      lastName: apellidos,
-      email: email,
-      department: departamento,
-      center: centro,
-      hiringDate: fechaAlta,
-      password: contrasena,
-      passwordConfirm: repetirContrasena,
+    const [errorNombre, setErrorNombre] = useState('');
+    const [errorApellidos, setErrorApellidos] = useState('');
+    const [errorDepartamento, setErrorDepartamento] = useState('');
+    const [errorCentro, setErrorCentro] = useState('');
+    const [errorFechaAlta, setErrorFechaAlta] = useState('');
+    const [errorPerfil, setErrorPerfil] = useState('');
+    const [errorContrasena, setErrorContrasena] = useState('');
+    const [errorRepetirContrasena, setErrorRepetirContrasena] = useState('');
+    const [errorEmail, setErrorEmail] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const getToken = () => {
+        return sessionStorage.getItem('authToken');
     };
-  
-    try {
-      setIsLoading(true);
-  
-      const response = await fetch('https://sgart-backend.onrender.com/users/verificar-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(usuario),
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error en el registro.');
-      }
-  
-      const data = await response.json();
-  
-      Alert.alert(
-        'Registro exitoso',
-        'Correo verificado. Pasando a la autenticación con doble factor...',
-     //   [{ text: 'OK', onPress: () => navigation.navigate('GoogleAuth', { data }) }]
-      );
-    } catch (error) {
-      Alert.alert('Error', error.message || 'Hubo un error durante el registro.');
-    } finally {
-      setIsLoading(false);
+
+    const handleChange = (name, value) => {
+        switch (name) {
+            case 'nombre':
+                setNombre(value);
+                break;
+            case 'apellidos':
+                setApellidos(value);
+                break;
+            case 'email':
+                setEmail(value);
+                break;
+            case 'departamento':
+                setDepartamento(value);
+                break;
+            case 'centro':
+                setCentro(value);
+                break;
+            case 'fechaAlta':
+                setFechaAlta(value);
+                break;
+            case 'perfil_desplegable':
+                setPerfil_desplegable(value);
+                break;
+            case 'contrasena':
+                setContrasena(value);
+                break;
+            case 'repetirContrasena':
+                setRepetirContrasena(value);
+                break;
+            default:
+                break;
+        }
+    };
+
+    const handleRegister = async () => {
+        let errorBool = false;
+      
+        setErrorNombre('');
+        setErrorApellidos('');
+        setErrorDepartamento('');
+        setErrorCentro('');
+        setErrorPerfil('');
+        setErrorRepetirContrasena('');
+        setErrorContrasena('');
+        setErrorFechaAlta('');
+        setErrorEmail('');
+    
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setErrorEmail('El formato del correo electrónico no es válido.');
+            errorBool = true;
+        }
+    
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    
+        
+        if (!passwordRegex.test(contrasena)) {
+            setErrorContrasena('La contraseña debe cumplir con los requisitos.');
+            errorBool = true;
+        }
+    
+        if (nombre === '') {
+            setErrorNombre('Campo vacío');
+            errorBool = true;
+        }
+        if (apellidos === '') {
+            setErrorApellidos('Campo vacío');
+            errorBool = true;
+        }
+        if (email === '') {
+            setErrorEmail('Campo vacío');
+            errorBool = true;
+        }
+        if (centro === '') {
+            setErrorCentro('Campo vacío');
+            errorBool = true;
+        }
+        if (fechaAlta === '') {
+            setErrorFechaAlta('Campo vacío');
+            errorBool = true;
+        }
+        if (contrasena === '') {
+            setErrorContrasena('Campo vacío');
+            errorBool = true;
+        }
+        if (repetirContrasena === '') {
+            setErrorRepetirContrasena('Campo vacío');
+            errorBool = true;
+        }
+        if (contrasena !== repetirContrasena) {
+            setErrorRepetirContrasena('Las contraseñas no coinciden.');
+            errorBool = true;
+        }
+    
+        const fechaSeleccionada = new Date(fechaAlta);
+        const fechaActual = new Date();
+        if (fechaSeleccionada > fechaActual) {
+            setErrorFechaAlta('La fecha de alta no puede ser una fecha futura.');
+            errorBool = true;
+        }
+    
+        if (errorBool) {
+            return;
+        }
+    
+        const usuario = {
+            name: nombre,
+            lastName: apellidos,
+            email: email,
+            department: departamento,
+            center: centro,
+            hiringDate: fechaAlta,
+            profile: perfil_desplegable,
+            password: contrasena,
+            passwordConfirm: repetirContrasena,
+            blocked: false,
+            verified: false,
+            twoFactorAuthCode: '',
+        };
+    
+        navigation.navigate('GoogleAuth', { state: { usuario, esAdmin: false } });
+    };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword((prevShowPassword) => !prevShowPassword);
+    };
+
+    const toggleRepeatPasswordVisibility = () => {
+        setShowRepeatPassword((prevShowRepeatPassword) => !prevShowRepeatPassword);
+    };
+
+    const handleToggleForm = () => {
+        setIsLoged(true);
+    };
+
+    if (isLoged) {
+        return <LoginForm />;
     }
-  };
-  
 
-  const showDatePicker = () => {
-    setDatePickerVisibility(true);
-  };
-
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false);
-  };
-
-  const handleConfirm = (date) => {
-    const formattedDate = date.toISOString().split('T')[0];
-    setFechaAlta(formattedDate);
-    hideDatePicker();
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-      <View style={styles.container}>
-          <Image
-            source={require('../media/logo_sgart-sinfondo.png')}
-            style={styles.sgartLogo}
-          />
-        <Text style={styles.title}>Registro de usuario</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nombre*"
-          value={nombre}
-          onChangeText={setNombre}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Apellidos*"
-          value={apellidos}
-          onChangeText={setApellidos}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email*"
-          value={email}
-          onChangeText={(value) => {
-            setEmail(value);
-            setEmailError('');
-          }}
-          onBlur={validateEmail}
-          keyboardType="email-address"
-        />
-        {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
-
-        <TextInput
-          style={styles.input}
-          placeholder="Departamento"
-          value={departamento}
-          onChangeText={setDepartamento}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Centro*"
-          value={centro}
-          onChangeText={setCentro}
-        />
-
-        <TouchableOpacity style={styles.input} onPress={showDatePicker}>
-          <Text style={{ color: fechaAlta ? '#000' : '#aaa' }}>
-            {fechaAlta ? `Fecha de Alta: ${fechaAlta}` : 'Selecciona la Fecha de Alta*'}
-          </Text>
-        </TouchableOpacity>
-
-        <DateTimePickerModal
-          isVisible={isDatePickerVisible}
-          mode="date"
-          display="default"
-          minimumDate={new Date(2000, 0, 1)}
-          maximumDate={new Date()}
-          onConfirm={handleConfirm}
-          onCancel={hideDatePicker}
-        />
-
-        {/* Contraseña */}
-        <View style={styles.inputWithIcon}>
-          <TextInput
-            style={styles.inputPassword}
-            placeholder="Contraseña*"
-            value={contrasena}
-            onChangeText={(value) => {
-              setContrasena(value);
-              setContrasenaError('');
-            }}
-            onBlur={validatePassword}
-            secureTextEntry={!showPassword}
-          />
-          <TouchableOpacity onPress={togglePasswordVisibility} style={styles.iconContainer}>
-            <Image
-              source={
-                showPassword
-                  ? require('../media/password_on.png')
-                  : require('../media/password_off.png')
-              }
-              style={styles.passwordIcon}
-            />
-          </TouchableOpacity>
-        </View>
-        {contrasenaError ? <Text style={styles.errorText}>{contrasenaError}</Text> : null}
-
-        {/* Repetir contraseña */}
-        <View style={styles.inputWithIcon}>
-          <TextInput
-            style={styles.inputPassword}
-            placeholder="Repetir Contraseña*"
-            value={repetirContrasena}
-            onChangeText={setRepetirContrasena}
-            secureTextEntry={!showRepeatPassword}
-          />
-          <TouchableOpacity onPress={toggleRepeatPasswordVisibility} style={styles.iconContainer}>
-            <Image
-              source={
-                showRepeatPassword
-                  ? require('../media/password_on.png')
-                  : require('../media/password_off.png')
-              }
-              style={styles.passwordIcon}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {isLoading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>Registrarse</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </ScrollView>
-  );
+    return (
+        <>
+            {isLoading ? (
+                {/* <LoadingSpinner /> */}
+            ) : (
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+              <View style={styles['register-container']}>
+                <View style={styles['register-box']}>
+                  <Image
+                    source={require('../media/1206.png')}
+                    style={styles['background-image']}
+                    resizeMode="cover"
+                  />
+                  <Text style={styles['title']}>Registro</Text>
+                  <Text style={[styles['title'], { marginTop: 10, fontSize: 12, color: '#555' }]}>
+                    Los campos marcados con (*) son obligatorios.
+                  </Text>
+          
+                  {/* Nombre */}
+                  <View style={errorNombre === '' ? styles['input-group'] : styles['input-group-error']}>
+                    <TextInput
+                      style={styles['text-input']}
+                      placeholder="Nombre*"
+                      value={nombre}
+                      onChangeText={(value) => handleChange('nombre', value)}
+                    />
+                  </View>
+                  <Text style={styles['error']}>{errorNombre}</Text>
+          
+                  {/* Apellidos */}
+                  <View style={errorApellidos === '' ? styles['input-group'] : styles['input-group-error']}>
+                    <TextInput
+                      style={styles['text-input']}
+                      placeholder="Apellidos*"
+                      value={apellidos}
+                      onChangeText={(value) => handleChange('apellidos', value)}
+                    />
+                  </View>
+                  <Text style={styles['error']}>{errorApellidos}</Text>
+          
+                  {/* Email */}
+                  <View style={errorEmail === '' ? styles['input-group'] : styles['input-group-error']}>
+                    <TextInput
+                      style={styles['text-input']}
+                      placeholder="Email*"
+                      value={email}
+                      onChangeText={(value) => handleChange('email', value)}
+                    />
+                  </View>
+                  <Text style={styles['error']}>{errorEmail}</Text>
+          
+                  {/* Departamento */}
+                  <View style={errorDepartamento === '' ? styles['input-group'] : styles['input-group-error']}>
+                    <TextInput
+                      style={styles['text-input']}
+                      placeholder="Departamento"
+                      value={departamento}
+                      onChangeText={(value) => handleChange('departamento', value)}
+                    />
+                  </View>
+                  <Text style={styles['error']}>{errorDepartamento}</Text>
+          
+                  {/* Centro */}
+                  <View style={errorCentro === '' ? styles['input-group'] : styles['input-group-error']}>
+                    <TextInput
+                      style={styles['text-input']}
+                      placeholder="Centro*"
+                      value={centro}
+                      onChangeText={(value) => handleChange('centro', value)}
+                    />
+                  </View>
+                  <Text style={styles['error']}>{errorCentro}</Text>
+          
+                  {/* Fecha de Alta */}
+                  <View style={errorFechaAlta === '' ? styles['input-group'] : styles['input-group-error']}>
+                    <TextInput
+                      style={styles['text-input']}
+                      placeholder="Fecha de Alta*"
+                      value={fechaAlta}
+                      onFocus={(e) => handleChange('fechaAlta', '')}
+                      onChangeText={(value) => handleChange('fechaAlta', value)}
+                    />
+                  </View>
+                  <Text style={styles['error']}>{errorFechaAlta}</Text>
+          
+                  {/* Perfil */}
+                  <View style={errorPerfil === '' ? styles['input-group'] : styles['input-group-error']}>
+                    <Picker
+                      selectedValue={perfil_desplegable}
+                      onValueChange={(value) => handleChange('perfil_desplegable', value)}
+                      style={styles['text-input']}
+                    >
+                      <Picker.Item label="Seleccione..." value="" />
+                      <Picker.Item label="Desarrollador" value="Desarrollador" />
+                      <Picker.Item label="Tester" value="Tester" />
+                      <Picker.Item label="Becario" value="Becario" />
+                      <Picker.Item label="RRHH" value="RRHH" />
+                      <Picker.Item label="Contabilidad" value="Contabilidad" />
+                    </Picker>
+                  </View>
+                  <Text style={styles['error']}>{errorPerfil}</Text>
+          
+                  {/* Contraseña */}
+                  <View style={errorContrasena === '' ? styles['input-group'] : styles['input-group-error']}>
+                    <TextInput
+                      style={styles['text-input']}
+                      placeholder="Contraseña*"
+                      secureTextEntry={!showPassword}
+                      value={contrasena}
+                      onChangeText={(value) => handleChange('contrasena', value)}
+                    />
+                    <TouchableOpacity
+                      style={styles['password-toggle-btn']}
+                      onPress={togglePasswordVisibility}
+                    >
+                      <Image
+                        source={
+                          showPassword
+                            ? require('../media/password_off.png')
+                            : require('../media/password_on.png')
+                        }
+                        style={styles['icon']}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles['error']}>{errorContrasena}</Text>
+          
+                  {/* Repetir Contraseña */}
+                  <View
+                    style={
+                      errorRepetirContrasena === '' ? styles['input-group'] : styles['input-group-error']
+                    }
+                  >
+                    <TextInput
+                      style={styles['text-input']}
+                      placeholder="Repetir Contraseña*"
+                      secureTextEntry={!showRepeatPassword}
+                      value={repetirContrasena}
+                      onChangeText={(value) => handleChange('repetirContrasena', value)}
+                    />
+                    <TouchableOpacity
+                      style={styles['repeatPassword-toggle-btn']}
+                      onPress={toggleRepeatPasswordVisibility}
+                    >
+                      <Image
+                        source={
+                          showRepeatPassword
+                            ? require('../media/password_off.png')
+                            : require('../media/password_on.png')
+                        }
+                        style={styles['icon']}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles['error']}>{errorRepetirContrasena}</Text>
+          
+                  {/* Botón Registrarse */}
+                  <TouchableOpacity style={styles['register-btn']} onPress={handleRegister}>
+                    <Text style={styles['register-btn-text']}>Registrarse</Text>
+                  </TouchableOpacity>
+          
+                  {/* Opciones de Registro */}
+                  <View style={styles['register-options']}>
+                    <Text style={styles['title-text']}>¿Ya estás registrado?</Text>
+                    <TouchableOpacity onPress={handleToggleForm}>
+                      <Text style={styles['link']}>Iniciar sesión</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+            )}
+        </>
+    );
 };
 
+export default RegisterForm;
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f8ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  scrollContent: {
+  scrollContainer: {
     flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
+  'background-image': {
+    position: 'absolute',
     width: '100%',
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
+    height: '100%',
+    top: 60,
+    right: -30,
+    opacity: 0.3,
+    zIndex: -1,
   },
-  inputWithIcon: {
+  'title': {
+    fontSize: 20,
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  'register-container': {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      position: 'fixed',
+      borderRadius: 8,
+  },
+  'register-box': {
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      borderRadius: 8,
+      padding: 20,
+      width: '90%',
+      maxWidth: 400,
+  },
+  'title-text': {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 5,
+    textAlign: 'center',
+    width: '100%',
+  },
+  'input-group': {
+    marginBottom: 15,
+    position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: '#ccc',
     borderWidth: 1,
+    borderColor: '#ccc',
     borderRadius: 5,
-    marginBottom: 10,
-    backgroundColor: '#fff',
   },
-  inputPassword: {
+  'input-group-error': {
+      marginBottom: 15,
+      position: 'relative',
+      borderColor: '#dc3545',
+  },
+  'text-input': {
     flex: 1,
-    height: 40,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
-  },
-  iconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 40,
-    height: 40,
-  },
-  passwordIcon: {
-    width: 20,
-    height: 20,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 12,
-    marginBottom: 10,
-  },
-  button: {
-    backgroundColor: '#007bff',
     padding: 10,
-    borderRadius: 5,
-    width: '100%',
+    fontSize: 14,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  'error': {
+      fontSize: 12,
+      color: '#dc3545',
+      marginTop: 5,
+  },
+  'perfil-select': {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 4,
+      padding: 10,
+      fontSize: 14,
+      backgroundColor: '#fff',
+  },
+  'password-toggle-btn':{
+    position: 'absolute',
+    right: 10,
+    height: 30,
+    top: '50%',
+    transform: [{ translateY: -10 }],
+    zIndex: 1,
+  },
+  'repeatPassword-toggle-btn': {
+    position: 'absolute',
+    right: 10,
+    height: 30,
+    top: '50%',
+    transform: [{ translateY: -10 }],
+    zIndex: 1,
+  },
+  'icon': {
+      width: 24,
+      height: 24,
+      resizeMode: 'contain',
+      tintColor: '#555',
+  },
+  'register-btn': {
+      backgroundColor: '#007bff',
+      borderRadius: 4,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+  },
+  'register-btn-text': {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+  },
+  'register-options': {
+    marginTop: 15,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    paddingHorizontal: 10,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  sgartLogo: {
-    width: 180,
-    height: 180,
-    resizeMode: 'contain',
-    marginBottom: -50,
-    top: -20,
+  'link': {
+    color: '#007bff',
+    textDecorationLine: 'underline',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 10,
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
 });
-
-export default RegisterForm;

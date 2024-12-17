@@ -10,6 +10,7 @@ import {
     ScrollView,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import config from '../config';
 
 const UserEdit = ({ navigation }) => {
     const [id, setId] = useState('');
@@ -27,8 +28,13 @@ const UserEdit = ({ navigation }) => {
 
     const loadUser = async () => {
         try {
-            const response = await fetch('http://localhost:3000/users/current/user', {
-                credentials: 'include',
+            const response = await fetch(`${config.BACKEND_URL}/users/current/user`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
             });
             if (!response.ok) {
                 throw new Error('No se pudo obtener el usuario');
@@ -48,36 +54,36 @@ const UserEdit = ({ navigation }) => {
         }
     };
 
-    const handleSave = async () => {
+    const handleSave = () => {
         const updatedUser = {
-            id,
-            name,
-            lastName,
-            profile,
-            department,
-            hiringDate,
-            center,
-            email,
+            id:id,
+            name:name,
+            lastName:lastName,
+            profile:profile,
+            department:department,
+            hiringDate:hiringDate,
+            center:center,
+            email:email
         };
 
-        try {
-            const response = await fetch('http://localhost:3000/users/modificar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(updatedUser),
-            });
+        console.log(updatedUser);
 
-            if (!response.ok) {
-                Alert.alert('Error', 'Error al modificar los datos del usuario');
-                return;
-            }
-            Alert.alert('Éxito', 'Usuario editado exitosamente');
-        } catch (error) {
-            Alert.alert('Error', 'Error al guardar los datos');
-            console.error(error);
-        }
+        // Realizar la solicitud al backend
+        fetch(`${config.BACKEND_URL}/users/modificar`, {
+            method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedUser)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    alert('Error al modificar los datos del usuario');
+                    return;
+                }
+                alert("Usuario editado exitosamente")
+            })
     };
 
     const handleCancel = () => {
@@ -219,6 +225,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     saveButton: {
+        width: '35%',
         backgroundColor: '#28a745',
         borderRadius: 8,
         paddingVertical: 10,
@@ -230,6 +237,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     cancelButton: {
+        width: '35%',
         backgroundColor: '#dc3545',
         borderRadius: 8,
         paddingVertical: 10,
