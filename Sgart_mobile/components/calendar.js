@@ -6,6 +6,10 @@ import { useNavigation } from '@react-navigation/native';
 import config from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/*Notificaciones*/
+import { TouchableOpacity, Image, Modal } from 'react-native';
+import { NotificacionesComponent } from "./Notificaciones";
+
 const CalendarComponent = () => {
 
     // Estados esenciales para reuniones
@@ -61,6 +65,10 @@ const CalendarComponent = () => {
     const [isOrganizedOpen, setIsOrganizedOpen] = useState(false);
 
     const [activeContent, setActiveContent] = useState('calendar');
+
+    //Notificaciones
+    const [showNotificaciones, setShowNotificaciones] = useState(false);
+    const [hasUnreadNotificaciones, setHasUnreadNotificaciones] = useState(false);
 
     const navigation = useNavigation();
 
@@ -933,6 +941,46 @@ const CalendarComponent = () => {
     };
 
 
+//items INTRODUCIR POR ANTONIO BORRAR LUEGO???????
+    // Transforma los eventos del formato de FullCalendar al formato de Agenda
+    const transformEventsForAgenda = (eventSources) => {
+        const agendaItems = {};
+        eventSources.forEach((source) => {
+          source.events.forEach((event) => {
+            const dateKey = new Date(event.start).toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
+            if (!agendaItems[dateKey]) {
+              agendaItems[dateKey] = [];
+            }
+            agendaItems[dateKey].push({
+              id: event.id,
+              name: event.title,
+              data: `Desde: ${new Date(event.start).toLocaleTimeString()} - Hasta: ${new Date(event.end).toLocaleTimeString()}`,
+              color: source.color || 'lightblue',
+            });
+          });
+        });
+        return agendaItems;
+      };
+
+  
+  // Usar los datos de eventSources
+    const items = transformEventsForAgenda([
+        {
+        events: regularEvents,
+        color: '#28a745',
+        },
+        {
+        events: pendingMeetingsEvents,
+        color: '#ffc107',
+        },
+        {
+        events: organizedEvents.map((event) => ({
+            ...event,
+            color: event.backgroundColor,
+        })),
+        },
+    ]);
+
     /* Efectos
     useEffect(() => {
         loadMeetings();
@@ -1120,11 +1168,15 @@ const CalendarComponent = () => {
         }
     };
 
+    //Notificaciones
+    const handleUnreadStatusChange = (hasUnread) => {
+        setHasUnreadNotificaciones(hasUnread);
+    };
 
     return (
         <>
-            
-                <ScrollView 
+
+<ScrollView 
                     style={styles.scrollContainer} 
                     contentContainerStyle={styles.scrollContent}
                 >
@@ -1896,10 +1948,49 @@ const CalendarComponent = () => {
                         style={styles.menuButtonIcon}
                     />
                 </TouchableOpacity>
+                {/* Botón de Notificaciones */}
+                <TouchableOpacity
+                    style={styles.notificationIconContainer}
+                    onPress={() => setShowNotificaciones(true)}
+                >
+                    <Image
+                        source={require("../media/notification_icon.png")}
+                        style={styles.notificationIcon}
+                    />
+                    {/* Indicador de notificaciones no leídas */}
+                    {hasUnreadNotificaciones && (
+                        <View style={styles.notificationBadge}></View>
+                    )}
+                </TouchableOpacity>
             </View>
 
+            {/* Pop-up de Notificaciones */}
+            <Modal
+                visible={showNotificaciones}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowNotificaciones(false)}
+            >
+                <View style={styles.overlay}>
+                    <View style={styles.popupContainer}>
+                        {/* Componente de Notificaciones */}
+                        <NotificacionesComponent onUnreadStatusChange={handleUnreadStatusChange} />
 
+                        {/* Botón para cerrar el modal */}
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setShowNotificaciones(false)}
+                        >
+                            <Image
+                                source={require("../media/close_icon.png")}
+                                style={styles.closeIcon}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </>
+
     );
 };
 
@@ -2464,6 +2555,50 @@ const styles = StyleSheet.create({
         left: '10%',
     },
 
+    //NOTIFICACIONES
+    notificationIconContainer: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 10, // Ajusta para que encaje mejor en el menú
+    },
+    notificationIcon: {
+        width: 30,
+        height: 30,
+        resizeMode: 'contain',
+    },
+    notificationBadge: {
+        position: 'absolute',
+        top: 5,
+        right: 5,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: 'red',
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    popupContainer: {
+        width: '90%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 20,
+        elevation: 5,
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+    },
+    closeIcon: {
+        width: 20,
+        height: 20,
+    },
 
 
     eventButton: {

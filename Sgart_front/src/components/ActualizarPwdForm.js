@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import config from '../config'; // Importa config para usar config.BACKEND
 
 const ActualizarPwdForm = () => {
     const [searchParams] = useSearchParams();
@@ -59,17 +58,17 @@ const ActualizarPwdForm = () => {
         });
 
         try {
-            const response = await fetch(`${config.BACKEND_URL}/auth/reset-password`, {
+            const response = await fetch('http://localhost:3000/auth/reset-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    Authorization: `Bearer ${token}`, // Agregado el token como Authorization
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({
                     email: email,
-                    newPassword: newPassword,
-                }),
+                    token: token,
+                    newPassword: newPassword
+                })
             });
 
             console.log('Respuesta del servidor:', {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from '../config';
-import '../styles/styles.css';
 import NavBar from './NavBar';
 import UserEditForm from './UserEditForm';
 import VentanaConfirm from './VentanaConfirm';
@@ -187,7 +186,7 @@ const UserValidationUI = () => {
         <>
             <NavBar isAdmin={true} />
             <div className="user-validation-container">
-                <div className="box">
+                <div className="login-box">
                     <body>
                         <h2>Pendientes de validación</h2>
                         <table className="user-table">

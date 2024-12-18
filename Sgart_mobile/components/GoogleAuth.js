@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import config from '../config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import PropTypes from 'prop-types';
 
-const GoogleAuth = ({navigation}) => {
-    const [usuario, setUsuario] = useState({});
-    const [isAdmin, setIsAdmin] = useState(false);
+const GoogleAuth = () => {
+    const { usuario, esAdmin } = location.state; // Extraemos el usuario de la ubicación
     const [inputCode, setInputCode] = useState('');
     const [message, setMessage] = useState('');
     const [qrCode, setQrCode] = useState('');
@@ -53,8 +50,9 @@ const GoogleAuth = ({navigation}) => {
                     }
                 );
 
-                if (!response.ok) throw new Error('Error al generar el código QR');
-
+                if (!response.ok) {
+                    throw new Error('Error al generar el código QR');
+                }
                 const data = await response.json();
                 setQrCode(data.qrCode);
                 setSecretKey(data.secretKey);
@@ -64,14 +62,16 @@ const GoogleAuth = ({navigation}) => {
             }
         };
 
-        if (usuario.email) fetchQRCode();
+        fetchQRCode();
     }, [usuario.email]);
 
-    const handleInputChange = (value) => {
-        setInputCode(value);
+    const handleInputChange = (event) => {
+        setInputCode(event.target.value);
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
         try {
             const response = await fetch(`${config.BACKEND_URL}/auth/validate-totp`, {
                 method: 'POST',
@@ -88,9 +88,11 @@ const GoogleAuth = ({navigation}) => {
 
             const data = await response.json();
             if (data.status === 'valid' ) {
-                if(!isAdmin){
+                if(!esAdmin){
+                    // Registro del usuario después de la validación exitosa
+                    await registrarUsuario(usuario.email); // Llama a la función para registrar al usuario
                     setMessage("Autenticación exitosa. Redirigiendo...");
-                    navigation.navigate('Calendar');
+                    navigate('/user-calendar');
                 }else{
                     // Si es admin, no puede usar la aplicación.
                     setMessage("Usuario no válido.");
@@ -108,7 +110,7 @@ const GoogleAuth = ({navigation}) => {
         try {
             const usuarioActualizado = {
                 ...usuario,
-                twoFactorAuthCode: secretKey,
+                twoFactorAuthCode: secretKey
             };
 
             const response = await fetch(`${config.BACKEND_URL}/users/registro`, {
@@ -176,11 +178,6 @@ const GoogleAuth = ({navigation}) => {
     );
 };
 
-GoogleAuth.propTypes = {
-    navigation: PropTypes.shape({
-    navigate: PropTypes.func.isRequired,
-    }).isRequired,
-};
 export default GoogleAuth;
 
 const styles = StyleSheet.create({

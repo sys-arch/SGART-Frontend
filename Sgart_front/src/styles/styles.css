@@ -277,13 +277,3 @@
 .popup-container::-webkit-scrollbar-thumb:hover {
     background: #888;
 }
-
-.box {
-    width: 90%; /* Ajusta el ancho al 90% del contenedor */
-    max-width: 1200px; /* Máximo ancho para pantallas grandes */
-    margin: 0 auto;
-    background: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}

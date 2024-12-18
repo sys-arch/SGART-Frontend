@@ -1,16 +1,13 @@
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import React, { useState, useEffect, useCallback } from 'react';
 import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import interactionPlugin from "@fullcalendar/interaction";
 import '../App.css';
-import config from '../config';
+import { useNavigate } from 'react-router-dom';
 
 const AdminWorkingHours = () => {
     const navigate = useNavigate();
-    const getToken = () => sessionStorage.getItem('authToken'); // Function to get the token
-
     // Variables para modificar día laborable
     const [selectedDate, setSelectedDate] = useState('');
     const [startingHour, setStartingHour] = useState('');
@@ -56,13 +53,9 @@ const AdminWorkingHours = () => {
     // Cargar los eventos regulares de la base de datos
     const loadEvents = useCallback(async () => {
         try {
-            const response = await fetch(`${config.ks}/administrador/eventos/loadEvents`, {
-                headers: {
-                    Authorization: `Bearer ${getToken()}`,
-                },
-            });
-
+            const response = await fetch('http://localhost:3000/administrador/eventos/loadEvents');
             if (!response.ok) throw new Error('Error al cargar los eventos');
+
             const backendEvents = await response.json();
             const transformedEvents = backendEvents.map(event => ({
                 title: event.event_title,
@@ -80,11 +73,8 @@ const AdminWorkingHours = () => {
     // Cargar los horarios de trabajo modificados de la base de datos
     const loadModifiedWorkingHours = useCallback(async () => {
         try {
-            const response = await fetch(`${config.ks}/administrador/eventos/loadSchedules`, {
-                headers: {
-                    Authorization: `Bearer ${getToken()}`,
-                },
-            });            if (!response.ok) throw new Error('Error al cargar los horarios modificados');
+            const response = await fetch('http://localhost:3000/administrador/eventos/loadSchedules');
+            if (!response.ok) throw new Error('Error al cargar los horarios modificados');
 
             const backendWorkingHours = await response.json();
             const transformedWorkingHours = backendWorkingHours.map(hour => ({
@@ -102,11 +92,7 @@ const AdminWorkingHours = () => {
     // Cargar los horarios de trabajo por defecto de la base de datos
     const loadDefaultWorkingHours = useCallback(async () => {
         try {
-            const response = await fetch(`${config.ks}/administrador/eventos/loadDefaultSchedule`, {
-                headers: {
-                    Authorization: `Bearer ${getToken()}`,
-                },
-            });            if (!response.ok) throw new Error('Error al cargar los horarios de trabajo por defecto');
+            const response = await fetch('http://localhost:3000/administrador/eventos/loadDefaultSchedule');
             if (!response.ok) throw new Error('Error al cargar los horarios de trabajo por defecto');
 
             const backendDefaultHours = await response.json();
@@ -238,15 +224,13 @@ const AdminWorkingHours = () => {
         };
 
         try {
-            const response = await fetch(`${config.ks}/administrador/eventos/saveEvent`, {
+            const response = await fetch('http://localhost:3000/administrador/eventos/saveEvent', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${getToken()}`,
                 },
                 body: JSON.stringify(newEvent),
             });
-
 
             if (!response.ok) throw new Error('Error al guardar el evento');
 
@@ -277,11 +261,10 @@ const AdminWorkingHours = () => {
         };
 
         try {
-            const response = await fetch(`${config.ks}/administrador/eventos/saveDay`, {
+            const response = await fetch('http://localhost:3000/administrador/eventos/saveDay', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
                 },
                 body: JSON.stringify(horarioData),
             });
