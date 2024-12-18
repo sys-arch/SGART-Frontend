@@ -3,8 +3,6 @@ import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'reac
 import config from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PropTypes from 'prop-types';
-import { ScrollView } from 'react-native-gesture-handler';
-import { Keyboard } from 'react-native';
 
 const GoogleAuth = ({navigation}) => {
     const [usuario, setUsuario] = useState({});
@@ -94,7 +92,6 @@ const GoogleAuth = ({navigation}) => {
             const data = await response.json();
             if (data.status === 'valid' ) {
                 if(!isAdmin){
-                    //await registrarUsuario();
                     setMessage("Autenticación exitosa. Redirigiendo...");
                     navigation.navigate('Calendar');
                 }else{
@@ -151,7 +148,6 @@ const GoogleAuth = ({navigation}) => {
     return (
         <View style={styles['login-container']}>
             <View style={styles['login-box']}>
-                <ScrollView>
                 <Text style={styles['login-title']}>Bienvenido</Text>
                 <Text style={styles['login-text']}>
                     Por favor escanea el código QR con tu dispositivo móvil para configurar Google Authenticator:
@@ -175,15 +171,11 @@ const GoogleAuth = ({navigation}) => {
                     value={inputCode}
                     onChangeText={handleInputChange}
                     keyboardType="numeric"
-                    returnKeyType="done"
-                    onSubmitEditing={() => Keyboard.dismiss()} // Oculta el teclado
-                    blurOnSubmit={true}
                 />
                 <TouchableOpacity style={styles['login-btn']} onPress={handleSubmit}>
                     <Text style={styles['login-btn-text']}>Verificar</Text>
                 </TouchableOpacity>
                 {message && <Text style={styles['login-message']}>{message}</Text>}
-                </ScrollView>
             </View>
         </View>
     );
