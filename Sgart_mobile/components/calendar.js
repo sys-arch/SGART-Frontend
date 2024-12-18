@@ -4,6 +4,7 @@ import { Picker } from '@react-native-picker/picker';
 import { Calendar } from 'react-native-calendars';
 import { useNavigation } from '@react-navigation/native';
 import config from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CalendarComponent = () => {
     // Estados esenciales para reuniones
@@ -64,11 +65,12 @@ const CalendarComponent = () => {
     const loadInvitees = useCallback(async (meetingId) => {
         try {
             console.log(`Cargando invitados para la reunión ID: ${meetingId}`);
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/invitados`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ meetingId }),
             });
@@ -90,10 +92,11 @@ const CalendarComponent = () => {
     // ! OBTENER USER ID ACTUAL	
     const getUserId = async () => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/users/current/userId`, {
                 credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             if (!response.ok) {
@@ -122,9 +125,10 @@ const CalendarComponent = () => {
                 throw new Error('No se pudo obtener el ID del usuario');
             }
 
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/loadMeetings`, {
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
 
@@ -208,10 +212,11 @@ const CalendarComponent = () => {
     const loadOrganizedMeetings = useCallback(async () => {
         try {
             console.log("Iniciando carga de reuniones organizadas...");
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/usuarios/calendarios/organized-meetings`, {
                 credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
 
@@ -266,10 +271,11 @@ const CalendarComponent = () => {
     // ! OBTENER ASISTENCIAS
     const checkAttendanceStatus = async (meetingId) => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/invitations/${meetingId}/attendance`, {
                 credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
 
@@ -319,6 +325,7 @@ const CalendarComponent = () => {
             console.log('Iniciando actualización de estado para evento:', selectedEvent);
             console.log('Acción seleccionada:', confirmationAction);
 
+            const token = await AsyncStorage.getItem('authToken');
             const url = `${config.BACKEND_URL}/invitations/${selectedEvent.id}/status`;
             console.log('URL de la petición:', url);
 
@@ -333,6 +340,7 @@ const CalendarComponent = () => {
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(requestBody),
             });
@@ -422,9 +430,10 @@ const CalendarComponent = () => {
 	// * NO SE ESTÁ USANDO
     const loadWorkSchedules = async () => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/administrador/horarios`, {
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             if (!response.ok) {
@@ -562,11 +571,12 @@ const CalendarComponent = () => {
                         return;
                     }
                 }
+                const token = await AsyncStorage.getItem('authToken');
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/${eventIdToEdit}/modify`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(newEvent),
                 });
@@ -579,11 +589,12 @@ const CalendarComponent = () => {
 
                 alert("Se ha modificado el evento de manera exitosa.");
             } else { // ! AQUI SE CREA LA REUNIÓN
+                const token = await AsyncStorage.getItem('authToken');
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(newEvent),
                     
@@ -599,7 +610,7 @@ const CalendarComponent = () => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(userIds),
                 });
@@ -659,9 +670,10 @@ const CalendarComponent = () => {
             const currentUserId = await getUserId();
             console.log('ID del usuario actual:', currentUserId);
             
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/api/meetings/available-users`, {
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             
@@ -695,9 +707,10 @@ const CalendarComponent = () => {
 	// Función para cargar localizaciones
 	// ? VAYA MIERDA DE MÉTODO
     const loadLocations = (async() => {
+        const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${config.BACKEND_URL}/api/meetings/locations`, {
             headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                'Authorization': `Bearer ${token}`
             },
         });
         if (!response.ok) {
@@ -714,9 +727,10 @@ const CalendarComponent = () => {
 
 	// ! CARGAR AUSENCIAS
     const loadAbsences = (async () => {
+        const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${config.BACKEND_URL}/administrador/ausencias/loadAbsences`, {
             headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                'Authorization': `Bearer ${token}`
             },
         });
         if (!response.ok) {
@@ -821,10 +835,11 @@ const CalendarComponent = () => {
     // Add this new function near other handler functions
     const handleAttendanceUpdate = async (meetingId) => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/invitations/${meetingId}/attendance`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                    'Authorization': `Bearer ${token}`,
                 },
             });
 
@@ -892,10 +907,11 @@ const CalendarComponent = () => {
             }
     
             // Hacer una petición DELETE al backend para eliminar la reunión
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/api/meetings/${reunion.id}/cancel`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                    'Authorization': `Bearer ${token}`,
                 },
             });
     
