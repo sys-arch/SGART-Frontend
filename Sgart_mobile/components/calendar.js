@@ -941,14 +941,14 @@ const CalendarComponent = () => {
     };
 
 
-    /* Efectos
+    
     useEffect(() => {
         loadMeetings();
         loadOrganizedMeetings();
         loadWorkSchedules();
-    }, [loadMeetings, loadOrganizedMeetings]);*/
+    }, [loadMeetings, loadOrganizedMeetings]);
     //Quietar esto
-    useEffect(() => {
+   /* Efectos useEffect(() => {
         const mockEvents = [
             {
                 id: "mock-event-1",
@@ -1048,7 +1048,7 @@ const CalendarComponent = () => {
         setReunionesOrganizadas(mocky);
         //setReunionesPendientes(mockEvents);
         //setPendingMeetingsEvents(mockEvents);
-    }, []);
+    }, []);*/
 
     // Modificar el useEffect para el filtrado de usuarios
     useEffect(() => {
