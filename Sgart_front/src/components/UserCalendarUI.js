@@ -66,8 +66,6 @@ const UserCalendarUI = () => {
     // Cargar invitados de una reunión
     const loadInvitees = useCallback(async (meetingId) => {
         try {
-            
-            
 
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/invitados`, {
                 method: 'POST',
@@ -157,6 +155,7 @@ const UserCalendarUI = () => {
 
                 // Cargar invitados para esta reunión
                 const invitados = await loadInvitees(meeting.meetingId);
+
 
                 const transformedMeeting = {
                     id: meeting.meetingId,
@@ -442,15 +441,12 @@ const UserCalendarUI = () => {
 
     const isTimeWithinWorkSchedule = (hour, minute) => {
         if (!workSchedules.length) {
-            console.log('No hay horarios laborales definidos, permitiendo cualquier hora');
             return true;
         }
 
         const timeInMinutes = hour * 60 + parseInt(minute);
-        console.log(`\nValidando tiempo: ${hour}:${minute} (${timeInMinutes} minutos)`);
         
         for (const schedule of workSchedules) {
-            console.log(`\nComprobando bloque horario: ${schedule.startingTime} - ${schedule.endingTime}`);
             
             const startTime = schedule.startingTime.split(':').slice(0, 2).join(':');
             const endTime = schedule.endingTime.split(':').slice(0, 2).join(':');
@@ -461,16 +457,12 @@ const UserCalendarUI = () => {
             const scheduleStartMinutes = startHour * 60 + startMinute;
             const scheduleEndMinutes = endHour * 60 + endMinute;
             
-            console.log(`Bloque en minutos: ${scheduleStartMinutes} - ${scheduleEndMinutes}`);
-            console.log(`Tiempo a validar en minutos: ${timeInMinutes}`);
             
             if (timeInMinutes >= scheduleStartMinutes && timeInMinutes <= scheduleEndMinutes) {
-                console.log('¡Tiempo válido! Está dentro de este bloque horario');
                 return true;
             }
         }
 
-        console.log('Tiempo no válido: No está dentro de ningún bloque horario');
         return false;
     };
 
@@ -562,7 +554,7 @@ const UserCalendarUI = () => {
                         return;
                     }
                 }
-                console.log("Datos enviados:", newEvent);
+            
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/${eventIdToEdit}/modify`, {
                     method: 'POST',
                     headers: {
@@ -580,7 +572,7 @@ const UserCalendarUI = () => {
 
                 alert("Se ha modificado el evento de manera exitosa.");
             } else {
-                console.log("Datos enviados:", newEvent);
+                
 
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/create`, {
                     method: 'POST',
@@ -611,11 +603,7 @@ const UserCalendarUI = () => {
                     },
                     body: JSON.stringify(userIds),
                 });
-                console.log("Datos enviados como JSON:", JSON.stringify(newEvent, null, 2));
 
-
-                
-    
 
                 if (!inviteResponse.ok) {
                     alert('Error al enviar las invitaciones');
