@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import config from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const UserEdit = ({ navigation }) => {
     const [id, setId] = useState('');

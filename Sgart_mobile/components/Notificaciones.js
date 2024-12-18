@@ -20,6 +20,7 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
         try {
             const response = await fetch(`${config.BACKEND_URL}/notificaciones`, {
                 headers: {
+                    "Content-Type": "application/json",
                     "Authorization": `Bearer ${await AsyncStorage.getItem("authToken")}`
                 },
             });

@@ -82,7 +82,6 @@ const CalendarComponent = () => {
     // ! CARGAR INVITADOS	
     const loadInvitees = useCallback(async (meetingId) => {
         try {
-            console.log(`Cargando invitados para la reunión ID: ${meetingId}`);
             const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/invitados`, {
                 method: 'POST',
@@ -98,7 +97,6 @@ const CalendarComponent = () => {
             }
 
             const backendInvitees = await response.json();
-            console.log("Lista de invitados cargada:", backendInvitees);
             return backendInvitees;
 
         } catch (error) {
@@ -121,7 +119,6 @@ const CalendarComponent = () => {
                 throw new Error('No se pudo obtener el ID del usuario');
             }
             const data = await response.json();
-            console.log("ID de usuario obtenido:", data.userId);
             return data.userId;
         } catch (error) {
             console.error('Error al obtener el ID del usuario:', error);
@@ -151,23 +148,14 @@ const CalendarComponent = () => {
             });
 
             const backendMeetings = await response.json();
-            console.log("Total de reuniones recibidas:", backendMeetings.length);
 
             const acceptedMeetings = [];
             const pendingMeetings = [];
 
             // Procesar cada reunión y sus invitados
             for (const meeting of backendMeetings) {
-                console.log(`\n--- Procesando reunión ID: ${meeting.meetingId} ---`);
-
                 // Cargar invitados para esta reunión
                 const invitados = await loadInvitees(meeting.meetingId);
-                console.log(`Invitados recibidos para reunión ${meeting.meetingId}:`, invitados);
-
-                // Imprimir cada invitado y su estado
-                invitados.forEach(invitee => {
-                    console.log(`Invitado ID: ${invitee.userId} (${typeof invitee.userId}), Estado: "${invitee.status}"`);
-                });
 
                 const transformedMeeting = {
                     id: meeting.meetingId,
@@ -185,17 +173,13 @@ const CalendarComponent = () => {
 
                 // Buscar la invitación del usuario actual por userId
                 const currentUserInvitation = invitados.find(invitee => {
-                    console.log(`Comparando: invitado.userId=${invitee.userId} con currentUserId=${currentUserId}`);
                     return invitee.userId.toString() === currentUserId.toString(); // Convertir ambos a string para comparar
                 });
 
                 if (currentUserInvitation) {
-                    console.log(`Estado de invitación encontrado: "${currentUserInvitation.status}"`);
                     if (currentUserInvitation.status.trim() === 'Aceptada') {
-                        console.log(`Reunión ${meeting.meetingId} clasificada como ACEPTADA`);
                         acceptedMeetings.push(transformedMeeting);
                     } else if (currentUserInvitation.status.trim() === 'Pendiente') {
-                        console.log(`Reunión ${meeting.meetingId} clasificada como PENDIENTE`);
                         pendingMeetings.push(transformedMeeting);
                     }
                 } else {
@@ -244,13 +228,10 @@ const CalendarComponent = () => {
             }
 
             const backendMeetings = await response.json();
-            console.log("Reuniones organizadas recibidas del backend:", backendMeetings);
 
             const transformedMeetings = await Promise.all(backendMeetings.map(async (meeting, index) => {
-                console.log(`Procesando reunión organizada ${index + 1}:`, meeting);
 
                 const invitados = await loadInvitees(meeting.meetingId);
-                console.log(`Invitados cargados para reunión ${meeting.meetingId}:`, invitados);
 
                 const allRejected = areAllInvitationsRejected(invitados);
 
@@ -270,13 +251,8 @@ const CalendarComponent = () => {
                         invitees: invitados
                     }
                 };
-
-                console.log(`Reunión ${index + 1} transformada:`, transformedMeeting);
                 return transformedMeeting;
             }));
-
-            console.log("Total de reuniones organizadas transformadas:", transformedMeetings.length);
-            console.log("Reuniones organizadas transformadas:", transformedMeetings);
 
             setOrganizedEvents(transformedMeetings);
             setReunionesOrganizadas(transformedMeetings);
@@ -340,18 +316,14 @@ const CalendarComponent = () => {
 
     const handleConfirmAction = async () => {
         try {
-            console.log('Iniciando actualización de estado para evento:', selectedEvent);
-            console.log('Acción seleccionada:', confirmationAction);
 
             const token = await AsyncStorage.getItem('authToken');
             const url = `${config.BACKEND_URL}/invitations/${selectedEvent.id}/status`;
-            console.log('URL de la petición:', url);
 
             const requestBody = {
                 newStatus: confirmationAction === 'accept' ? 'Aceptada' : 'Rechazada',
                 comment: ''
             };
-            console.log('Cuerpo de la petición:', requestBody);
 
             const response = await fetch(url, {
                 method: 'PUT',
@@ -363,16 +335,13 @@ const CalendarComponent = () => {
                 body: JSON.stringify(requestBody),
             });
 
-            console.log('Respuesta del servidor:', response.status);
-
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('Error response:', errorText);
                 throw new Error(`Error al actualizar el estado de la invitación: ${errorText}`);
             }
 
-            await loadMeetings(); // Recargar reuniones después de la actualización
-            console.log('Actualización completada con éxito');
+            await loadMeetings();
         } catch (error) {
             console.error('Error detallado:', error);
         } finally {
@@ -458,7 +427,6 @@ const CalendarComponent = () => {
                 throw new Error('Error al cargar los horarios laborales');
             }
             const schedules = await response.json();
-            console.log('Horarios laborales cargados:', schedules);
             setWorkSchedules(schedules);
         } catch (error) {
             console.error('Error cargando horarios:', error);
@@ -467,16 +435,9 @@ const CalendarComponent = () => {
 
 	// ! COMPRUEBA SI LAS REUNIONES ESTÁN DENTRO DE LOS HORARIOS LABORALES
 	const isTimeWithinWorkSchedule = (hour, minute) => {
-        if (!workSchedules.length) {
-            console.log('No hay horarios laborales definidos, permitiendo cualquier hora');
-            return true;
-        }
-
         const timeInMinutes = hour * 60 + parseInt(minute);
-        console.log(`\nValidando tiempo: ${hour}:${minute} (${timeInMinutes} minutos)`);
         
         for (const schedule of workSchedules) {
-            console.log(`\nComprobando bloque horario: ${schedule.startingTime} - ${schedule.endingTime}`);
             
             const startTime = schedule.startingTime.split(':').slice(0, 2).join(':');
             const endTime = schedule.endingTime.split(':').slice(0, 2).join(':');
@@ -487,16 +448,10 @@ const CalendarComponent = () => {
             const scheduleStartMinutes = startHour * 60 + startMinute;
             const scheduleEndMinutes = endHour * 60 + endMinute;
             
-            console.log(`Bloque en minutos: ${scheduleStartMinutes} - ${scheduleEndMinutes}`);
-            console.log(`Tiempo a validar en minutos: ${timeInMinutes}`);
-            
             if (timeInMinutes >= scheduleStartMinutes && timeInMinutes <= scheduleEndMinutes) {
-                console.log('¡Tiempo válido! Está dentro de este bloque horario');
                 return true;
             }
         }
-
-        console.log('Tiempo no válido: No está dentro de ningún bloque horario');
         return false;
     };
 
@@ -686,7 +641,6 @@ const CalendarComponent = () => {
         try {
             // Obtener el ID del usuario actual
             const currentUserId = await getUserId();
-            console.log('ID del usuario actual:', currentUserId);
             
             const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/api/meetings/available-users`, {
@@ -696,22 +650,18 @@ const CalendarComponent = () => {
             });
             
             const backendUsers = await response.json();
-            console.log('Usuarios recibidos del backend:', backendUsers);
             const userId=await getUserId();
 
             // Filtrar excluyendo al usuario actual
             const transformedUsers = backendUsers
                 .filter(user => {
                     const isCurrentUser = user.id === currentUserId;
-                    console.log(`Comparando usuario ${user.name} (${user.id}) con usuario actual (${currentUserId}): ${isCurrentUser ? 'Es el mismo' : 'Es diferente'}`);
                     return user.id !== userId;
                 })
                 .map(user => ({
                     id: user.id,
                     nombre: `${user.name} ${user.lastName}`
                 }));
-                
-            console.log('Usuarios transformados (sin usuario actual):', transformedUsers);
             
             // Actualizar estados
             setAvailableUsers(transformedUsers);
@@ -768,7 +718,6 @@ const CalendarComponent = () => {
             absenceReason: ausencia.absenceReason
         }));
         setAusencias(transformedAbsences);
-        console.log(transformedAbsences);
     })
 
 	// ! COMPROBAR AUSENCIAS
@@ -1876,7 +1825,7 @@ const CalendarComponent = () => {
                         style={styles.menuButtonIcon}
                     />
                 </TouchableOpacity>
-                {/* Botón de Notificaciones */}
+                 {/* Botón de Notificaciones */}
                 <TouchableOpacity
                     style={styles.notificationIconContainer}
                     onPress={() => setShowNotificaciones(true)}
@@ -1902,7 +1851,9 @@ const CalendarComponent = () => {
                 <View style={styles.overlay}>
                     <View style={styles.popupContainer}>
                         {/* Componente de Notificaciones */}
-                        <NotificacionesComponent onUnreadStatusChange={handleUnreadStatusChange} />
+                        <NotificacionesComponent
+                            onUnreadStatusChange={handleUnreadStatusChange}
+                        />
 
                         {/* Botón para cerrar el modal */}
                         <TouchableOpacity
