@@ -2,9 +2,11 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from '../config'; // Importa la configuración
+import '../styles/styles.css';
 import LoadingSpinner from './LoadingSpinner';
 import NavBar from './NavBar';
 import VentanaConfirm from './VentanaConfirm';
+
 
 
 const AdminAusenciasUI = () => {
@@ -219,7 +221,7 @@ const AdminAusenciasUI = () => {
                 <LoadingSpinner />
             ) : (
             <div className="user-validation-container">
-                <div className="login-box">
+                <div className="box">
                     <h2>Lista de Trabajadores</h2>
                     <table className="user-table">
                         <thead>
