@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import config from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import config from '../config';
 
-const GoogleAuth = ({navigation}) => {
+const GoogleAuth = ({ navigation }) => {
     const [usuario, setUsuario] = useState({});
     const [isAdmin, setIsAdmin] = useState(false);
     const [inputCode, setInputCode] = useState('');
@@ -15,20 +15,18 @@ const GoogleAuth = ({navigation}) => {
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
-                
-        
-                // Obtener el objeto User desde el backend
+                const token = await AsyncStorage.getItem('authToken');
+                if (!token) throw new Error('Token no encontrado');
+
                 const response = await fetch(`${config.BACKEND_URL}/users/current/user`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
-                    credentials: 'include',
                 });
-        
+
                 if (!response.ok) throw new Error('Error al obtener los datos del usuario');
-        
                 const userData = await response.json();
                 setUsuario(userData);
                 setIsAdmin(userData.profile === 'admin');
@@ -37,19 +35,22 @@ const GoogleAuth = ({navigation}) => {
                 setMessage('Error al cargar los datos del usuario.');
             }
         };
-    
+
         fetchCurrentUser();
     }, []);
 
     useEffect(() => {
         const fetchQRCode = async () => {
+            if (!usuario.email) return;
+
             try {
+                const token = await AsyncStorage.getItem('authToken');
+                if (!token) throw new Error('Token no encontrado');
+
                 const response = await fetch(
                     `${config.BACKEND_URL}/auth/generate-qr?email=${usuario.email}`,
                     {
-                        headers: {
-                            'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
-                        },
+                        headers: { 'Authorization': `Bearer ${token}` },
                     }
                 );
 
@@ -64,79 +65,41 @@ const GoogleAuth = ({navigation}) => {
             }
         };
 
-        if (usuario.email) fetchQRCode();
+        fetchQRCode();
     }, [usuario.email]);
 
-    const handleInputChange = (value) => {
-        setInputCode(value);
-    };
+    const handleInputChange = (value) => setInputCode(value);
 
     const handleSubmit = async () => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
+            if (!token) throw new Error('Token no encontrado');
+
             const response = await fetch(`${config.BACKEND_URL}/auth/validate-totp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({ mail: usuario.email, code: inputCode }),
             });
 
-            if (!response.ok) {
-                throw new Error('Código de autenticación incorrecto');
-            }
+            if (!response.ok) throw new Error('Código de autenticación incorrecto');
 
             const data = await response.json();
-            if (data.status === 'valid' ) {
-                if(!isAdmin){
-                    setMessage("Autenticación exitosa. Redirigiendo...");
+            if (data.status === 'valid') {
+                if (!isAdmin) {
+                    setMessage('Autenticación exitosa. Redirigiendo...');
                     navigation.navigate('Calendar');
-                }else{
-                    // Si es admin, no puede usar la aplicación.
-                    setMessage("Usuario no válido.");
+                } else {
+                    setMessage('Usuario no válido para esta aplicación.');
                 }
             } else {
-                setMessage("Código inválido. Por favor, intenta nuevamente.");
+                setMessage('Código inválido. Intenta nuevamente.');
             }
         } catch (error) {
-            setMessage("Error al validar el código.");
-            console.error("Error en la autenticación:", error);
-        }
-    };
-
-    const registrarUsuario = async (email) => {
-        try {
-            const usuarioActualizado = {
-                ...usuario,
-                twoFactorAuthCode: secretKey,
-            };
-
-            const response = await fetch(`${config.BACKEND_URL}/users/registro`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
-                },
-                body: JSON.stringify(usuarioActualizado),
-            });
-
-            if (!response.ok) {
-                throw new Error('Error al registrar el usuario');
-            }
-
-            let result;
-            const contentType = response.headers.get('Content-Type');
-            if (contentType?.includes('application/json')) {
-                result = await response.json();
-            } else {
-                result = await response.text(); // Maneja texto plano
-            }
-
-            console.log('Usuario registrado:', result);
-            setMessage("Usuario registrado con éxito.");
-        } catch (error) {
-            setMessage("Error al registrar al usuario.");
-            console.error("Error en el registro:", error);
+            setMessage('Error al validar el código.');
+            console.error('Error en la autenticación:', error);
         }
     };
 
@@ -145,7 +108,7 @@ const GoogleAuth = ({navigation}) => {
             <View style={styles['login-box']}>
                 <Text style={styles['login-title']}>Bienvenido</Text>
                 <Text style={styles['login-text']}>
-                    Por favor escanea el código QR con tu dispositivo móvil para configurar Google Authenticator:
+                    Escanea el código QR para configurar Google Authenticator:
                 </Text>
                 <View style={styles['qr-container']}>
                     {qrCode ? (
@@ -159,10 +122,10 @@ const GoogleAuth = ({navigation}) => {
                         </View>
                     )}
                 </View>
-                <Text style={styles['login-subtitle']}>Introduce tu código de Google Authenticator</Text>
+                <Text style={styles['login-subtitle']}>Introduce tu código:</Text>
                 <TextInput
                     style={styles['code-input']}
-                    placeholder="Introduce el código"
+                    placeholder="Código"
                     value={inputCode}
                     onChangeText={handleInputChange}
                     keyboardType="numeric"
@@ -178,9 +141,10 @@ const GoogleAuth = ({navigation}) => {
 
 GoogleAuth.propTypes = {
     navigation: PropTypes.shape({
-    navigate: PropTypes.func.isRequired,
+        navigate: PropTypes.func.isRequired,
     }).isRequired,
 };
+
 export default GoogleAuth;
 
 const styles = StyleSheet.create({
@@ -207,13 +171,11 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontWeight: 'bold',
         marginBottom: 10,
-        color: '#333',
         textAlign: 'center',
     },
     'login-text': {
         fontSize: 16,
         marginBottom: 15,
-        color: '#555',
         textAlign: 'center',
     },
     'qr-container': {
@@ -234,16 +196,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#ececec',
         borderRadius: 8,
     },
-    'qr-placeholder-text': {
-        color: '#888',
-        textAlign: 'center',
-    },
     'login-subtitle': {
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
-        color: '#333',
-        textAlign: 'center',
     },
     'code-input': {
         borderWidth: 1,
@@ -252,14 +208,12 @@ const styles = StyleSheet.create({
         padding: 10,
         fontSize: 16,
         marginBottom: 15,
-        textAlign: 'center',
     },
     'login-btn': {
         backgroundColor: '#007bff',
         padding: 10,
         borderRadius: 8,
         alignItems: 'center',
-        marginBottom: 15,
     },
     'login-btn-text': {
         color: 'white',

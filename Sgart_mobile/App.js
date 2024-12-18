@@ -1,12 +1,11 @@
-import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import React from 'react';
+import CalendarComponent from './components/calendar';
+import GoogleAuthLogin from './components/GoogleAuthLogin';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
-import CalendarComponent from './components/calendar';
 import UserEdit from './components/UserEdit';
-import GoogleAuth from './components/GoogleAuth';
-import NotificacionesComponent from './components/Notificaciones';
 
 const Stack = createStackNavigator();
 
@@ -26,7 +25,7 @@ export default function App() {
         />
         <Stack.Screen
           name="GoogleAuth"
-          component={GoogleAuth}
+          component={GoogleAuthLogin}
           options={{ headerShown: false }}
         />
         <Stack.Screen 

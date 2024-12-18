@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import React, { useState } from 'react';
+import config from '../config'; // Importa la configuración para BACKEND_URL
 
 const UserEditForm = ({ user, onSave, onCancel }) => {
     const [name, setName] = useState(user.name);
@@ -8,10 +9,12 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
     const [department, setDepartment] = useState(user.department);
     const [hiringDate, setHiringDate] = useState(user.hiringDate);
     const [center, setCenter] = useState(user.center);
+    const getToken = () => sessionStorage.getItem('authToken'); // Función para obtener el token
 
-    const handleSave = () => {
+    const handleSave = async() => {
         // Guardar los cambios realizados al usuario
         const updatedUser = {
+            email: user.email,
             name: name,
             lastName: lastName,
             profile: profile,
@@ -20,22 +23,29 @@ const UserEditForm = ({ user, onSave, onCancel }) => {
             center: center
         };
 
-        fetch('http://localhost:3000/users/modificar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updatedUser),
-        })
-        .then(response => response.json())
-        .then(data => {
+        try {
+            const response = await fetch(`${config.BACKEND_URL}/users/modificar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${getToken()}`, // Token incluido en la cabecera
+                },
+                body: JSON.stringify(updatedUser),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error al guardar el usuario: ${response.statusText}`);
+            }
+
+            const data = await response.json();
             console.log('Usuario editado exitosamente:', data);
-        })
-        .catch(error => {
+            onSave(updatedUser);
+            window.location.reload();
+
+        } catch (error) {
             console.error('Error al guardar usuario:', error);
-        });
-        onSave(updatedUser);
-    };
+        }
+    }
 
     return (
         <div className="user-edit-form">

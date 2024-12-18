@@ -1,7 +1,7 @@
 import { jwtDecode } from 'jwt-decode';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import config from '../config';
 
 
