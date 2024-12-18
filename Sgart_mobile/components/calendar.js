@@ -7,6 +7,7 @@ import config from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CalendarComponent = () => {
+
     // Estados esenciales para reuniones
     const [isLoading, setIsLoading] = useState(false);
     const [regularEvents, setRegularEvents] = useState([]);
@@ -74,12 +75,11 @@ const CalendarComponent = () => {
     const loadInvitees = useCallback(async (meetingId) => {
         try {
             console.log(`Cargando invitados para la reunión ID: ${meetingId}`);
-            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/invitados`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                 },
                 body: JSON.stringify({ meetingId }),
             });
@@ -101,11 +101,10 @@ const CalendarComponent = () => {
     // ! OBTENER USER ID ACTUAL	
     const getUserId = async () => {
         try {
-            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/users/current/userId`, {
                 credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                 },
             });
             if (!response.ok) {
@@ -134,10 +133,9 @@ const CalendarComponent = () => {
                 throw new Error('No se pudo obtener el ID del usuario');
             }
 
-            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/loadMeetings`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                 },
             });
 
@@ -221,11 +219,10 @@ const CalendarComponent = () => {
     const loadOrganizedMeetings = useCallback(async () => {
         try {
             console.log("Iniciando carga de reuniones organizadas...");
-            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/usuarios/calendarios/organized-meetings`, {
                 credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                 },
             });
 
@@ -280,11 +277,10 @@ const CalendarComponent = () => {
     // ! OBTENER ASISTENCIAS
     const checkAttendanceStatus = async (meetingId) => {
         try {
-            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/invitations/${meetingId}/attendance`, {
                 credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                 },
             });
 
@@ -334,7 +330,6 @@ const CalendarComponent = () => {
             console.log('Iniciando actualización de estado para evento:', selectedEvent);
             console.log('Acción seleccionada:', confirmationAction);
 
-            const token = await AsyncStorage.getItem('authToken');
             const url = `${config.BACKEND_URL}/invitations/${selectedEvent.id}/status`;
             console.log('URL de la petición:', url);
 
@@ -349,7 +344,7 @@ const CalendarComponent = () => {
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                 },
                 body: JSON.stringify(requestBody),
             });
@@ -439,10 +434,9 @@ const CalendarComponent = () => {
 	// * NO SE ESTÁ USANDO
     const loadWorkSchedules = async () => {
         try {
-            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/administrador/horarios`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                 },
             });
             if (!response.ok) {
@@ -580,12 +574,11 @@ const CalendarComponent = () => {
                         return;
                     }
                 }
-                const token = await AsyncStorage.getItem('authToken');
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/${eventIdToEdit}/modify`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                     },
                     body: JSON.stringify(newEvent),
                 });
@@ -598,12 +591,11 @@ const CalendarComponent = () => {
 
                 alert("Se ha modificado el evento de manera exitosa.");
             } else { // ! AQUI SE CREA LA REUNIÓN
-                const token = await AsyncStorage.getItem('authToken');
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                     },
                     body: JSON.stringify(newEvent),
                     
@@ -619,7 +611,7 @@ const CalendarComponent = () => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                     },
                     body: JSON.stringify(userIds),
                 });
@@ -679,10 +671,10 @@ const CalendarComponent = () => {
             const currentUserId = await getUserId();
             console.log('ID del usuario actual:', currentUserId);
             
-            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/api/meetings/available-users`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
                 },
             });
             
@@ -716,10 +708,10 @@ const CalendarComponent = () => {
 	// Función para cargar localizaciones
 	// ? VAYA MIERDA DE MÉTODO
     const loadLocations = (async() => {
-        const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${config.BACKEND_URL}/api/meetings/locations`, {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
             },
         });
         if (!response.ok) {
@@ -736,10 +728,10 @@ const CalendarComponent = () => {
 
 	// ! CARGAR AUSENCIAS
     const loadAbsences = (async () => {
-        const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${config.BACKEND_URL}/administrador/ausencias/loadAbsences`, {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
             },
         });
         if (!response.ok) {
@@ -844,11 +836,11 @@ const CalendarComponent = () => {
     // Add this new function near other handler functions
     const handleAttendanceUpdate = async (meetingId) => {
         try {
-            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/invitations/${meetingId}/attendance`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
                 },
             });
 
@@ -916,11 +908,11 @@ const CalendarComponent = () => {
             }
     
             // Hacer una petición DELETE al backend para eliminar la reunión
-            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/api/meetings/${reunion.id}/cancel`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
                 },
             });
     
@@ -1080,7 +1072,7 @@ const CalendarComponent = () => {
         });
         return transformedEvents;
     };
-  
+
     // Generar markedDates combinando todos los eventos
     const markedDates = {   // cambiar esto a morado organizador y asistente en verde
 
@@ -1108,8 +1100,8 @@ const CalendarComponent = () => {
         console.log(eventos);
         // Actualizar el estado asegurando que no haya duplicados
         const eventosUnicos = Array.from(new Set(eventos.map((event) => event.id))) // Filtrar por ID único
-          .map((id) => eventos.find((event) => event.id === id));
-      
+            .map((id) => eventos.find((event) => event.id === id));
+
         setSelectedEvents(eventosUnicos);
     };
 
@@ -1117,7 +1109,7 @@ const CalendarComponent = () => {
         //setSelectedMeeting(event); // Establecer la reunión seleccionada
         //setModalVisible(true); // Mostrar el modal con los detalles
         const isOrganizedEvent = reunionesOrganizadas.some(reunion => reunion.id === event.id);
-       
+
         if (isOrganizedEvent) {
             // Si es una reunión organizada, permite la edición
             handleModifyEvent(event);
@@ -1172,7 +1164,7 @@ const CalendarComponent = () => {
                             />
                             {/* Lista de eventos seleccionados */}
                             {selectedEvents.length > 0 && (
-                                 <>
+                                <>
                                 <Text style={styles.headerText}>Reuniones del día {selectedDay}</Text>
                             <FlatList
                                 data={selectedEvents}
@@ -1192,7 +1184,6 @@ const CalendarComponent = () => {
                             />
                             </>
                             )}
-                           
 
                                 {/* Modal para mostrar detalles de la reunión */}
                                 <Modal
@@ -1244,7 +1235,7 @@ const CalendarComponent = () => {
                                                 reunionesPendientes.map((reunion) => (
                                                     <View key={reunion.meetingId} style={[styles['meeting-item'], styles['meeting-item-pending']]}>
                                                         <View style={styles['meeting-info']}>
-                                                            <Text>{reunion.title}</Text>
+                                                            <Text>{reunion.title || 'Título no disponible'}</Text>
                                                         </View>
                                                         <View style={styles['meeting-actions']}>
                                                             <TouchableOpacity
@@ -1323,7 +1314,7 @@ const CalendarComponent = () => {
                                                 <View key={reunion.meetingId} style={[styles['meeting-item'], styles['meeting-item-accepted']]}>
                                                     <View style={styles['meeting-item-content']}>
                                                         <View style={styles['meeting-info']}>
-                                                            <Text>{reunion.title}</Text>
+                                                            <Text>{reunion.title || 'Título no disponible'}</Text>
                                                         </View>
                                                         <View style={styles['meeting-buttons']}>
                                                             <TouchableOpacity
@@ -1382,7 +1373,7 @@ const CalendarComponent = () => {
                                                 >
                                                     <View style={styles['meeting-item-content']}>
                                                         <View style={styles['meeting-info']}>
-                                                            <Text>{reunion.title}</Text>
+                                                            <Text>{reunion.title || 'Título no disponible'}</Text>
                                                         </View>
                                                         <View style={styles['meeting-buttons']}>
                                                             <TouchableOpacity
@@ -1563,8 +1554,8 @@ const CalendarComponent = () => {
                                         <View style={styles['AdminCalendar-input-group']}>
                                             <Text style={styles['label']}>Lista de Invitados:</Text>
                                             <View>
-                                                {invitees.map((invitee) => (
-                                                    <Text key={invitee.id} style={styles['value']}>
+                                                {invitees.map((invitee, index) => (
+                                                    <Text key={index} style={styles['value']}>
                                                         {invitee.userName} - {invitee.status}
                                                     </Text>
                                                 ))}
@@ -1688,7 +1679,7 @@ const CalendarComponent = () => {
                                                     <View style={styles['work-schedules']}>
                                                         {workSchedules.length > 0 ? (
                                                             workSchedules.map((schedule, index) => (
-                                                                <View key={schedule.startingTime + schedule.endingTime} style={styles['work-schedule-item']}>
+                                                                <View key={index} style={styles['work-schedule-item']}>
                                                                     <Text>
                                                                         Bloque {index + 1}: {schedule.startingTime.slice(0, -3)} - {schedule.endingTime.slice(0, -3)}
                                                                     </Text>
@@ -2426,13 +2417,6 @@ const styles = StyleSheet.create({
         color: '#1e3a8a',
         fontWeight: 'bold',
     }, 
-    'calendarContainer': {
-        flex: 1, // Asegura que el contenedor ocupe todo el espacio disponible
-        backgroundColor: 'white', // Fondo blanco para claridad
-        width: '100%', // Usa todo el ancho disponible
-        //height: '40%', // Ajusta la altura del calendario (puedes personalizar este valor)
-        top: -100,
-    },
     'item': {
         backgroundColor: 'lightblue',
         borderRadius: 5,
@@ -2450,26 +2434,26 @@ const styles = StyleSheet.create({
     },
 
     calendarContainer: {
-        flex: 0, // Ajusta el tamaño según el contenido
-        backgroundColor: 'white', // Fondo blanco para claridad
-        width: '120%', // Ajusta el ancho para que no ocupe todo el espacio
-        marginTop: -520, // Ajusta el margen superior para separarlo del encabezado
-        padding: 10, // Añade espaciado interno
-        alignSelf: 'center', // Centra el contenedor horizontalmente
-        borderRadius: 15, // Bordes redondeados para un diseño más moderno
-        shadowColor: '#000', // Sombra para darle profundidad
-        shadowOffset: { width: 0, height: 2 }, // Desplazamiento de la sombra
-        shadowOpacity: 0.2, // Opacidad de la sombra
-        shadowRadius: 5, // Difuminado de la sombra
-        elevation: 3, // Elevación para dispositivos Android
+        flex: 0,
+        backgroundColor: 'white',
+        width: '120%',
+        marginTop: -300,
+        padding: 10,
+        alignSelf: 'center',
+        borderRadius: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2, 
+        shadowRadius: 5,
+        elevation: 3,
     },
     calendar: {
-        borderWidth: 1, // Borde del calendario
-        borderColor: '#ddd', // Color del borde
-        borderRadius: 10, // Bordes redondeados
-        padding: 10, // Espaciado interno
-        fontSize: 16, // Tamaño del texto
-        height: 350, // Ajusta la altura del calendario
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 10,
+        padding: 10,
+        fontSize: 16,
+        height: 350,
     },
     subtitleCalend: {
         //fontSize: 16,
@@ -2530,5 +2514,5 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         textAlign: 'center',
         color: '#00aced',
-      },
+    },
 });
