@@ -13,6 +13,8 @@ import VentanaConfirm from './VentanaConfirm';
 
 const UserCalendarUI = () => {
     // Estados esenciales para reuniones
+    const [currentUserId, setCurrentUserId] = useState(null); // Estado global para userId
+
     const [isLoading, setIsLoading] = useState(false);
     const [regularEvents, setRegularEvents] = useState([]);
     const [pendingMeetingsEvents, setPendingMeetingsEvents] = useState([]);
@@ -65,6 +67,9 @@ const UserCalendarUI = () => {
     const loadInvitees = useCallback(async (meetingId) => {
         try {
             console.log(`Cargando invitados para la reunión ID: ${meetingId}`);
+            console.log("Id del usuario actual:", currentUserId);   
+            
+
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/invitados`, {
                 method: 'POST',
                 headers: {
@@ -74,16 +79,16 @@ const UserCalendarUI = () => {
                 body: JSON.stringify({ meetingId }),
             });
             console.log("Estado de respuesta:", response.status);
-            console.log("Texto de respuesta:", await response.text());
 
 
             if (!response.ok) {
                 throw new Error(`Error al cargar los invitados: ${response.statusText}`);
             }
+            // Leer el cuerpo de la respuesta SOLO UNA VEZ
+            const responseBody = await response.json();
 
-            const backendInvitees = await response.json();
-            console.log("Lista de invitados cargada:", backendInvitees);
-            return backendInvitees;
+            console.log("Texto de respuesta (JSON):", JSON.stringify(responseBody, null, 2));
+            return responseBody;
 
         } catch (error) {
             console.error("Error al cargar los invitados:", error);
@@ -92,25 +97,39 @@ const UserCalendarUI = () => {
     }, []);
 
     // Función para obtener el userId del usuario actual
-    const getUserId = async () => {
+    const getUserId = () => {
         try {
-            const response = await fetch(`${config.BACKEND_URL}/users/current/userId`, {
-                credentials: 'include',
-                headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
-                },
-            });
-            if (!response.ok) {
-                throw new Error('No se pudo obtener el ID del usuario');
+            const authToken = sessionStorage.getItem('authToken');
+    
+            if (!authToken) {
+                console.error("Error: Token no encontrado.");
+                return null;
             }
-            const data = await response.json();
-            console.log("ID de usuario obtenido:", data.userId);
-            return data.userId;
+    
+            const tokenParts = authToken.split('.');
+            if (tokenParts.length !== 3) {
+                console.error("Error: Token JWT inválido.");
+                return null;
+            }
+    
+            const decodedPayload = JSON.parse(atob(tokenParts[1])); // Decodificar payload
+            const userId = decodedPayload.userId;
+    
+            if (!userId) {
+                console.error("Error: userId no encontrado en el token.");
+                return null;
+            }
+    
+            console.log("ID del usuario extraído del token:", userId);
+            return userId;
+    
         } catch (error) {
-            console.error('Error al obtener el ID del usuario:', error);
+            console.error("Error al extraer el userId del token:", error);
             return null;
         }
     };
+    
+    
     
 
     // Cargar reuniones y clasificarlas según los invitados
@@ -191,6 +210,8 @@ const UserCalendarUI = () => {
             console.log("\n=== RESUMEN FINAL ===");
             console.log("Total reuniones aceptadas:", acceptedMeetings.length);
             console.log("Total reuniones pendientes:", pendingMeetings.length);
+            console.log("Token: ", sessionStorage.getItem('authToken'));
+
 
             // Actualizar estados
             setRegularEvents(acceptedMeetings);
@@ -231,7 +252,7 @@ const UserCalendarUI = () => {
             console.log("Reuniones organizadas recibidas del backend:", backendMeetings);
 
             const transformedMeetings = await Promise.all(backendMeetings.map(async (meeting, index) => {
-                console.log(`Procesando reunión organizada ${index + 1}:`, meeting);
+                
 
                 const invitados = await loadInvitees(meeting.meetingId);
                 console.log(`Invitados cargados para reunión ${meeting.meetingId}:`, invitados);
@@ -929,6 +950,12 @@ console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invita
 
     
     useEffect(() => {
+        const userId = getUserId();
+        if (userId) {
+            setCurrentUserId(userId); // Guardar el userId en el estado global
+        } else {
+        console.error("No se pudo obtener el ID del usuario.");
+        }
         loadMeetings();
         loadOrganizedMeetings();
         loadWorkSchedules();
@@ -1134,13 +1161,7 @@ console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invita
                                     }
                                 ]}
                                 eventDidMount={(info) => {
-                                    console.log("Evento montado en el calendario:", {
-                                        id: info.event.id,
-                                        title: info.event.title,
-                                        start: info.event.start,
-                                        end: info.event.end,
-                                        source: info.event.source?.id
-                                    });
+                                    
                                 }}
                                 eventClick={handleEventClick}
                                 selectable={true}
