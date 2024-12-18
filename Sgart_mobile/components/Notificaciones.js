@@ -10,78 +10,113 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import config from "../config";
 
-const NotificacionesComponent = ({ onUnreadStatusChange }) => {
+import React, { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+
+const NotificacionesComponent = () => {
     const [notificaciones, setNotificaciones] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Obtener usuarioId del token JWT
+    const getUsuarioIdFromToken = () => {
+        const token = sessionStorage.getItem("authToken");
+
+        if (token) {
+            const decodedToken = jwtDecode(token);
+            console.log("Token decodificado:", decodedToken);
+            return decodedToken.userId;
+        }
+        return null;
+    };
+
+    // Obtener el token del sessionStorage
+    const getAuthToken = () => {
+        return sessionStorage.getItem("authToken");
+    };
+
     // Cargar notificaciones desde el backend
     const loadNotificaciones = async () => {
-        setIsLoading(true);
+        const userId = getUsuarioIdFromToken();
+        const token = getAuthToken();
+
+        if (!userId || !token) {
+            console.error("Token JWT o usuarioId no encontrado.");
+            return;
+        }
+
         try {
-            const response = await fetch(`${config.BACKEND_URL}/notificaciones`, {
+            setIsLoading(true);
+            const response = await fetch(`http://localhost:9000/notificaciones?usuarioId=${userId}`, {
+                method: "GET",
                 headers: {
-                    "Authorization": `Bearer ${await AsyncStorage.getItem("authToken")}`
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
                 },
             });
+
             if (!response.ok) {
                 throw new Error("Error al cargar las notificaciones");
             }
-            const data = await response.json();
 
-            // Actualizar notificaciones y verificar si hay no leídas
+            const data = await response.json();
             setNotificaciones(data);
-            const hasUnread = data.some((notificacion) => !notificacion.leida);
-            onUnreadStatusChange(hasUnread);
         } catch (error) {
-            console.error("Error al cargar notificaciones:", error);
+            console.error("Error cargando notificaciones:", error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Marcar una notificación como leída
-    const markAsRead = async (id) => {
-        try {
-            await fetch(`${config.BACKEND_URL}/notificaciones/${id}/marcarLeida`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${await AsyncStorage.getItem("authToken")}`
-                },
-            });
-
-            // Actualizar localmente la notificación
-            setNotificaciones((prev) =>
-                prev.map((n) => (n.id === id ? { ...n, leida: true } : n))
-            );
-
-            // Verificar si todavía hay no leídas
-            const hasUnread = notificaciones.some((n) => n.id !== id && !n.leida);
-            onUnreadStatusChange(hasUnread);
-        } catch (error) {
-            console.error("Error al marcar la notificación como leída:", error);
-        }
-    };
-
-    // Eliminar una notificación
+    // Eliminar una notificación individual
     const deleteNotificacion = async (id) => {
+        const token = getAuthToken();
+
         try {
-            await fetch(`${config.BACKEND_URL}/notificaciones/${id}`, {
+            const response = await fetch(`${CONFIG.BACKEND_URL}/notificaciones/${id}`, {
                 method: "DELETE",
                 headers: {
-                    "Authorization": `Bearer ${await AsyncStorage.getItem("authToken")}`
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
                 },
             });
-            setNotificaciones((prev) => prev.filter((n) => n.id !== id));
 
-            // Verificar si todavía hay no leídas
-            const hasUnread = notificaciones.some((n) => n.id !== id && !n.leida);
-            onUnreadStatusChange(hasUnread);
+            if (!response.ok) {
+                throw new Error("Error al eliminar la notificación");
+            }
+
+            setNotificaciones((prev) => prev.filter((n) => n.id !== id));
         } catch (error) {
-            console.error("Error al eliminar la notificación:", error);
+            console.error(`Error al eliminar la notificación ${id}:`, error);
         }
     };
 
+    // Eliminar todas las notificaciones
+    const deleteAllNotificaciones = async () => {
+        const userId = getUsuarioIdFromToken();
+        const token = getAuthToken();
+
+        if (!userId || !token) return;
+
+        try {
+            const response = await fetch(`${CONFIG.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Error al eliminar todas las notificaciones");
+            }
+
+            setNotificaciones([]);
+        } catch (error) {
+            console.error("Error al eliminar todas las notificaciones:", error);
+        }
+    };
+
+    // Cargar notificaciones al montar el componente
     useEffect(() => {
         loadNotificaciones();
     }, []);
@@ -89,45 +124,44 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.header}>Notificaciones</Text>
+
             {isLoading ? (
                 <ActivityIndicator size="large" color="#1e3a8a" />
             ) : notificaciones.length > 0 ? (
-                <FlatList
-                    data={notificaciones}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={({ item }) => (
-                        <View
-                            style={[
-                                styles.notificacion,
-                                item.leida ? styles.leida : styles.noLeida,
-                            ]}
-                        >
-                            <Text style={styles.title}>{item.titulo}</Text>
-                            <Text>{item.mensaje}</Text>
+                <>
+                    <TouchableOpacity 
+                        style={styles.deleteAllButton} 
+                        onPress={deleteAllNotificaciones}
+                    >
+                        <Text style={styles.deleteAllText}>Eliminar todas</Text>
+                    </TouchableOpacity>
 
-                            <View style={styles.buttonContainer}>
-                                {!item.leida && (
-                                    <TouchableOpacity
-                                        onPress={() => markAsRead(item.id)}
-                                    >
-                                        <Text style={styles.markAsRead}>
-                                            Marcar como leída
-                                        </Text>
+                    <FlatList
+                        data={notificaciones}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={({ item }) => (
+                            <View 
+                                style={[
+                                    styles.notificacion,
+                                    item.leida ? styles.leida : styles.noLeida
+                                ]}
+                            >
+                                <Text style={styles.title}>{item.titulo}</Text>
+                                <Text>{item.mensaje}</Text>
+                                <Text style={styles.fecha}>
+                                    {new Date(item.fechaCreacion).toLocaleString()}
+                                </Text>
+                                <View style={styles.buttonContainer}>
+                                    <TouchableOpacity onPress={() => deleteNotificacion(item.id)}>
+                                        <Text style={styles.deleteButton}>Eliminar</Text>
                                     </TouchableOpacity>
-                                )}
-                                <TouchableOpacity
-                                    onPress={() => deleteNotificacion(item.id)}
-                                >
-                                    <Text style={styles.deleteButton}>
-                                        Eliminar
-                                    </Text>
-                                </TouchableOpacity>
+                                </View>
                             </View>
-                        </View>
-                    )}
-                />
+                        )}
+                    />
+                </>
             ) : (
-                <Text style={styles.empty}>No tienes notificaciones.</Text>
+                <Text style={styles.empty}>No tienes notificaciones pendientes.</Text>
             )}
         </View>
     );
@@ -166,17 +200,29 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         color: "#333",
     },
+    fecha: {
+        fontSize: 12,
+        color: "#666",
+        marginTop: 5,
+    },
     buttonContainer: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        justifyContent: "flex-end",
         marginTop: 10,
-    },
-    markAsRead: {
-        color: "#007bff",
-        fontWeight: "bold",
     },
     deleteButton: {
         color: "red",
+        fontWeight: "bold",
+    },
+    deleteAllButton: {
+        backgroundColor: "#ff0000",
+        padding: 10,
+        borderRadius: 5,
+        marginBottom: 10,
+        alignItems: "center",
+    },
+    deleteAllText: {
+        color: "#fff",
         fontWeight: "bold",
     },
     empty: {
