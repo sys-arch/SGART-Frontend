@@ -1,11 +1,9 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import '../App.css';
-import config from '../config'; // Importa config para usar config.ks
-import LoadingSpinner from './LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import NavBar from './NavBar';
-
+import LoadingSpinner from './LoadingSpinner';
 
 const AdminGestionarHorariosDeTrabajo = () => {
     const navigate = useNavigate();
@@ -19,18 +17,13 @@ const AdminGestionarHorariosDeTrabajo = () => {
     const [isEditable, setIsEditable] = useState(true); // Estado para manejar la edición
     const [existingSchedules, setExistingSchedules] = useState([]); // Estado para almacenar horarios existentes
     const [isLoading, setIsLoading] = useState(false);
-    const getToken = () => sessionStorage.getItem('authToken'); // Función para obtener el token
 
     // Fetch para obtener los horarios de trabajo al cargar el componente
     useEffect(() => {
         const fetchWorkingHours = async () => {
             try {
                 setIsLoading(true);
-                const response = await axios.get(`${config.BACKEND_URL}/administrador/horarios`, {
-                    headers: {
-                        Authorization: `Bearer ${getToken()}`,
-                    },
-                });
+                const response = await axios.get("https://sgart-backend.onrender.com/administrador/horarios");
                 if (response.data.length > 0) {
                     // Si hay datos, desactiva la edición y almacena los horarios recibidos
                     setIsEditable(false);
@@ -78,11 +71,7 @@ const AdminGestionarHorariosDeTrabajo = () => {
         
         try {
             setIsLoading(true);
-            await axios.post(`${config.BACKEND_URL}/administrador/horarios`, workingHoursList, {
-                headers: {
-                    Authorization: `Bearer ${getToken()}`,
-                },
-            });
+            await axios.post("https://sgart-backend.onrender.com/administrador/horarios", workingHoursList);
             alert("Horarios de trabajo guardados correctamente.");
             setIsEditable(false); // Desactiva la edición después de guardar
             setIsPopupOpen(false);
@@ -93,7 +82,6 @@ const AdminGestionarHorariosDeTrabajo = () => {
             setIsLoading(false);
         }
     };
-
 
     // Función para manejar el cierre del pop-up y reiniciar la selección
     const handleClosePopup = () => {

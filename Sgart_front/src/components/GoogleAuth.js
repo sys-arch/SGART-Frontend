@@ -99,7 +99,6 @@ const GoogleAuth = () => {
             });
     
             if (!response.ok) {
-                alert('Error al registrar el usuario');
                 throw new Error(`Error al registrar el usuario: ${response.statusText}`);
             }
     
@@ -118,7 +117,7 @@ const GoogleAuth = () => {
             console.error("Error en el registro:", error);
         }
     };
-
+    
 
     const registrarAdmin = async (email) => {
         try {

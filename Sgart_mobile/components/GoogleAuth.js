@@ -15,14 +15,13 @@ const GoogleAuth = ({navigation}) => {
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
-                const token = await AsyncStorage.getItem('authToken');
-                if (!token) throw new Error('Token no encontrado');
+                
         
                 // Obtener el objeto User desde el backend
                 const response = await fetch(`${config.BACKEND_URL}/users/current/user`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
                         'Content-Type': 'application/json',
                     },
                     credentials: 'include',
@@ -45,12 +44,11 @@ const GoogleAuth = ({navigation}) => {
     useEffect(() => {
         const fetchQRCode = async () => {
             try {
-                const token = await AsyncStorage.getItem('authToken');
                 const response = await fetch(
                     `${config.BACKEND_URL}/auth/generate-qr?email=${usuario.email}`,
                     {
                         headers: {
-                            'Authorization': `Bearer ${token}`,
+                            'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
                         },
                     }
                 );
@@ -75,12 +73,11 @@ const GoogleAuth = ({navigation}) => {
 
     const handleSubmit = async () => {
         try {
-            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/auth/validate-totp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
                 },
                 body: JSON.stringify({ mail: usuario.email, code: inputCode }),
             });
@@ -92,7 +89,6 @@ const GoogleAuth = ({navigation}) => {
             const data = await response.json();
             if (data.status === 'valid' ) {
                 if(!isAdmin){
-                    //await registrarUsuario();
                     setMessage("Autenticación exitosa. Redirigiendo...");
                     navigation.navigate('Calendar');
                 }else{
@@ -110,8 +106,6 @@ const GoogleAuth = ({navigation}) => {
 
     const registrarUsuario = async (email) => {
         try {
-            const token = await AsyncStorage.getItem('authToken');
-
             const usuarioActualizado = {
                 ...usuario,
                 twoFactorAuthCode: secretKey,
@@ -121,7 +115,7 @@ const GoogleAuth = ({navigation}) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
                 },
                 body: JSON.stringify(usuarioActualizado),
             });

@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from '../config.js';
-import '../styles/styles.css';
 import AdminCreateForm from './AdminCreateForm';
 import AdminEditForm from './AdminEditForm';
 import NavBar from './NavBar';
 import VentanaConfirm from './VentanaConfirm';
-
 
 
 const AdminPanel = () => {
@@ -217,7 +215,7 @@ const AdminPanel = () => {
     <>
         <NavBar isAdmin={true} />
         <div className="user-validation-container">
-        <div className="box">
+        <div className="login-box">
             <body>
                 <h2>Listado de Administradores</h2>
                 <table className="user-table">
