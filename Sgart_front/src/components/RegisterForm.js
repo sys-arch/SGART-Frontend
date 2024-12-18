@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from './LoadingSpinner';
 import LoginForm from './LoginForm';
+import config from '../config';
 
 const RegisterForm = () => {
     const navigate = useNavigate();
@@ -141,23 +142,66 @@ const RegisterForm = () => {
         if (errorBool) {
             return;
         }
+
+        try {
+            // Intentar registrar el usuario
+            const response = await fetch(`${config.BACKEND_URL}/registro`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(usuario),
+            });
+
+            if (!response.ok) {
+                if (response.status === 409) {
+                    setErrorEmail('El correo electrónico ya está registrado.');
+                } else {
+                    setErrorEmail('Error al registrar el usuario.');
+                }
+                return;
+            }
+
+            const usuario = {
+                name: nombre,
+                lastName: apellidos,
+                email: email,
+                department: departamento,
+                center: centro,
+                hiringDate: fechaAlta,
+                profile: perfil_desplegable,
+                password: contrasena,
+                passwordConfirm: repetirContrasena,
+                blocked: false,
+                verified: false,
+                twoFactorAuthCode: '',
+            };
+
+            // Si el registro es exitoso, redirigir a GoogleAuth
+            navigate('/google-auth', { state: { usuario, esAdmin: false } });
+        } catch (error) {
+            setErrorEmail('Error. Este email no es válido.');
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     
-        const usuario = {
-            name: nombre,
-            lastName: apellidos,
-            email: email,
-            department: departamento,
-            center: centro,
-            hiringDate: fechaAlta,
-            profile: perfil_desplegable,
-            password: contrasena,
-            passwordConfirm: repetirContrasena,
-            blocked: false,
-            verified: false,
-            twoFactorAuthCode: '',
-        };
+        //const usuario = {
+           // name: nombre,
+            //lastName: apellidos,
+            //email: email,
+            //department: departamento,
+            //center: centro,
+            //hiringDate: fechaAlta,
+            //profile: perfil_desplegable,
+            //password: contrasena,
+            //passwordConfirm: repetirContrasena,
+            //blocked: false,
+            //verified: false,
+            //twoFactorAuthCode: '',
+        //};
     
-        navigate('/google-auth', { state: { usuario, esAdmin: false } });
+        //navigate('/google-auth', { state: { usuario, esAdmin: false } });
     };
 
     const togglePasswordVisibility = () => {
