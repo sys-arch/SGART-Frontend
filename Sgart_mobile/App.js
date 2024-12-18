@@ -6,6 +6,7 @@ import RegisterForm from './components/RegisterForm';
 import CalendarComponent from './components/calendar';
 import UserEdit from './components/UserEdit';
 import GoogleAuth from './components/GoogleAuth';
+import NotificacionesComponent from './components/Notificaciones';
 
 const Stack = createStackNavigator();
 

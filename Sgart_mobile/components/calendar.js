@@ -7,8 +7,7 @@ import config from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /*Notificaciones*/
-import { TouchableOpacity, Image, Modal } from 'react-native';
-import { NotificacionesComponent } from "./Notificaciones";
+import NotificacionesComponent from "./Notificaciones";
 
 const CalendarComponent = () => {
     // Estados esenciales para reuniones
