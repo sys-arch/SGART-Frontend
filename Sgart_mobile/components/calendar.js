@@ -1111,8 +1111,18 @@ const CalendarComponent = () => {
     };
 
     const handleEventPress = (event) => {
-        setSelectedMeeting(event); // Establecer la reunión seleccionada
-        setModalVisible(true); // Mostrar el modal con los detalles
+        //setSelectedMeeting(event); // Establecer la reunión seleccionada
+        //setModalVisible(true); // Mostrar el modal con los detalles
+        const isOrganizedEvent = reunionesOrganizadas.some(reunion => reunion.id === event.id);
+       
+        if (isOrganizedEvent) {
+            // Si es una reunión organizada, permite la edición
+            handleModifyEvent(event);
+        } else {
+            // Si no, solo muestra la información
+            setSelectedMeeting(event);
+            setModalVisible(true);
+        }
     };
 
 
