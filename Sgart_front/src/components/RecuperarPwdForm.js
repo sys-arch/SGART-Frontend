@@ -1,4 +1,5 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
+import config from "../config"; // Importa config para usar BACKEND_URL
 import LoginForm from "./LoginForm";
 
 const RecuperarPwdForm = () => {
@@ -25,14 +26,14 @@ const RecuperarPwdForm = () => {
         }
 
         try {
-            const response = await fetch('https://sgart-backend.onrender.com/auth/forgot-password', {
+            const response = await fetch(`${config.BACKEND_URL}/auth/forgot-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email }),
             });
-
+            
             if (response.ok) {
                 setSuccessMessage('Correo enviado. Por favor, revisa tu bandeja de entrada.');
                 setError('');
