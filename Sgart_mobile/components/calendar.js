@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Modal, Switch, SafeAreaView, ScrollView, FlatList } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { Calendar } from 'react-native-calendars';
-import { useNavigation } from '@react-navigation/native';
-import config from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Picker } from '@react-native-picker/picker';
+import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { FlatList, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Calendar } from 'react-native-calendars';
+import config from '../config';
 
 /*Notificaciones*/
 import NotificacionesComponent from "./Notificaciones";

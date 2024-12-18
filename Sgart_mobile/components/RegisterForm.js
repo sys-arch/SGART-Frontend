@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { Text, TextInput, TouchableOpacity, View, Image , StyleSheet, ScrollView} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import LoginForm from './LoginForm';
 
 const RegisterForm = () => {
