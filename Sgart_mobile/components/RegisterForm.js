@@ -30,9 +30,6 @@ const RegisterForm = () => {
     const [errorRepetirContrasena, setErrorRepetirContrasena] = useState('');
     const [errorEmail, setErrorEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const getToken = () => {
-        return sessionStorage.getItem('authToken');
-    };
 
     const handleChange = (name, value) => {
         switch (name) {
