@@ -6,7 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import config from '../config';
 
 /*Notificaciones*/
-import NotificacionesComponent from "./Notificaciones";
+import { TouchableOpacity, Image, Modal } from 'react-native';
+import { NotificacionesComponent } from "./Notificaciones";
 
 const CalendarComponent = () => {
     // Estados esenciales para reuniones
@@ -62,6 +63,7 @@ const CalendarComponent = () => {
 
     //Notificaciones
     const [showNotificaciones, setShowNotificaciones] = useState(false);
+    const [hasUnreadNotificaciones, setHasUnreadNotificaciones] = useState(false);
 
     const navigation = useNavigation();
 
@@ -1058,6 +1060,10 @@ const CalendarComponent = () => {
         alert(mensaje);
     }
 
+    //Notificaciones
+    const handleUnreadStatusChange = (hasUnread) => {
+        setHasUnreadNotificaciones(hasUnread);
+    };
 
     return (
         <>
@@ -1065,63 +1071,63 @@ const CalendarComponent = () => {
             {isLoading ? (
                 <LoadingSpinner />
             ) : (
-                <ScrollView 
-                    style={styles.scrollContainer} 
+                <ScrollView
+                    style={styles.scrollContainer}
                     contentContainerStyle={styles.scrollContent}
                 >
-                    
+
                     <View style={[styles['AdminCalendarapp-container'], styles['main-content']]}>
-                    <Image
-                        source={require('../media/1206.png')}
-                        style={styles['background-image']}
-                        resizeMode="cover"
-                    />
-                    {activeContent === 'calendar' &&(
-
-                        
-                        // Calendario en la parte superior
-                        <SafeAreaView style={styles.calendarContainer}>
-                            
-                        <Text style={styles.subtitleCalend}>Selecciona una fecha para ver tus eventos</Text>
-                            <Calendar style={styles.calendar}
-                            // Días marcados con eventos
-                                markingType={'multi-dot'}
-                                markedDates={markedDates}
-
-                                // Evento cuando se selecciona un día
-                                onDayPress={handleDayPress}
-
-                                // Opciones de estilo
-                                theme={{
-                                    selectedDayBackgroundColor: '#00aced',
-                                    todayTextColor: '#00aced',
-                                    dayTextColor: '#2d4150',
-                                    arrowColor: '#00aced',
-                                    monthTextColor: '#00aced',
-                                    textDayFontWeight: '300',
-                                    textMonthFontWeight: 'bold',
-                                    textDayHeaderFontWeight: '300',
-                                }}
-                            />
-                        </SafeAreaView>
-                    )}
+                        <Image
+                            source={require('../media/1206.png')}
+                            style={styles['background-image']}
+                            resizeMode="cover"
+                        />
+                        {activeContent === 'calendar' && (
 
 
+                            // Calendario en la parte superior
+                            <SafeAreaView style={styles.calendarContainer}>
+
+                                <Text style={styles.subtitleCalend}>Selecciona una fecha para ver tus eventos</Text>
+                                <Calendar style={styles.calendar}
+                                    // Días marcados con eventos
+                                    markingType={'multi-dot'}
+                                    markedDates={markedDates}
+
+                                    // Evento cuando se selecciona un día
+                                    onDayPress={handleDayPress}
+
+                                    // Opciones de estilo
+                                    theme={{
+                                        selectedDayBackgroundColor: '#00aced',
+                                        todayTextColor: '#00aced',
+                                        dayTextColor: '#2d4150',
+                                        arrowColor: '#00aced',
+                                        monthTextColor: '#00aced',
+                                        textDayFontWeight: '300',
+                                        textMonthFontWeight: 'bold',
+                                        textDayHeaderFontWeight: '300',
+                                    }}
+                                />
+                            </SafeAreaView>
+                        )}
 
 
 
 
-                    {activeContent === 'reuniones' && (
-                        <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9f9' }}>
-                            <View style={styles['AdminCalendar-left-panel']}>
-                                <TouchableOpacity
-                                    style={styles['section-header']}
-                                    onPress={() => setIsPendingOpen(!isPendingOpen)}
-                                >
-                                    <Text style={styles['section-header-text']}>
-                                        Reuniones Pendientes {isPendingOpen ? '-' : '+'}
-                                    </Text>
-                                </TouchableOpacity>
+
+
+                        {activeContent === 'reuniones' && (
+                            <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9f9' }}>
+                                <View style={styles['AdminCalendar-left-panel']}>
+                                    <TouchableOpacity
+                                        style={styles['section-header']}
+                                        onPress={() => setIsPendingOpen(!isPendingOpen)}
+                                    >
+                                        <Text style={styles['section-header-text']}>
+                                            Reuniones Pendientes {isPendingOpen ? '-' : '+'}
+                                        </Text>
+                                    </TouchableOpacity>
                                     {isPendingOpen && (
                                         <View style={styles['meeting-list-pending']}>
                                             {reunionesPendientes.length > 0 ? (
@@ -1190,7 +1196,7 @@ const CalendarComponent = () => {
                                             ) : (
                                                 <Text style={styles['no-participants-message']}>No hay reuniones pendientes</Text>
                                             )}
-                                        </View> 
+                                        </View>
                                     )}
 
                                     <TouchableOpacity
@@ -1200,7 +1206,7 @@ const CalendarComponent = () => {
                                         <Text style={styles['section-header-text']}>
                                             Reuniones Aceptadas {isAcceptedOpen ? '-' : '+'}
                                         </Text>
-                                    </TouchableOpacity> 
+                                    </TouchableOpacity>
                                     {isAcceptedOpen && (
                                         <View style={styles['meeting-list-accepted']}>
                                             {reunionesAceptadas.map((reunion) => (
@@ -1318,13 +1324,13 @@ const CalendarComponent = () => {
                                             ))}
                                         </View>
                                     )}
-                                <View style={styles['AdminCalendar-add-time']}>
-                                    <Text style={styles['AdminCalendar-add-time-text']}>Crear nueva reunión</Text>
-                                    <TouchableOpacity style={styles['add-button']} onPress={handleAddTimeClick}>
-                                        <Text style={styles['add-button-text']}>+</Text>
-                                    </TouchableOpacity>
+                                    <View style={styles['AdminCalendar-add-time']}>
+                                        <Text style={styles['AdminCalendar-add-time-text']}>Crear nueva reunión</Text>
+                                        <TouchableOpacity style={styles['add-button']} onPress={handleAddTimeClick}>
+                                            <Text style={styles['add-button-text']}>+</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
-                            </View>
 
 
 
@@ -1336,7 +1342,7 @@ const CalendarComponent = () => {
 
 
 
-                            {/* <div className="AdminCalendar-calendar-container">
+                                {/* <div className="AdminCalendar-calendar-container">
                                 <h2>Calendario de Trabajo</h2>
                                 <div className="calendar-wrapper">
                                     <FullCalendar
@@ -1374,385 +1380,385 @@ const CalendarComponent = () => {
                                     />
                                 </div>
                             </div> */}
-                            {/* Pop-up de detalles del evento */}
-                            {isEventDetailPopupOpen && selectedEvent && (
-                            <Modal
-                                visible={isEventDetailPopupOpen}
-                                transparent={true}
-                                animationType="fade"
-                                onRequestClose={() => setIsEventDetailPopupOpen(false)}
-                            >
-                                <View style={styles['popup-overlay']}>
-                                    <View style={styles['popup-container']}>
-                                        <Text style={styles['popup-title']}>Detalles de la Reunión</Text>
+                                {/* Pop-up de detalles del evento */}
+                                {isEventDetailPopupOpen && selectedEvent && (
+                                    <Modal
+                                        visible={isEventDetailPopupOpen}
+                                        transparent={true}
+                                        animationType="fade"
+                                        onRequestClose={() => setIsEventDetailPopupOpen(false)}
+                                    >
+                                        <View style={styles['popup-overlay']}>
+                                            <View style={styles['popup-container']}>
+                                                <Text style={styles['popup-title']}>Detalles de la Reunión</Text>
 
-                                        {/* Nombre de la Reunión */}
-                                        <View style={styles['AdminCalendar-input-group']}>
-                                            <Text style={styles['label']}>Nombre de la Reunión:</Text>
-                                            <Text style={styles['value']}>{selectedEvent.title}</Text>
-                                        </View>
-
-                                        {/* Fecha */}
-                                        <View style={styles['AdminCalendar-input-group']}>
-                                            <Text style={styles['label']}>Fecha:</Text>
-                                            <Text style={styles['value']}>
-                                                {selectedEvent.start.split('T')[0]}
-                                            </Text>
-                                        </View>
-
-                                        {/* Hora de Inicio y Fin */}
-                                        {!selectedEvent.allDay && (
-                                            <>
+                                                {/* Nombre de la Reunión */}
                                                 <View style={styles['AdminCalendar-input-group']}>
-                                                    <Text style={styles['label']}>Hora de Inicio:</Text>
+                                                    <Text style={styles['label']}>Nombre de la Reunión:</Text>
+                                                    <Text style={styles['value']}>{selectedEvent.title}</Text>
+                                                </View>
+
+                                                {/* Fecha */}
+                                                <View style={styles['AdminCalendar-input-group']}>
+                                                    <Text style={styles['label']}>Fecha:</Text>
                                                     <Text style={styles['value']}>
-                                                        {selectedEvent.start.split('T')[1]}
+                                                        {selectedEvent.start.split('T')[0]}
                                                     </Text>
                                                 </View>
 
-                                                <View style={styles['AdminCalendar-input-group']}>
-                                                    <Text style={styles['label']}>Hora de Fin:</Text>
-                                                    <Text style={styles['value']}>
-                                                        {selectedEvent.end.split('T')[1]}
-                                                    </Text>
-                                                </View>
-                                            </>
-                                        )}
+                                                {/* Hora de Inicio y Fin */}
+                                                {!selectedEvent.allDay && (
+                                                    <>
+                                                        <View style={styles['AdminCalendar-input-group']}>
+                                                            <Text style={styles['label']}>Hora de Inicio:</Text>
+                                                            <Text style={styles['value']}>
+                                                                {selectedEvent.start.split('T')[1]}
+                                                            </Text>
+                                                        </View>
 
-                                        {/* Organizador */}
-                                        <View style={styles['AdminCalendar-input-group']}>
-                                            <Text style={styles['label']}>Organizador:</Text>
-                                            <Text style={styles['value']}>
-                                                {selectedEvent.extendedProps.organizerName}
-                                            </Text>
-                                        </View>
-
-                                        {/* Ubicación */}
-                                        <View style={styles['AdminCalendar-input-group']}>
-                                            <Text style={styles['label']}>Ubicación:</Text>
-                                            <Text style={styles['value']}>
-                                                {selectedEvent.extendedProps.locationName}
-                                            </Text>
-                                        </View>
-
-                                        {/* Observaciones */}
-                                        <View style={styles['AdminCalendar-input-group']}>
-                                            <Text style={styles['label']}>Observaciones:</Text>
-                                            <Text style={styles['value']}>
-                                                {selectedEvent.extendedProps.observations}
-                                            </Text>
-                                        </View>
-
-                                        {/* Lista de Invitados */}
-                                        <View style={styles['AdminCalendar-input-group']}>
-                                            <Text style={styles['label']}>Lista de Invitados:</Text>
-                                            <View>
-                                                {invitees.map((invitee, index) => (
-                                                    <Text key={index} style={styles['value']}>
-                                                        {invitee.userName} - {invitee.status}
-                                                    </Text>
-                                                ))}
-                                            </View>
-                                        </View>
-
-                                        {/* Botones */}
-                                        <View style={styles['popup-button-container']}>
-
-                                            {/* Botón Modificar */}
-                                            {organizedEvents.find((event) => event.id === selectedEvent.id) &&
-                                                !areAllInvitationsRejected(invitees) && (
-                                                    <TouchableOpacity
-                                                        style={styles['modify-event-button']}
-                                                        onPress={() => handleModifyEvent(selectedEvent)}
-                                                    >
-                                                        <Text style={styles['modify-button-text']}>Modificar</Text>
-                                                    </TouchableOpacity>
+                                                        <View style={styles['AdminCalendar-input-group']}>
+                                                            <Text style={styles['label']}>Hora de Fin:</Text>
+                                                            <Text style={styles['value']}>
+                                                                {selectedEvent.end.split('T')[1]}
+                                                            </Text>
+                                                        </View>
+                                                    </>
                                                 )}
 
-                                            {/* Botón Asistencia */}
-                                            {regularEvents.find((event) => event.id === selectedEvent.id) && (
-                                                <View style={styles['attendance-button-container']}>
-                                                    {selectedEvent.extendedProps.hasConfirmedAttendance ? (
-                                                        <TouchableOpacity
-                                                            style={styles['attendance-confirmed-button']}
-                                                        >
-                                                            <Text style={styles['attendance-confirmed-text']}>
-                                                                Asistencia Confirmada
-                                                            </Text>
-                                                        </TouchableOpacity>
-                                                    ) : (
-                                                        <TouchableOpacity
-                                                            style={styles['attendance-button']}
-                                                            onPress={() =>
-                                                                handleAttendanceUpdate(selectedEvent.id)
-                                                            }
-                                                        >
-                                                            <Text style={styles['attendance-button-text']}>
-                                                                Confirmar Asistencia
-                                                            </Text>
-                                                        </TouchableOpacity>
-                                                    )}
-                                                </View>
-                                            )}
-                                            {/* Botón Cerrar */}
-                                            <TouchableOpacity
-                                                style={styles['close-button']}
-                                                onPress={() => setIsEventDetailPopupOpen(false)}
-                                            >
-                                                <Text style={styles['close-button-text']}>Cerrar</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
-                                </View>
-                            </Modal>
-                        )}
-
-
-                            {/* Ventana de confirmación */}
-                            {showConfirmation && (
-                                <VentanaConfirm
-                                    onConfirm={handleConfirmAction}
-                                    onCancel={() => setShowConfirmation(false)}
-                                    action={confirmationAction}
-                                />
-                            )}
-
-                            {isPopupOpen && currentStep === 1 && (
-                                <Modal
-                                    visible={isPopupOpen}
-                                    transparent={true}
-                                    animationType="fade"
-                                    onRequestClose={handleClosePopup}
-                                >
-                                    <View style={styles['popup-overlay']}>
-                                        <View style={styles['popup-container']}>
-                                        <ScrollView
-                                                contentContainerStyle={styles['popup-scroll-content']}
-                                                keyboardShouldPersistTaps="handled" // Permite cerrar el teclado al hacer tap fuera
-                                            >
-                                            <Text style={styles['popup-title']}>
-                                                {isEditingEvent ? 'Modificar Reunión' : 'Crear Nueva Reunión'}
-                                            </Text>
-
-                                            {/* Campo: Nombre de la Reunión */}
-                                            <View style={styles['AdminCalendar-input-group']}>
-                                                <Text style={styles['label']}>Nombre de la Reunión:</Text>
-                                                <TextInput
-                                                    style={styles['text-input']}
-                                                    placeholder="Nombre de la Reunión"
-                                                    value={eventName}
-                                                    onChangeText={(text) => setEventName(text)}
-                                                />
-                                            </View>
-
-                                            {/* Campo: Fecha */}
-                                            <View style={styles['AdminCalendar-input-group']}>
-                                                <Text style={styles['label']}>Fecha:</Text>
-                                                <TextInput
-                                                    style={styles['text-input']}
-                                                    placeholder="YYYY-MM-DD"
-                                                    value={popupSelectedDate}
-                                                    onChangeText={(text) => setPopupSelectedDate(text)}
-                                                />
-                                            </View>
-
-                                            {/* Campo: ¿Es una reunión de el día? */}
-                                            <View style={styles['AdminCalendar-input-group']}>
-                                                <Text style={styles['label']}>¿Es una reunión de todo el día?</Text>
-                                                <Switch
-                                                    value={isAllDay}
-                                                    onValueChange={(value) => setIsAllDay(value)}
-                                                />
-                                            </View>
-                                        
-                                            {!isAllDay && (
-                                            <>
+                                                {/* Organizador */}
                                                 <View style={styles['AdminCalendar-input-group']}>
-                                                    <Text style={styles['label']}>Horarios laborales disponibles:</Text>
-                                                    <View style={styles['work-schedules']}>
-                                                        {workSchedules.length > 0 ? (
-                                                            workSchedules.map((schedule, index) => (
-                                                                <View key={index} style={styles['work-schedule-item']}>
-                                                                    <Text>
-                                                                        Bloque {index + 1}: {schedule.startingTime.slice(0, -3)} - {schedule.endingTime.slice(0, -3)}
-                                                                    </Text>
-                                                                </View>
-                                                            ))
-                                                        ) : (
-                                                            <Text>No hay horarios laborales definidos</Text>
+                                                    <Text style={styles['label']}>Organizador:</Text>
+                                                    <Text style={styles['value']}>
+                                                        {selectedEvent.extendedProps.organizerName}
+                                                    </Text>
+                                                </View>
+
+                                                {/* Ubicación */}
+                                                <View style={styles['AdminCalendar-input-group']}>
+                                                    <Text style={styles['label']}>Ubicación:</Text>
+                                                    <Text style={styles['value']}>
+                                                        {selectedEvent.extendedProps.locationName}
+                                                    </Text>
+                                                </View>
+
+                                                {/* Observaciones */}
+                                                <View style={styles['AdminCalendar-input-group']}>
+                                                    <Text style={styles['label']}>Observaciones:</Text>
+                                                    <Text style={styles['value']}>
+                                                        {selectedEvent.extendedProps.observations}
+                                                    </Text>
+                                                </View>
+
+                                                {/* Lista de Invitados */}
+                                                <View style={styles['AdminCalendar-input-group']}>
+                                                    <Text style={styles['label']}>Lista de Invitados:</Text>
+                                                    <View>
+                                                        {invitees.map((invitee, index) => (
+                                                            <Text key={index} style={styles['value']}>
+                                                                {invitee.userName} - {invitee.status}
+                                                            </Text>
+                                                        ))}
+                                                    </View>
+                                                </View>
+
+                                                {/* Botones */}
+                                                <View style={styles['popup-button-container']}>
+
+                                                    {/* Botón Modificar */}
+                                                    {organizedEvents.find((event) => event.id === selectedEvent.id) &&
+                                                        !areAllInvitationsRejected(invitees) && (
+                                                            <TouchableOpacity
+                                                                style={styles['modify-event-button']}
+                                                                onPress={() => handleModifyEvent(selectedEvent)}
+                                                            >
+                                                                <Text style={styles['modify-button-text']}>Modificar</Text>
+                                                            </TouchableOpacity>
                                                         )}
-                                                    </View>
-                                                </View>
 
-                                                {/* Hora de Inicio */}
-                                                <View style={styles['AdminCalendar-input-group']}>
-                                                    <Text style={styles['label']}>Hora de inicio:</Text>
-                                                    <View style={styles['time-input-container']}>
-                                                        <TextInput
-                                                            style={styles['time-input']}
-                                                            placeholder="HH"
-                                                            keyboardType="numeric"
-                                                            value={popupStartingHour}
-                                                            onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupStartingHour')}
-                                                            maxLength={2}
-                                                        />
-                                                        <Text style={styles['time-separator']}>:</Text>
-                                                        <TextInput
-                                                            style={styles['time-input']}
-                                                            placeholder="MM"
-                                                            keyboardType="numeric"
-                                                            value={popupStartingMinutes}
-                                                            onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupStartingMinutes')}
-                                                            maxLength={2}
-                                                        />
-                                                    </View>
-                                                </View>
-
-                                                {/* Hora de Fin */}
-                                                <View style={styles['AdminCalendar-input-group']}>
-                                                    <Text style={styles['label']}>Hora de fin:</Text>
-                                                    <View style={styles['time-input-container']}>
-                                                        <TextInput
-                                                            style={styles['time-input']}
-                                                            placeholder="HH"
-                                                            keyboardType="numeric"
-                                                            value={popupEndingHour}
-                                                            onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupEndingHour')}
-                                                            maxLength={2}
-                                                        />
-                                                        <Text style={styles['time-separator']}>:</Text>
-                                                        <TextInput
-                                                            style={styles['time-input']}
-                                                            placeholder="MM"
-                                                            keyboardType="numeric"
-                                                            value={popupEndingMinutes}
-                                                            onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupEndingMinutes')}
-                                                            maxLength={2}
-                                                        />
-                                                    </View>
-                                                </View>
-                                            </>
-                                        )}
-
-                                        {/* Ubicación */}
-                                        <View style={styles['AdminCalendar-input-group']}>
-                                            <Text style={styles['label']}>Ubicación:</Text>
-                                            <View style={styles['select-container']}>
-                                                <Picker
-                                                    selectedValue={eventLocation}
-                                                    onValueChange={(itemValue) => setEventLocation(itemValue)}
-                                                    style={styles['select']}
-                                                >
-                                                    <Picker.Item label="Seleccione..." value="" />
-                                                    {locations.map((location) => (
-                                                        <Picker.Item
-                                                            key={location.locationId}
-                                                            label={location.locationName}
-                                                            value={location.locationId}
-                                                        />
-                                                    ))}
-                                                </Picker>
-                                            </View>
-                                        </View>
-
-                                        {/* Observaciones */}
-                                        <View style={styles['AdminCalendar-input-group']}>
-                                            <Text style={styles['label']}>Observaciones:</Text>
-                                            <TextInput
-                                                style={styles['textarea']}
-                                                placeholder="Añadir observaciones"
-                                                value={popupDescription}
-                                                onChangeText={(text) => setPopupDescription(text)}
-                                                multiline
-                                                numberOfLines={4}
-                                            />
-                                        </View>
-
-                                        {/* Botones */}
-                                        <View style={styles['AdminCalendar-button-group']}>
-                                            <TouchableOpacity style={styles['save-button']} onPress={isEditing ? handleSaveEvent : handleNextStep}>
-                                                <Text style={styles['save-button-text']}>{isEditing ? 'Guardar' : 'Siguiente'}</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity style={styles['cancel-button']} onPress={handleClosePopup}>
-                                                <Text style={styles['cancel-button-text']}>Cancelar</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                        </ScrollView>
-                                        </View> 
-                                    </View>
-                                </Modal>
-                            )}
-                            {isPopupOpen && currentStep === 2 && (
-                                <Modal
-                                    visible={isPopupOpen}
-                                    transparent={true}
-                                    animationType="fade"
-                                    onRequestClose={handleClosePopup}
-                                >
-                                    <View style={styles['popup-overlay']}>
-                                        <View style={styles['popup-container']}>
-                                            <Text style={styles['popup-title']}>Invitar Participantes</Text>
-
-                                            {/* Campo de búsqueda */}
-                                            <View style={styles['search-participants-container']}>
-                                                <TextInput
-                                                    style={styles['text-input']}
-                                                    placeholder="Buscar participantes..."
-                                                    value={searchTerm}
-                                                    onChangeText={(text) => setSearchTerm(text)}
-                                                />
-                                            </View>
-
-                                            {/* Lista de participantes disponibles */}
-                                            <View style={styles['participant-list-available']}>
-                                                {filteredParticipants.map((participant) => (
+                                                    {/* Botón Asistencia */}
+                                                    {regularEvents.find((event) => event.id === selectedEvent.id) && (
+                                                        <View style={styles['attendance-button-container']}>
+                                                            {selectedEvent.extendedProps.hasConfirmedAttendance ? (
+                                                                <TouchableOpacity
+                                                                    style={styles['attendance-confirmed-button']}
+                                                                >
+                                                                    <Text style={styles['attendance-confirmed-text']}>
+                                                                        Asistencia Confirmada
+                                                                    </Text>
+                                                                </TouchableOpacity>
+                                                            ) : (
+                                                                <TouchableOpacity
+                                                                    style={styles['attendance-button']}
+                                                                    onPress={() =>
+                                                                        handleAttendanceUpdate(selectedEvent.id)
+                                                                    }
+                                                                >
+                                                                    <Text style={styles['attendance-button-text']}>
+                                                                        Confirmar Asistencia
+                                                                    </Text>
+                                                                </TouchableOpacity>
+                                                            )}
+                                                        </View>
+                                                    )}
+                                                    {/* Botón Cerrar */}
                                                     <TouchableOpacity
-                                                        key={participant.id}
-                                                        style={styles['participant-item']}
-                                                        onPress={() => handleSelectParticipant(participant)}
+                                                        style={styles['close-button']}
+                                                        onPress={() => setIsEventDetailPopupOpen(false)}
                                                     >
-                                                        <Text style={styles['participant-text']}>{participant.nombre}</Text>
+                                                        <Text style={styles['close-button-text']}>Cerrar</Text>
                                                     </TouchableOpacity>
-                                                ))}
+                                                </View>
                                             </View>
+                                        </View>
+                                    </Modal>
+                                )}
 
-                                            {/* Lista de participantes seleccionados */}
-                                            <View style={styles['selected-participants']}>
-                                                <Text style={styles['selected-participants-title']}>Participantes Seleccionados:</Text>
-                                                {selectedUsers.map((user) => (
-                                                    <View
-                                                        key={user.id}
-                                                        style={[
-                                                            styles['selected-participant'],
-                                                            user.enAusencia && styles['selected-participant-absent']
-                                                        ]}
-                                                    >
-                                                        <Text>{user.nombre}</Text>
-                                                        <TouchableOpacity onPress={() => handleRemoveUser(user)}>
-                                                            <Text style={styles['remove-button']}>X</Text>
+
+                                {/* Ventana de confirmación */}
+                                {showConfirmation && (
+                                    <VentanaConfirm
+                                        onConfirm={handleConfirmAction}
+                                        onCancel={() => setShowConfirmation(false)}
+                                        action={confirmationAction}
+                                    />
+                                )}
+
+                                {isPopupOpen && currentStep === 1 && (
+                                    <Modal
+                                        visible={isPopupOpen}
+                                        transparent={true}
+                                        animationType="fade"
+                                        onRequestClose={handleClosePopup}
+                                    >
+                                        <View style={styles['popup-overlay']}>
+                                            <View style={styles['popup-container']}>
+                                                <ScrollView
+                                                    contentContainerStyle={styles['popup-scroll-content']}
+                                                    keyboardShouldPersistTaps="handled" // Permite cerrar el teclado al hacer tap fuera
+                                                >
+                                                    <Text style={styles['popup-title']}>
+                                                        {isEditingEvent ? 'Modificar Reunión' : 'Crear Nueva Reunión'}
+                                                    </Text>
+
+                                                    {/* Campo: Nombre de la Reunión */}
+                                                    <View style={styles['AdminCalendar-input-group']}>
+                                                        <Text style={styles['label']}>Nombre de la Reunión:</Text>
+                                                        <TextInput
+                                                            style={styles['text-input']}
+                                                            placeholder="Nombre de la Reunión"
+                                                            value={eventName}
+                                                            onChangeText={(text) => setEventName(text)}
+                                                        />
+                                                    </View>
+
+                                                    {/* Campo: Fecha */}
+                                                    <View style={styles['AdminCalendar-input-group']}>
+                                                        <Text style={styles['label']}>Fecha:</Text>
+                                                        <TextInput
+                                                            style={styles['text-input']}
+                                                            placeholder="YYYY-MM-DD"
+                                                            value={popupSelectedDate}
+                                                            onChangeText={(text) => setPopupSelectedDate(text)}
+                                                        />
+                                                    </View>
+
+                                                    {/* Campo: ¿Es una reunión de el día? */}
+                                                    <View style={styles['AdminCalendar-input-group']}>
+                                                        <Text style={styles['label']}>¿Es una reunión de todo el día?</Text>
+                                                        <Switch
+                                                            value={isAllDay}
+                                                            onValueChange={(value) => setIsAllDay(value)}
+                                                        />
+                                                    </View>
+
+                                                    {!isAllDay && (
+                                                        <>
+                                                            <View style={styles['AdminCalendar-input-group']}>
+                                                                <Text style={styles['label']}>Horarios laborales disponibles:</Text>
+                                                                <View style={styles['work-schedules']}>
+                                                                    {workSchedules.length > 0 ? (
+                                                                        workSchedules.map((schedule, index) => (
+                                                                            <View key={index} style={styles['work-schedule-item']}>
+                                                                                <Text>
+                                                                                    Bloque {index + 1}: {schedule.startingTime.slice(0, -3)} - {schedule.endingTime.slice(0, -3)}
+                                                                                </Text>
+                                                                            </View>
+                                                                        ))
+                                                                    ) : (
+                                                                        <Text>No hay horarios laborales definidos</Text>
+                                                                    )}
+                                                                </View>
+                                                            </View>
+
+                                                            {/* Hora de Inicio */}
+                                                            <View style={styles['AdminCalendar-input-group']}>
+                                                                <Text style={styles['label']}>Hora de inicio:</Text>
+                                                                <View style={styles['time-input-container']}>
+                                                                    <TextInput
+                                                                        style={styles['time-input']}
+                                                                        placeholder="HH"
+                                                                        keyboardType="numeric"
+                                                                        value={popupStartingHour}
+                                                                        onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupStartingHour')}
+                                                                        maxLength={2}
+                                                                    />
+                                                                    <Text style={styles['time-separator']}>:</Text>
+                                                                    <TextInput
+                                                                        style={styles['time-input']}
+                                                                        placeholder="MM"
+                                                                        keyboardType="numeric"
+                                                                        value={popupStartingMinutes}
+                                                                        onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupStartingMinutes')}
+                                                                        maxLength={2}
+                                                                    />
+                                                                </View>
+                                                            </View>
+
+                                                            {/* Hora de Fin */}
+                                                            <View style={styles['AdminCalendar-input-group']}>
+                                                                <Text style={styles['label']}>Hora de fin:</Text>
+                                                                <View style={styles['time-input-container']}>
+                                                                    <TextInput
+                                                                        style={styles['time-input']}
+                                                                        placeholder="HH"
+                                                                        keyboardType="numeric"
+                                                                        value={popupEndingHour}
+                                                                        onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupEndingHour')}
+                                                                        maxLength={2}
+                                                                    />
+                                                                    <Text style={styles['time-separator']}>:</Text>
+                                                                    <TextInput
+                                                                        style={styles['time-input']}
+                                                                        placeholder="MM"
+                                                                        keyboardType="numeric"
+                                                                        value={popupEndingMinutes}
+                                                                        onChangeText={(text) => handlePopupTimeChange({ target: { value: text } }, 'popupEndingMinutes')}
+                                                                        maxLength={2}
+                                                                    />
+                                                                </View>
+                                                            </View>
+                                                        </>
+                                                    )}
+
+                                                    {/* Ubicación */}
+                                                    <View style={styles['AdminCalendar-input-group']}>
+                                                        <Text style={styles['label']}>Ubicación:</Text>
+                                                        <View style={styles['select-container']}>
+                                                            <Picker
+                                                                selectedValue={eventLocation}
+                                                                onValueChange={(itemValue) => setEventLocation(itemValue)}
+                                                                style={styles['select']}
+                                                            >
+                                                                <Picker.Item label="Seleccione..." value="" />
+                                                                {locations.map((location) => (
+                                                                    <Picker.Item
+                                                                        key={location.locationId}
+                                                                        label={location.locationName}
+                                                                        value={location.locationId}
+                                                                    />
+                                                                ))}
+                                                            </Picker>
+                                                        </View>
+                                                    </View>
+
+                                                    {/* Observaciones */}
+                                                    <View style={styles['AdminCalendar-input-group']}>
+                                                        <Text style={styles['label']}>Observaciones:</Text>
+                                                        <TextInput
+                                                            style={styles['textarea']}
+                                                            placeholder="Añadir observaciones"
+                                                            value={popupDescription}
+                                                            onChangeText={(text) => setPopupDescription(text)}
+                                                            multiline
+                                                            numberOfLines={4}
+                                                        />
+                                                    </View>
+
+                                                    {/* Botones */}
+                                                    <View style={styles['AdminCalendar-button-group']}>
+                                                        <TouchableOpacity style={styles['save-button']} onPress={isEditing ? handleSaveEvent : handleNextStep}>
+                                                            <Text style={styles['save-button-text']}>{isEditing ? 'Guardar' : 'Siguiente'}</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity style={styles['cancel-button']} onPress={handleClosePopup}>
+                                                            <Text style={styles['cancel-button-text']}>Cancelar</Text>
                                                         </TouchableOpacity>
                                                     </View>
-                                                ))}
+                                                </ScrollView>
                                             </View>
-
-                                            {/* Botones */}
-                                            <View style={styles['AdminCalendar-button-group']}>
-                                                <TouchableOpacity style={styles['save-button']} onPress={handleSaveEvent}>
-                                                    <Text style={styles['save-button-text']}>Guardar</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={styles['cancel-button']} onPress={handleClosePopup}>
-                                                    <Text style={styles['cancel-button-text']}>Cancelar</Text>
-                                                </TouchableOpacity>
-                                            </View>
-
-                                            {/* Mensaje de error */}
-                                            {errorEvent && <Text style={styles['error-message']}>{errorEvent}</Text>}
                                         </View>
-                                    </View>
-                                </Modal>
-                            )}
-                        </SafeAreaView>
-                    )}
+                                    </Modal>
+                                )}
+                                {isPopupOpen && currentStep === 2 && (
+                                    <Modal
+                                        visible={isPopupOpen}
+                                        transparent={true}
+                                        animationType="fade"
+                                        onRequestClose={handleClosePopup}
+                                    >
+                                        <View style={styles['popup-overlay']}>
+                                            <View style={styles['popup-container']}>
+                                                <Text style={styles['popup-title']}>Invitar Participantes</Text>
+
+                                                {/* Campo de búsqueda */}
+                                                <View style={styles['search-participants-container']}>
+                                                    <TextInput
+                                                        style={styles['text-input']}
+                                                        placeholder="Buscar participantes..."
+                                                        value={searchTerm}
+                                                        onChangeText={(text) => setSearchTerm(text)}
+                                                    />
+                                                </View>
+
+                                                {/* Lista de participantes disponibles */}
+                                                <View style={styles['participant-list-available']}>
+                                                    {filteredParticipants.map((participant) => (
+                                                        <TouchableOpacity
+                                                            key={participant.id}
+                                                            style={styles['participant-item']}
+                                                            onPress={() => handleSelectParticipant(participant)}
+                                                        >
+                                                            <Text style={styles['participant-text']}>{participant.nombre}</Text>
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </View>
+
+                                                {/* Lista de participantes seleccionados */}
+                                                <View style={styles['selected-participants']}>
+                                                    <Text style={styles['selected-participants-title']}>Participantes Seleccionados:</Text>
+                                                    {selectedUsers.map((user) => (
+                                                        <View
+                                                            key={user.id}
+                                                            style={[
+                                                                styles['selected-participant'],
+                                                                user.enAusencia && styles['selected-participant-absent']
+                                                            ]}
+                                                        >
+                                                            <Text>{user.nombre}</Text>
+                                                            <TouchableOpacity onPress={() => handleRemoveUser(user)}>
+                                                                <Text style={styles['remove-button']}>X</Text>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    ))}
+                                                </View>
+
+                                                {/* Botones */}
+                                                <View style={styles['AdminCalendar-button-group']}>
+                                                    <TouchableOpacity style={styles['save-button']} onPress={handleSaveEvent}>
+                                                        <Text style={styles['save-button-text']}>Guardar</Text>
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity style={styles['cancel-button']} onPress={handleClosePopup}>
+                                                        <Text style={styles['cancel-button-text']}>Cancelar</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+
+                                                {/* Mensaje de error */}
+                                                {errorEvent && <Text style={styles['error-message']}>{errorEvent}</Text>}
+                                            </View>
+                                        </View>
+                                    </Modal>
+                                )}
+                            </SafeAreaView>
+                        )}
                     </View>
                 </ScrollView>
             )}
@@ -1785,29 +1791,47 @@ const CalendarComponent = () => {
                         style={styles.menuButtonIcon}
                     />
                 </TouchableOpacity>
+                {/* Botón de Notificaciones */}
+                <TouchableOpacity
+                    style={styles.notificationIconContainer}
+                    onPress={() => setShowNotificaciones(true)}
+                >
+                    <Image
+                        source={require("../media/notification_icon.png")}
+                        style={styles.notificationIcon}
+                    />
+                    {/* Indicador de notificaciones no leídas */}
+                    {hasUnreadNotificaciones && (
+                        <View style={styles.notificationBadge}></View>
+                    )}
+                </TouchableOpacity>
             </View>
 
-            {/*NOTIFICACIONES*/}
-            <View style={{ flex: 1 }}>
-                {/* Mostrar u ocultar el componente de notificaciones */}
-                {showNotificaciones ? (
-                    <NotificacionesComponent />
-                ) : (
-                    <>
-                        {/* Tu calendario existente */}
-                        {/* Agregar botón flotante */}
+            {/* Pop-up de Notificaciones */}
+            <Modal
+                visible={showNotificaciones}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowNotificaciones(false)}
+            >
+                <View style={styles.overlay}>
+                    <View style={styles.popupContainer}>
+                        {/* Componente de Notificaciones */}
+                        <NotificacionesComponent onUnreadStatusChange={handleUnreadStatusChange} />
+
+                        {/* Botón para cerrar el modal */}
                         <TouchableOpacity
-                            style={styles.fab}
-                            onPress={() => setShowNotificaciones(true)}
+                            style={styles.closeButton}
+                            onPress={() => setShowNotificaciones(false)}
                         >
                             <Image
-                                source={require("../media/notification_icon.png")}
-                                style={styles.fabIcon}
+                                source={require("../media/close_icon.png")}
+                                style={styles.closeIcon}
                             />
                         </TouchableOpacity>
-                    </>
-                )}
-            </View> 
+                    </View>
+                </View>
+            </Modal>
         </>
 
     );
@@ -2371,25 +2395,47 @@ const styles = StyleSheet.create({
     },
 
     //NOTIFICACIONES
-    fab: {
-        position: "absolute",
-        bottom: 80,
-        right: 20,
-        backgroundColor: "#1e3a8a",
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        justifyContent: "center",
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        elevation: 5,
+    notificationIconContainer: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 10, // Ajusta para que encaje mejor en el menú
     },
-    fabIcon: {
+    notificationIcon: {
         width: 30,
         height: 30,
-        tintColor: "#fff",
+        resizeMode: 'contain',
+    },
+    notificationBadge: {
+        position: 'absolute',
+        top: 5,
+        right: 5,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: 'red',
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    popupContainer: {
+        width: '90%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 20,
+        elevation: 5,
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+    },
+    closeIcon: {
+        width: 20,
+        height: 20,
     },
 });

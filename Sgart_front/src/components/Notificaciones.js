@@ -1,15 +1,47 @@
 import React, { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const Notificaciones = () => {
     const [notificaciones, setNotificaciones] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Obtener usuarioId del token JWT
+    const getUsuarioIdFromToken = () => {
+        const token = sessionStorage.getItem("authToken");
+        console.log("Token recuperado:", token); // Log para depuración
+        console.log("Token length:", token.length);
+
+        if (token) {
+            const decodedToken = jwtDecode(token);
+            console.log("Token decodificado:", decodedToken);
+            return decodedToken.userId; // Ajusta "usuarioId" según la clave en tu JWT
+        }
+        return null;
+    };
+
+    // Obtener el token del sessionStorage
+    const getAuthToken = () => {
+        return sessionStorage.getItem("authToken");
+    };
+
     // Cargar notificaciones desde el backend
     const loadNotificaciones = async () => {
+        const userId = getUsuarioIdFromToken();
+        const token = getAuthToken();
+
+        if (!userId || !token) {
+            console.error("Token JWT o usuarioId no encontrado.");
+            return;
+        }
+
         try {
             setIsLoading(true);
-            const response = await fetch("http://localhost:3000/notificaciones", {
-                credentials: "include",
+            const response = await fetch(`http://localhost:9000/notificaciones?usuarioId=${userId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`, // Token JWT en el encabezado
+                },
             });
 
             if (!response.ok) {
@@ -27,10 +59,15 @@ const Notificaciones = () => {
 
     // Eliminar una notificación individual
     const deleteNotificacion = async (id) => {
+        const token = getAuthToken();
+
         try {
-            const response = await fetch(`http://localhost:3000/notificaciones/${id}`, {
+            const response = await fetch(`http://localhost:9000/notificaciones/${id}`, {
                 method: "DELETE",
-                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
             });
 
             if (!response.ok) {
@@ -45,10 +82,18 @@ const Notificaciones = () => {
 
     // Eliminar todas las notificaciones
     const deleteAllNotificaciones = async () => {
+        const userId = getUsuarioIdFromToken();
+        const token = getAuthToken();
+
+        if (!userId || !token) return;
+
         try {
-            const response = await fetch("http://localhost:3000/notificaciones", {
+            const response = await fetch(`http://localhost:9000/notificaciones?usuarioId=${userId}`, {
                 method: "DELETE",
-                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
             });
 
             if (!response.ok) {
@@ -85,7 +130,7 @@ const Notificaciones = () => {
                                     <h3>{notificacion.titulo}</h3>
                                     <p>{notificacion.mensaje}</p>
                                     <p className="notificacion-fecha">
-                                        {new Date(notificacion.fecha).toLocaleString()}
+                                        {new Date(notificacion.fechaCreacion).toLocaleString()}
                                     </p>
                                 </div>
                                 <button
