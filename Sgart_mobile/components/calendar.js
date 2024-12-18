@@ -40,6 +40,9 @@ const CalendarComponent = () => {
     const [filteredParticipants, setFilteredParticipants] = useState([]);
     const [errorEvent, setErrorEvent] = useState('');
 
+    // Añadir estos estados adicionales junto a los otros estados
+    const [popupHourError, setPopupHourError] = useState(false);
+    const [popupMinuteError, setPopupMinuteError] = useState(false);
 
     // Añadir nuevo estado para reuniones organizadas
     const [organizedEvents, setOrganizedEvents] = useState([]);
@@ -1128,10 +1131,7 @@ const CalendarComponent = () => {
 
     return (
         <>
-            {/* <NavBar isAdmin={false} /> */}
-            {isLoading ? (
-                <LoadingSpinner />
-            ) : (
+            
                 <ScrollView 
                     style={styles.scrollContainer} 
                     contentContainerStyle={styles.scrollContent}
@@ -1563,8 +1563,8 @@ const CalendarComponent = () => {
                                         <View style={styles['AdminCalendar-input-group']}>
                                             <Text style={styles['label']}>Lista de Invitados:</Text>
                                             <View>
-                                                {invitees.map((invitee, index) => (
-                                                    <Text key={index} style={styles['value']}>
+                                                {invitees.map((invitee) => (
+                                                    <Text key={invitee.id} style={styles['value']}>
                                                         {invitee.userName} - {invitee.status}
                                                     </Text>
                                                 ))}
@@ -1688,7 +1688,7 @@ const CalendarComponent = () => {
                                                     <View style={styles['work-schedules']}>
                                                         {workSchedules.length > 0 ? (
                                                             workSchedules.map((schedule, index) => (
-                                                                <View key={index} style={styles['work-schedule-item']}>
+                                                                <View key={schedule.startingTime + schedule.endingTime} style={styles['work-schedule-item']}>
                                                                     <Text>
                                                                         Bloque {index + 1}: {schedule.startingTime.slice(0, -3)} - {schedule.endingTime.slice(0, -3)}
                                                                     </Text>
@@ -1820,35 +1820,39 @@ const CalendarComponent = () => {
                                             </View>
 
                                             {/* Lista de participantes disponibles */}
-                                            <View style={styles['participant-list-available']}>
-                                                {filteredParticipants.map((participant) => (
-                                                    <TouchableOpacity
-                                                        key={participant.id}
-                                                        style={styles['participant-item']}
-                                                        onPress={() => handleSelectParticipant(participant)}
-                                                    >
-                                                        <Text style={styles['participant-text']}>{participant.nombre}</Text>
-                                                    </TouchableOpacity>
-                                                ))}
+                                            <View style={{ maxHeight: 150 }}>
+                                                <ScrollView style={styles['scroll-list']}>
+                                                    {filteredParticipants.map((participant) => (
+                                                        <TouchableOpacity
+                                                            key={participant.id}
+                                                            style={styles['participant-item']}
+                                                            onPress={() => handleSelectParticipant(participant)}
+                                                        >
+                                                            <Text style={styles['participant-text']}>{participant.nombre}</Text>
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </ScrollView>
                                             </View>
 
                                             {/* Lista de participantes seleccionados */}
-                                            <View style={styles['selected-participants']}>
-                                                <Text style={styles['selected-participants-title']}>Participantes Seleccionados:</Text>
-                                                {selectedUsers.map((user) => (
-                                                    <View
-                                                        key={user.id}
-                                                        style={[
-                                                            styles['selected-participant'],
-                                                            user.enAusencia && styles['selected-participant-absent']
-                                                        ]}
-                                                    >
-                                                        <Text>{user.nombre}</Text>
-                                                        <TouchableOpacity onPress={() => handleRemoveUser(user)}>
-                                                            <Text style={styles['remove-button']}>X</Text>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                ))}
+                                            <View style={{ maxHeight: 150, marginTop: 10 }}>
+                                                <Text style={styles['selected-title']}>Participantes Seleccionados:</Text>
+                                                <ScrollView style={styles['scroll-list']}>
+                                                    {selectedUsers.map((user) => (
+                                                        <View
+                                                            key={user.id}
+                                                            style={[
+                                                                styles['selected-participant'],
+                                                                user.enAusencia && styles['selected-participant-absent'],
+                                                            ]}
+                                                        >
+                                                            <Text>{user.nombre}</Text>
+                                                            <TouchableOpacity onPress={() => handleRemoveUser(user)}>
+                                                                <Text style={styles['remove-button']}>X</Text>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    ))}
+                                                </ScrollView>
                                             </View>
 
                                             {/* Botones */}
@@ -1871,7 +1875,7 @@ const CalendarComponent = () => {
                     )}
                     </View>
                 </ScrollView>
-            )}
+            )
             {/* Menú flotante */}
             <View style={styles.floatingMenu}>
                 <TouchableOpacity
@@ -2158,7 +2162,7 @@ const styles = StyleSheet.create({
     'popup-scroll-content': {
         flexGrow: 1,
         justifyContent: 'flex-start',
-        paddingBottom: 20,
+        paddingBottom: 20, 
     },
     'AdminCalendar-input-group': {
         marginBottom: 15,
@@ -2259,6 +2263,13 @@ const styles = StyleSheet.create({
         textAlignVertical: 'top',
         minHeight: 80,
     },
+    'scroll-list': {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        padding: 5,
+        backgroundColor: '#f9f9f9',
+    },
     'search-participants-container': {
         marginBottom: 15,
     },
@@ -2267,14 +2278,19 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     'participant-item': {
-        padding: 10,
+        padding: 8,
         borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
+        borderBottomColor: '#e0e0e0',
     },
     'participant-text': {
         fontSize: 14,
         color: '#333',
     },
+    'selected-title': {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 5,
+        },
     'selected-participants': {
         marginBottom: 15,
     },
@@ -2286,14 +2302,13 @@ const styles = StyleSheet.create({
     'selected-participant': {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 10,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 4,
-        marginBottom: 5,
+        padding: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        backgroundColor: '#f0f8ff',
     },
     'selected-participant-absent': {
-        backgroundColor: '#ffe5e5',
+        backgroundColor: '#ffe6e6',
     },
     'remove-button': {
         color: '#dc3545',

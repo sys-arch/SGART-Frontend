@@ -1,6 +1,6 @@
 // src/config.js
 const config = {
-    BACKEND_URL: 'http://10.35.88.104:9000'
+    BACKEND_URL: 'http://192.168.43.62:9000'
 };
 
 export default config;
