@@ -70,6 +70,8 @@ const CalendarComponent = () => {
 
     const [selectedDay, setSelectedDay] = useState('');
 
+    const [currentUserId, setCurrentUserId] = useState(null);
+
 
     // ! CARGAR INVITADOS	
     const loadInvitees = useCallback(async (meetingId) => {
@@ -933,114 +935,17 @@ const CalendarComponent = () => {
     };
 
 
-    /* Efectos
     useEffect(() => {
+        const userId = getUserId();
+        if (userId) {
+            setCurrentUserId(userId); // Guardar el userId en el estado global
+        } else {
+        console.error("No se pudo obtener el ID del usuario.");
+        }
         loadMeetings();
         loadOrganizedMeetings();
         loadWorkSchedules();
-    }, [loadMeetings, loadOrganizedMeetings]);*/
-    //Quietar esto
-    useEffect(() => {
-        const mockEvents = [
-            {
-                id: "mock-event-1",
-                title: "Reunión de Prueba 1",
-                start: "2024-12-08T10:00:00",
-                end: "2024-12-08T11:00:00",
-                allDay: false,
-                extendedProps: {
-                    locationName: "Sala de Juntas 1",
-                    observations: "Primera reunión de prueba.",
-                    organizerName: "Luis Fernández",
-                },
-            },
-            {
-                id: "mock-event-2",
-                title: "Reunión de Prueba 2",
-                start: "2024-12-09T15:00:00",
-                end: "2024-12-09T16:00:00",
-                allDay: false,
-                extendedProps: {
-                    locationName: "Sala de Conferencias",
-                    observations: "Segunda reunión de prueba.",
-                    organizerName: "María Domínguez",
-                },
-            },
-            {
-                id: "mock-event-3",
-                title: "Reunión de Prueba 2",
-                start: "2024-12-09T15:00:00",
-                end: "2024-12-09T16:00:00",
-                allDay: false,
-                extendedProps: {
-                    locationName: "Sala de Conferencias",
-                    observations: "Segunda reunión de prueba.",
-                    organizerName: "María Domínguez",
-                },
-            },
-            {
-                id: "mock-event-4",
-                title: "Reunión de Prueba 3",
-                start: "2024-12-09T15:00:00",
-                end: "2024-12-09T16:00:00",
-                allDay: false,
-                extendedProps: {
-                    locationName: "Sala de Conferencias",
-                    observations: "Segunda reunión de prueba.",
-                    organizerName: "María Domínguez",
-                },
-            },
-            {
-                id: "mock-event-5",
-                title: "Reunión de Prueba 3",
-                start: "2024-12-18T15:00:00",
-                end: "2024-12-18T16:00:00",
-                allDay: false,
-                extendedProps: {
-                    locationName: "Sala de Conferencias",
-                    observations: "Tercera reunión de prueba.",
-                    organizerName: "María Domínguez",
-                },
-            },
-            {
-                id: "mock-event-6",
-                title: "Reunión de Prueba 4",
-                start: "2024-12-18T18:00:00",
-                end: "2024-12-18T20:00:00",
-                allDay: false,
-                extendedProps: {
-                    locationName: "Sala de Conferencias",
-                    observations: "Tercera reunión de prueba.",
-                    organizerName: "María Domínguez",
-                },
-            },
-        
-        ];
-
-        const mocky = [
-            {
-                id: "mock-event-8",
-                title: "Reunión de Prueba 10",
-                start: "2024-12-08T8:00:00",
-                end: "2024-12-08T9:00:00",
-                allDay: false,
-                extendedProps: {
-                    locationName: "Sala de Juntas 1",
-                    observations: "Primera reunión de prueba.",
-                    organizerName: "Luis Fernández",
-                },
-            },
-        
-        ];
-        
-    
-       
-        setRegularEvents(mockEvents);
-        setReunionesAceptadas(mockEvents);
-        setReunionesOrganizadas(mocky);
-        //setReunionesPendientes(mockEvents);
-        //setPendingMeetingsEvents(mockEvents);
-    }, []);
+    }, [loadMeetings, loadOrganizedMeetings]);
 
     // Modificar el useEffect para el filtrado de usuarios
     useEffect(() => {
@@ -1434,53 +1339,6 @@ const CalendarComponent = () => {
                             </View>
 
 
-
-
-
-
-
-
-
-
-
-                            {/* <div className="AdminCalendar-calendar-container">
-                                <h2>Calendario de Trabajo</h2>
-                                <div className="calendar-wrapper">
-                                    <FullCalendar
-                                        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                                        initialView="dayGridMonth"
-                                        eventSources={[
-                                            {
-                                                events: regularEvents,
-                                                color: '#28a745',
-                                                textColor: 'white'
-                                            },
-                                            {
-                                                events: pendingMeetingsEvents,
-                                                color: '#ffc107',
-                                                textColor: 'black'
-                                            },
-                                            {
-                                                events: organizedEvents.map(event => ({
-                                                    ...event,
-                                                    color: event.backgroundColor // Usar el color definido en el evento
-                                                }))
-                                            }
-                                        ]}
-                                        eventDidMount={(info) => {
-                                            console.log("Evento montado en el calendario:", {
-                                                id: info.event.id,
-                                                title: info.event.title,
-                                                start: info.event.start,
-                                                end: info.event.end,
-                                                source: info.event.source?.id
-                                            });
-                                        }}
-                                        eventClick={handleEventClick}
-                                        selectable={true}
-                                    />
-                                </div>
-                            </div> */}
                             {/* Pop-up de detalles del evento */}
                             {isEventDetailPopupOpen && selectedEvent && (
                             <Modal
