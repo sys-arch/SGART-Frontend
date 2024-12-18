@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import React, { useCallback, useEffect, useState } from 'react';
 import '../App.css';
-import NavBar from './NavBar';
+import config from '../config'; // Importa config para usar config.BACKEND_URL
 import LoadingSpinner from './LoadingSpinner';
+import NavBar from './NavBar';
 
 const AdminCalendar = () => {
     const [meetings, setMeetings] = useState([]);
@@ -13,6 +14,7 @@ const AdminCalendar = () => {
     const [invitees, setInvitees] = useState([]);
     const [isMeetingDetailPopupOpen, setIsMeetingDetailPopupOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const getToken = () => sessionStorage.getItem('authToken'); // Función para obtener el token
 
     // Función para cargar las reuniones desde el backend
     const loadMeetings = useCallback(async () => {
@@ -20,8 +22,11 @@ const AdminCalendar = () => {
             setIsLoading(true);
             console.log("Intentando cargar meetings desde el backend...");
 
-            const response = await fetch('http://localhost:3000/administrador/calendarios/loadMeetings');
-            if (!response.ok) {
+            const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/loadMeetings`, {
+                headers: {
+                    Authorization: `Bearer ${getToken()}`, // Se incluye el token en la cabecera
+                },
+            });            if (!response.ok) {
                 throw new Error(`Error al cargar los meetings: ${response.statusText}`);
             }
 
@@ -55,14 +60,14 @@ const AdminCalendar = () => {
             setIsLoading(true);
             console.log(`Intentando cargar invitados para la reunión con ID: ${meetingId}`);
 
-            const response = await fetch(`http://localhost:3000/administrador/calendarios/invitados`, {
+            const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/invitados`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${getToken()}`, // Se incluye el token en la cabecera
                 },
                 body: JSON.stringify({ meetingId }),
             });
-
             if (!response.ok) {
                 throw new Error(`Error al cargar los invitados: ${response.statusText}`);
             }
