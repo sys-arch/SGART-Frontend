@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useState } from "react";
+import config from "../config";
 
 const Notificaciones = () => {
     const [notificaciones, setNotificaciones] = useState([]);
@@ -36,7 +37,7 @@ const Notificaciones = () => {
 
         try {
             setIsLoading(true);
-            const response = await fetch(`http://localhost:9000/notificaciones?usuarioId=${userId}`, {
+            const response = await fetch(`${config.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
