@@ -28,10 +28,11 @@ const UserEdit = ({ navigation }) => {
 
     const loadUser = async () => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/users/current/user`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include'
@@ -72,7 +73,7 @@ const UserEdit = ({ navigation }) => {
         fetch(`${config.BACKEND_URL}/users/modificar`, {
             method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${getToken()}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(updatedUser)

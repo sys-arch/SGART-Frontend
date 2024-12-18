@@ -9,6 +9,9 @@ import {
     View,
 } from 'react-native';
 import config from '../config';
+import PropTypes from 'prop-types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const LoginForm = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -20,6 +23,16 @@ const LoginForm = ({ navigation }) => {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const storeData = async (token, userEmail) => {
+    try {
+      await AsyncStorage.setItem('authToken', token);
+      await AsyncStorage.setItem('userEmail', userEmail);
+      console.log('Token y email almacenados correctamente.');
+    } catch (error) {
+      console.error('Error al guardar en AsyncStorage:', error);
+    }
   };
 
   const handleLogin = async () => {
@@ -54,48 +67,38 @@ const LoginForm = ({ navigation }) => {
     };
 
     fetch(`${config.BACKEND_URL}/users/login`, {
-
       method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user),
-      credentials: 'include', // Enviar y recibir cookies de sesión
-  })
+      credentials: 'include',
+    })
       .then((response) => {
-          setIsLoading(true);
-          if (!response.ok) {
-              return response.json().then((data) => {
-                  if (response.status === 403) {
-                      throw new Error('Los inicios de sesión están bloqueados temporalmente.');
-                  } else if (response.status === 401) {
-                      throw new Error(data.message || 'Error al iniciar sesión. Correo y/o contraseña incorrectos');
-                  }
-                  throw new Error(data.message || 'Error al iniciar sesión.');
-              });
-          }
-          return response.json();
+    
+        if (!response.ok) {
+          // Si la respuesta es un error HTTP (ej: 401, 403, 500)
+          return response.text().then((text) => {
+            const errorMessage = text || 'Error desconocido del servidor.';
+            throw new Error(`HTTP ${response.status}: ${errorMessage}`);
+          });
+        }
+        return response.json();
       })
-      .then((data) => {
+        .then(async (data) => {
           if (data.success) {
-              // Guarda el token en sessionStorage
-              sessionStorage.setItem('authToken', data.token);
-              sessionStorage.setItem('userEmail', email);
-
-              // Redirige a la pantalla de doble factor
-              navigate('GoogleAuth', { state: { data: data, email: email } });
+            console.log('Login exitoso:', data);
+            // Guardar token y email usando AsyncStorage
+            await storeData(data.token, email);
+            navigation.navigate('GoogleAuth', { state: { data: data, email: email } });
           } else {
-              throw new Error(data.message || 'Error al iniciar sesión.');
+            throw new Error(data.message || 'Error al iniciar sesión.');
           }
-      })
-
-      .catch((error) => {
+        })
+        .catch((error) => {
+          console.error('Error en el login:', error.message);
           alert(error.message);
-      })
-      .finally(() => {
-          setIsLoading(false);
-      }); 
-  };
+        })
+        .finally(() => setIsLoading(false));
+    };
 
   return (
     <View style={styles.container}>
@@ -300,5 +303,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+LoginForm.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default LoginForm;
