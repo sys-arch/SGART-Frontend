@@ -7,6 +7,8 @@ import {
     ActivityIndicator, 
     StyleSheet 
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import config from "../config";
 
 const NotificacionesComponent = ({ onUnreadStatusChange }) => {
     const [notificaciones, setNotificaciones] = useState([]);
@@ -16,9 +18,9 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
     const loadNotificaciones = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch("http://localhost:9000/notificaciones", {
+            const response = await fetch(`${config.BACKEND_URL}/notificaciones`, {
                 headers: {
-                    "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+                    "Authorization": `Bearer ${await AsyncStorage.getItem("authToken")}`
                 },
             });
             if (!response.ok) {
@@ -40,11 +42,11 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
     // Marcar una notificación como leída
     const markAsRead = async (id) => {
         try {
-            await fetch(`http://localhost:9000/notificaciones/${id}/marcarLeida`, {
+            await fetch(`${config.BACKEND_URL}/notificaciones/${id}/marcarLeida`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+                    "Authorization": `Bearer ${await AsyncStorage.getItem("authToken")}`
                 },
             });
 
@@ -64,10 +66,10 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
     // Eliminar una notificación
     const deleteNotificacion = async (id) => {
         try {
-            await fetch(`http://localhost:9000/notificaciones/${id}`, {
+            await fetch(`${config.BACKEND_URL}/notificaciones/${id}`, {
                 method: "DELETE",
                 headers: {
-                    "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+                    "Authorization": `Bearer ${await AsyncStorage.getItem("authToken")}`
                 },
             });
             setNotificaciones((prev) => prev.filter((n) => n.id !== id));
