@@ -950,51 +950,6 @@ const CalendarComponent = () => {
     };
 
 
-<<<<<<< HEAD
-//items INTRODUCIR POR ANTONIO BORRAR LUEGO???????
-    // Transforma los eventos del formato de FullCalendar al formato de Agenda
-    const transformEventsForAgenda = (eventSources) => {
-        const agendaItems = {};
-        eventSources.forEach((source) => {
-          source.events.forEach((event) => {
-            const dateKey = new Date(event.start).toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
-            if (!agendaItems[dateKey]) {
-              agendaItems[dateKey] = [];
-            }
-            agendaItems[dateKey].push({
-              id: event.id,
-              name: event.title,
-              data: `Desde: ${new Date(event.start).toLocaleTimeString()} - Hasta: ${new Date(event.end).toLocaleTimeString()}`,
-              color: source.color || 'lightblue',
-            });
-          });
-        });
-        return agendaItems;
-      };
-
-  
-  // Usar los datos de eventSources
-    const items = transformEventsForAgenda([
-        {
-        events: regularEvents,
-        color: '#28a745',
-        },
-        {
-        events: pendingMeetingsEvents,
-        color: '#ffc107',
-        },
-        {
-        events: organizedEvents.map((event) => ({
-            ...event,
-            color: event.backgroundColor,
-        })),
-        },
-    ]);
-
-    /* Efectos
-=======
-    
->>>>>>> 6d2a026138a97c968762d874549b7e55864d615f
     useEffect(() => {
         const userId = getUserId();
         if (userId) {
@@ -1006,8 +961,7 @@ const CalendarComponent = () => {
         loadOrganizedMeetings();
         loadWorkSchedules();
     }, [loadMeetings, loadOrganizedMeetings]);
-<<<<<<< HEAD
-=======
+    
     //Quietar esto
    /* Efectos useEffect(() => {
         const mockEvents = [
@@ -1110,7 +1064,6 @@ const CalendarComponent = () => {
         //setReunionesPendientes(mockEvents);
         //setPendingMeetingsEvents(mockEvents);
     }, []);*/
->>>>>>> 6d2a026138a97c968762d874549b7e55864d615f
 
     // Modificar el useEffect para el filtrado de usuarios
     useEffect(() => {
