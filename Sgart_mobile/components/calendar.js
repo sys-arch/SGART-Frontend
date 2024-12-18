@@ -950,47 +950,6 @@ const CalendarComponent = () => {
     };
 
 
-//items INTRODUCIR POR ANTONIO BORRAR LUEGO???????
-    // Transforma los eventos del formato de FullCalendar al formato de Agenda
-    const transformEventsForAgenda = (eventSources) => {
-        const agendaItems = {};
-        eventSources.forEach((source) => {
-          source.events.forEach((event) => {
-            const dateKey = new Date(event.start).toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
-            if (!agendaItems[dateKey]) {
-              agendaItems[dateKey] = [];
-            }
-            agendaItems[dateKey].push({
-              id: event.id,
-              name: event.title,
-              data: `Desde: ${new Date(event.start).toLocaleTimeString()} - Hasta: ${new Date(event.end).toLocaleTimeString()}`,
-              color: source.color || 'lightblue',
-            });
-          });
-        });
-        return agendaItems;
-      };
-
-  
-  // Usar los datos de eventSources
-    const items = transformEventsForAgenda([
-        {
-        events: regularEvents,
-        color: '#28a745',
-        },
-        {
-        events: pendingMeetingsEvents,
-        color: '#ffc107',
-        },
-        {
-        events: organizedEvents.map((event) => ({
-            ...event,
-            color: event.backgroundColor,
-        })),
-        },
-    ]);
-
-    /* Efectos
     useEffect(() => {
         const userId = getUserId();
         if (userId) {
@@ -1002,6 +961,109 @@ const CalendarComponent = () => {
         loadOrganizedMeetings();
         loadWorkSchedules();
     }, [loadMeetings, loadOrganizedMeetings]);
+    
+    //Quietar esto
+   /* Efectos useEffect(() => {
+        const mockEvents = [
+            {
+                id: "mock-event-1",
+                title: "Reunión de Prueba 1",
+                start: "2024-12-08T10:00:00",
+                end: "2024-12-08T11:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Juntas 1",
+                    observations: "Primera reunión de prueba.",
+                    organizerName: "Luis Fernández",
+                },
+            },
+            {
+                id: "mock-event-2",
+                title: "Reunión de Prueba 2",
+                start: "2024-12-09T15:00:00",
+                end: "2024-12-09T16:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Conferencias",
+                    observations: "Segunda reunión de prueba.",
+                    organizerName: "María Domínguez",
+                },
+            },
+            {
+                id: "mock-event-3",
+                title: "Reunión de Prueba 2",
+                start: "2024-12-09T15:00:00",
+                end: "2024-12-09T16:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Conferencias",
+                    observations: "Segunda reunión de prueba.",
+                    organizerName: "María Domínguez",
+                },
+            },
+            {
+                id: "mock-event-4",
+                title: "Reunión de Prueba 3",
+                start: "2024-12-09T15:00:00",
+                end: "2024-12-09T16:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Conferencias",
+                    observations: "Segunda reunión de prueba.",
+                    organizerName: "María Domínguez",
+                },
+            },
+            {
+                id: "mock-event-5",
+                title: "Reunión de Prueba 3",
+                start: "2024-12-18T15:00:00",
+                end: "2024-12-18T16:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Conferencias",
+                    observations: "Tercera reunión de prueba.",
+                    organizerName: "María Domínguez",
+                },
+            },
+            {
+                id: "mock-event-6",
+                title: "Reunión de Prueba 4",
+                start: "2024-12-18T18:00:00",
+                end: "2024-12-18T20:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Conferencias",
+                    observations: "Tercera reunión de prueba.",
+                    organizerName: "María Domínguez",
+                },
+            },
+        
+        ];
+
+        const mocky = [
+            {
+                id: "mock-event-8",
+                title: "Reunión de Prueba 10",
+                start: "2024-12-08T8:00:00",
+                end: "2024-12-08T9:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Juntas 1",
+                    observations: "Primera reunión de prueba.",
+                    organizerName: "Luis Fernández",
+                },
+            },
+        
+        ];
+        
+    
+       
+        setRegularEvents(mockEvents);
+        setReunionesAceptadas(mockEvents);
+        setReunionesOrganizadas(mocky);
+        //setReunionesPendientes(mockEvents);
+        //setPendingMeetingsEvents(mockEvents);
+    }, []);*/
 
     // Modificar el useEffect para el filtrado de usuarios
     useEffect(() => {

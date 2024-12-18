@@ -38,6 +38,11 @@ export default function App() {
           component={UserEdit} 
           options={{ title: 'Perfil' }}
         />
+        <Stack.Screen 
+          name="Notificaciones" 
+          component={NotificacionesComponent} 
+          options={{ title: 'Notificaciones' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
