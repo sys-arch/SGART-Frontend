@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import VentanaConfirm from './VentanaConfirm';
-import VerAusenciasModal from './VerAusenciasModal';
-import { useNavigate } from 'react-router-dom';
-import NavBar from './NavBar';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import config from '../config'; // Importa la configuración
+import '../styles/styles.css';
 import LoadingSpinner from './LoadingSpinner';
+import NavBar from './NavBar';
+import VentanaConfirm from './VentanaConfirm';
+
+
 
 const AdminAusenciasUI = () => {
     const navigate = useNavigate();
@@ -24,14 +27,18 @@ const AdminAusenciasUI = () => {
     const [horaFin, setHoraFin] = useState('');
     const [showDateError, setShowDateError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const getToken = () => sessionStorage.getItem('authToken'); // Función para obtener el token
 
 
     useEffect(() => {
         const fetchEmpleados = async () => {
             try {
                 setIsLoading(true);
-                const response = await axios.get('http://localhost:3000/users/cargarUsuarios');
-                const empleadosData = response.data.map(user => ({
+                const response = await axios.get(`${config.BACKEND_URL}/users/cargarUsuarios`, {
+                    headers: {
+                        Authorization: `Bearer ${getToken()}`,
+                    },
+                });                const empleadosData = response.data.map(user => ({
                     id: user.id,
                     nombre: user.firstName,
                     apellidos: user.lastName,
@@ -101,8 +108,11 @@ const AdminAusenciasUI = () => {
 
             console.log('Datos de ausencia a enviar:', nuevaAusencia);
 
-            const response = await axios.post('http://localhost:3000/administrador/ausencias/newAbsence', nuevaAusencia);
-            console.log('Respuesta del servidor:', response.data);
+            await axios.post(`${config.BACKEND_URL}/administrador/ausencias/newAbsence`, nuevaAusencia, {
+                headers: {
+                    Authorization: `Bearer ${getToken()}`,
+                },
+            });
 
             alert('Ausencia guardada correctamente.');
             setShowConfirmation(false);
@@ -182,9 +192,11 @@ const AdminAusenciasUI = () => {
                     nombre: empleado.nombre,
                     apellidos: empleado.apellidos
                 });
-
-                const response = await axios.get(`http://localhost:3000/administrador/ausencias/loadAbsences/${empleado.id}`);
-                console.log('Ausencias cargadas:', response.data);
+                const response = await axios.get(`${config.BACKEND_URL}/administrador/ausencias/loadAbsences/${empleado.id}`, {
+                    headers: {
+                        Authorization: `Bearer ${getToken()}`,
+                    },
+                });
 
                 setEmpleadoAusencias(response.data);
                 setShowAbsencesPopup(true);
@@ -209,7 +221,7 @@ const AdminAusenciasUI = () => {
                 <LoadingSpinner />
             ) : (
             <div className="user-validation-container">
-                <div className="login-box">
+                <div className="box">
                     <h2>Lista de Trabajadores</h2>
                     <table className="user-table">
                         <thead>

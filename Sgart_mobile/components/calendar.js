@@ -76,6 +76,8 @@ const CalendarComponent = () => {
 
     const [selectedDay, setSelectedDay] = useState('');
 
+    const [currentUserId, setCurrentUserId] = useState(null);
+
 
     // ! CARGAR INVITADOS	
     const loadInvitees = useCallback(async (meetingId) => {
@@ -948,54 +950,20 @@ const CalendarComponent = () => {
     };
 
 
-//items INTRODUCIR POR ANTONIO BORRAR LUEGO???????
-    // Transforma los eventos del formato de FullCalendar al formato de Agenda
-    const transformEventsForAgenda = (eventSources) => {
-        const agendaItems = {};
-        eventSources.forEach((source) => {
-          source.events.forEach((event) => {
-            const dateKey = new Date(event.start).toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
-            if (!agendaItems[dateKey]) {
-              agendaItems[dateKey] = [];
-            }
-            agendaItems[dateKey].push({
-              id: event.id,
-              name: event.title,
-              data: `Desde: ${new Date(event.start).toLocaleTimeString()} - Hasta: ${new Date(event.end).toLocaleTimeString()}`,
-              color: source.color || 'lightblue',
-            });
-          });
-        });
-        return agendaItems;
-      };
-
-  
-  // Usar los datos de eventSources
-    const items = transformEventsForAgenda([
-        {
-        events: regularEvents,
-        color: '#28a745',
-        },
-        {
-        events: pendingMeetingsEvents,
-        color: '#ffc107',
-        },
-        {
-        events: organizedEvents.map((event) => ({
-            ...event,
-            color: event.backgroundColor,
-        })),
-        },
-    ]);
-
-    /* Efectos
     useEffect(() => {
+        const userId = getUserId();
+        if (userId) {
+            setCurrentUserId(userId); // Guardar el userId en el estado global
+        } else {
+        console.error("No se pudo obtener el ID del usuario.");
+        }
         loadMeetings();
         loadOrganizedMeetings();
         loadWorkSchedules();
-    }, [loadMeetings, loadOrganizedMeetings]);*/
+    }, [loadMeetings, loadOrganizedMeetings]);
+    
     //Quietar esto
-    useEffect(() => {
+   /* Efectos useEffect(() => {
         const mockEvents = [
             {
                 id: "mock-event-1",
@@ -1095,7 +1063,7 @@ const CalendarComponent = () => {
         setReunionesOrganizadas(mocky);
         //setReunionesPendientes(mockEvents);
         //setPendingMeetingsEvents(mockEvents);
-    }, []);
+    }, []);*/
 
     // Modificar el useEffect para el filtrado de usuarios
     useEffect(() => {
@@ -1493,53 +1461,6 @@ const CalendarComponent = () => {
                             </View>
 
 
-
-
-
-
-
-
-
-
-
-                            {/* <div className="AdminCalendar-calendar-container">
-                                <h2>Calendario de Trabajo</h2>
-                                <div className="calendar-wrapper">
-                                    <FullCalendar
-                                        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                                        initialView="dayGridMonth"
-                                        eventSources={[
-                                            {
-                                                events: regularEvents,
-                                                color: '#28a745',
-                                                textColor: 'white'
-                                            },
-                                            {
-                                                events: pendingMeetingsEvents,
-                                                color: '#ffc107',
-                                                textColor: 'black'
-                                            },
-                                            {
-                                                events: organizedEvents.map(event => ({
-                                                    ...event,
-                                                    color: event.backgroundColor // Usar el color definido en el evento
-                                                }))
-                                            }
-                                        ]}
-                                        eventDidMount={(info) => {
-                                            console.log("Evento montado en el calendario:", {
-                                                id: info.event.id,
-                                                title: info.event.title,
-                                                start: info.event.start,
-                                                end: info.event.end,
-                                                source: info.event.source?.id
-                                            });
-                                        }}
-                                        eventClick={handleEventClick}
-                                        selectable={true}
-                                    />
-                                </div>
-                            </div> */}
                             {/* Pop-up de detalles del evento */}
                             {isEventDetailPopupOpen && selectedEvent && (
                             <Modal
