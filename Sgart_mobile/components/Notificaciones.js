@@ -10,34 +10,50 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import config from "../config";
 
-import React, { useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
-
 const NotificacionesComponent = () => {
     const [notificaciones, setNotificaciones] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
     // Obtener usuarioId del token JWT
-    const getUsuarioIdFromToken = () => {
-        const token = sessionStorage.getItem("authToken");
+    //const getUsuarioIdFromToken = () => {
+        //const token = AsyncStorage.getItem("authToken");
 
-        if (token) {
-            const decodedToken = jwtDecode(token);
-            console.log("Token decodificado:", decodedToken);
-            return decodedToken.userId;
+        //if (token) {
+            //const decodedToken = jwtDecode(token);
+            //console.log("Token decodificado:", decodedToken);
+            //return decodedToken.userId;
+        //}
+        //return null;
+    //};
+
+    const getUserId = async () => {
+        try {
+            const response = await fetch(`${config.BACKEND_URL}/users/current/userId`, {
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                },
+            });
+            if (!response.ok) {
+                throw new Error('No se pudo obtener el ID del usuario');
+            }
+            const data = await response.json();
+            console.log("ID de usuario obtenido:", data.userId);
+            return data.userId;
+        } catch (error) {
+            console.error('Error al obtener el ID del usuario:', error);
+            return null;
         }
-        return null;
     };
 
-    // Obtener el token del sessionStorage
-    const getAuthToken = () => {
-        return sessionStorage.getItem("authToken");
-    };
+    // Obtener el token 
+    //const getAuthToken = () => {
+        //return AsyncStorage.getItem("authToken");
+    //};
 
     // Cargar notificaciones desde el backend
     const loadNotificaciones = async () => {
-        const userId = getUsuarioIdFromToken();
-        const token = getAuthToken();
+        const userId = getUserId();
 
         if (!userId || !token) {
             console.error("Token JWT o usuarioId no encontrado.");
@@ -46,11 +62,11 @@ const NotificacionesComponent = () => {
 
         try {
             setIsLoading(true);
-            const response = await fetch(`http://localhost:9000/notificaciones?usuarioId=${userId}`, {
+            const response = await fetch(`${config.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
+                    "Authorization": `Bearer ${AsyncStorage.getItem("authToken")}`,
                 },
             });
 
@@ -69,14 +85,13 @@ const NotificacionesComponent = () => {
 
     // Eliminar una notificación individual
     const deleteNotificacion = async (id) => {
-        const token = getAuthToken();
 
         try {
-            const response = await fetch(`${CONFIG.BACKEND_URL}/notificaciones/${id}`, {
+            const response = await fetch(`${config.BACKEND_URL}/notificaciones/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
+                    "Authorization": `Bearer ${AsyncStorage.getItem("authToken")}`,
                 },
             });
 
@@ -92,17 +107,16 @@ const NotificacionesComponent = () => {
 
     // Eliminar todas las notificaciones
     const deleteAllNotificaciones = async () => {
-        const userId = getUsuarioIdFromToken();
-        const token = getAuthToken();
+        const userId = getUserId();
 
-        if (!userId || !token) return;
+        //if (!userId || !token) return;
 
         try {
-            const response = await fetch(`${CONFIG.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
+            const response = await fetch(`${config.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
+                    "Authorization": `Bearer ${AsyncStorage.getItem("authToken")}`,
                 },
             });
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import config from "../config";
 
 const Notificaciones = () => {
     const [notificaciones, setNotificaciones] = useState([]);
@@ -34,7 +35,7 @@ const Notificaciones = () => {
 
         try {
             setIsLoading(true);
-            const response = await fetch(`${CONFIG.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
+            const response = await fetch(`${config.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -60,7 +61,7 @@ const Notificaciones = () => {
         const token = getAuthToken();
 
         try {
-            const response = await fetch(`${CONFIG.BACKEND_URL}/notificaciones/${id}`, {
+            const response = await fetch(`${config.BACKEND_URL}/notificaciones/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
