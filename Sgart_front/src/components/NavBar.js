@@ -17,7 +17,7 @@ const NavBar = ({ isAdmin }) => {
     }
 
     const confirmLogout = () => {
-        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('authToken');
         navigate('/');
         setShowConfirmation(false);
     }
