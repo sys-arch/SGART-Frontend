@@ -78,7 +78,7 @@ const UserCalendarUI = () => {
                 },
                 body: JSON.stringify({ meetingId }),
             });
-            console.log("Estado de respuesta:", response.status);
+
 
 
             if (!response.ok) {
@@ -501,6 +501,7 @@ const UserCalendarUI = () => {
 
     // Modificar handleSaveEvent para incluir la validación
     const handleSaveEvent = async () => {
+        console.log('Guardando evento...');
         setErrorEvent('');
 
         // Validación de usuarios ausentes solo si hay usuarios seleccionados
@@ -511,17 +512,18 @@ const UserCalendarUI = () => {
                 return;
             }
         }
-
         
         if (selectedUsers.length === 0) {
+            
             setErrorEvent('Debes invitar al menos a un participante');
             return;
         }
-
         const startingTime = `${popupStartingHour.padStart(2, '0')}:${popupStartingMinutes.padStart(2, '0')}:00`;
         const endingTime = `${popupEndingHour.padStart(2, '0')}:${popupEndingMinutes.padStart(2, '0')}:00`;
+        
 
         try {
+            console.log("Entro en el try")
             setIsLoading(true);
             const currentUserId = await getUserId();
             const newEvent = {
@@ -585,6 +587,7 @@ const UserCalendarUI = () => {
                         return;
                     }
                 }
+                console.log("Datos enviados:", newEvent);
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/${eventIdToEdit}/modify`, {
                     method: 'POST',
                     headers: {
@@ -892,6 +895,7 @@ console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invita
 
 
     const handleModifyEvent = (event) => {
+        console.log('Evento a modificar:', event);
         loadLocations();
         setIsEditing(true);  // Indicamos que estamos editando un eventos
         setEventIdToEdit(event.id);
@@ -953,6 +957,7 @@ console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invita
         const userId = getUserId();
         if (userId) {
             setCurrentUserId(userId); // Guardar el userId en el estado global
+            console.log("ID del usuario obtenido:", userId);
         } else {
         console.error("No se pudo obtener el ID del usuario.");
         }
