@@ -31,7 +31,7 @@ const UserEdit = ({ navigation }) => {
             const response = await fetch(`${config.BACKEND_URL}/users/current/user`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include'
@@ -72,7 +72,7 @@ const UserEdit = ({ navigation }) => {
         fetch(`${config.BACKEND_URL}/users/modificar`, {
             method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${getToken()}`,
+                    'Authorization': `Bearer ${AsyncStorage.getItem('authToken')}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(updatedUser)
@@ -82,13 +82,14 @@ const UserEdit = ({ navigation }) => {
                     alert('Error al modificar los datos del usuario');
                     return;
                 }
-                alert("Usuario editado exitosamente")
+                Alert.alert('Exito', 'Datos modificados correctamente');
             })
+            navigation.goBack();
     };
 
     const handleCancel = () => {
         Alert.alert('Cancelar', 'Edición cancelada');
-        navigation.goBack(); // Regresar a la pantalla anterior
+        navigation.goBack();
     };
 
     return (

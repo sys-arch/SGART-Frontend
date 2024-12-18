@@ -10,13 +10,42 @@ const GoogleAuth = () => {
     const [secretKey, setSecretKey] = useState('');
 
     useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                
+        
+                // Obtener el objeto User desde el backend
+                const response = await fetch(`${config.BACKEND_URL}/users/current/user`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                });
+        
+                if (!response.ok) throw new Error('Error al obtener los datos del usuario');
+        
+                const userData = await response.json();
+                setUsuario(userData);
+                setIsAdmin(userData.profile === 'admin');
+            } catch (error) {
+                console.error('Error al obtener el usuario:', error.message);
+                setMessage('Error al cargar los datos del usuario.');
+            }
+        };
+    
+        fetchCurrentUser();
+    }, []);
+
+    useEffect(() => {
         const fetchQRCode = async () => {
             try {
                 const response = await fetch(
                     `${config.BACKEND_URL}/auth/generate-qr?email=${usuario.email}`,
                     {
                         headers: {
-                            'Authorization': `Bearer ${getToken()}`,
+                            'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
                         },
                     }
                 );
@@ -48,7 +77,7 @@ const GoogleAuth = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getToken()}`,
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
                 },
                 body: JSON.stringify({ mail: usuario.email, code: inputCode }),
             });
@@ -88,7 +117,7 @@ const GoogleAuth = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getToken()}`,
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
                 },
                 body: JSON.stringify(usuarioActualizado),
             });
