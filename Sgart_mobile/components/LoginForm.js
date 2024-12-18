@@ -88,7 +88,7 @@ const LoginForm = ({ navigation }) => {
             console.log('Login exitoso:', data);
             // Guardar token y email usando AsyncStorage
             await storeData(data.token, email);
-            navigation.navigate('GoogleAuth', { state: { data: data, email: email } });
+            navigation.navigate('Calendar', { state: { data: data, email: email } });
             //navigation.navigate('Calendar', { state: { data: data, email: email } });
           } else {
             throw new Error(data.message || 'Error al iniciar sesión.');

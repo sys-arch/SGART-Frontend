@@ -6,6 +6,9 @@ import { useNavigation } from '@react-navigation/native';
 import config from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/*Notificaciones*/
+import NotificacionesComponent from "./Notificaciones";
+
 const CalendarComponent = () => {
     // Estados esenciales para reuniones
     const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +64,10 @@ const CalendarComponent = () => {
 
     const [activeContent, setActiveContent] = useState('calendar');
 
+    //Notificaciones
+    const [showNotificaciones, setShowNotificaciones] = useState(false);
+    const [hasUnreadNotificaciones, setHasUnreadNotificaciones] = useState(false);
+
     const navigation = useNavigation();
 
     const [selectedEvents, setSelectedEvents] = useState([]); // Estado para almacenar eventos del día
@@ -68,6 +75,8 @@ const CalendarComponent = () => {
     const [selectedMeeting, setSelectedMeeting] = useState(null);
 
     const [selectedDay, setSelectedDay] = useState('');
+
+    const [currentUserId, setCurrentUserId] = useState(null);
 
 
     // ! CARGAR INVITADOS	
@@ -941,12 +950,18 @@ const CalendarComponent = () => {
     };
 
 
-    
     useEffect(() => {
+        const userId = getUserId();
+        if (userId) {
+            setCurrentUserId(userId); // Guardar el userId en el estado global
+        } else {
+        console.error("No se pudo obtener el ID del usuario.");
+        }
         loadMeetings();
         loadOrganizedMeetings();
         loadWorkSchedules();
     }, [loadMeetings, loadOrganizedMeetings]);
+    
     //Quietar esto
    /* Efectos useEffect(() => {
         const mockEvents = [
@@ -1128,11 +1143,15 @@ const CalendarComponent = () => {
         }
     };
 
+    //Notificaciones
+    const handleUnreadStatusChange = (hasUnread) => {
+        setHasUnreadNotificaciones(hasUnread);
+    };
 
     return (
         <>
-            
-                <ScrollView 
+
+<ScrollView 
                     style={styles.scrollContainer} 
                     contentContainerStyle={styles.scrollContent}
                 >
@@ -1172,7 +1191,7 @@ const CalendarComponent = () => {
                             />
                             {/* Lista de eventos seleccionados */}
                             {selectedEvents.length > 0 && (
-                                 <>
+                                <>
                                 <Text style={styles.headerText}>Reuniones del día {selectedDay}</Text>
                             <FlatList
                                 data={selectedEvents}
@@ -1192,7 +1211,6 @@ const CalendarComponent = () => {
                             />
                             </>
                             )}
-                           
 
                                 {/* Modal para mostrar detalles de la reunión */}
                                 <Modal
@@ -1244,7 +1262,7 @@ const CalendarComponent = () => {
                                                 reunionesPendientes.map((reunion) => (
                                                     <View key={reunion.meetingId} style={[styles['meeting-item'], styles['meeting-item-pending']]}>
                                                         <View style={styles['meeting-info']}>
-                                                            <Text>{reunion.title}</Text>
+                                                            <Text>{reunion.title || 'Título no disponible'}</Text>
                                                         </View>
                                                         <View style={styles['meeting-actions']}>
                                                             <TouchableOpacity
@@ -1323,7 +1341,7 @@ const CalendarComponent = () => {
                                                 <View key={reunion.meetingId} style={[styles['meeting-item'], styles['meeting-item-accepted']]}>
                                                     <View style={styles['meeting-item-content']}>
                                                         <View style={styles['meeting-info']}>
-                                                            <Text>{reunion.title}</Text>
+                                                            <Text>{reunion.title || 'Título no disponible'}</Text>
                                                         </View>
                                                         <View style={styles['meeting-buttons']}>
                                                             <TouchableOpacity
@@ -1382,7 +1400,7 @@ const CalendarComponent = () => {
                                                 >
                                                     <View style={styles['meeting-item-content']}>
                                                         <View style={styles['meeting-info']}>
-                                                            <Text>{reunion.title}</Text>
+                                                            <Text>{reunion.title || 'Título no disponible'}</Text>
                                                         </View>
                                                         <View style={styles['meeting-buttons']}>
                                                             <TouchableOpacity
@@ -1443,53 +1461,6 @@ const CalendarComponent = () => {
                             </View>
 
 
-
-
-
-
-
-
-
-
-
-                            {/* <div className="AdminCalendar-calendar-container">
-                                <h2>Calendario de Trabajo</h2>
-                                <div className="calendar-wrapper">
-                                    <FullCalendar
-                                        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                                        initialView="dayGridMonth"
-                                        eventSources={[
-                                            {
-                                                events: regularEvents,
-                                                color: '#28a745',
-                                                textColor: 'white'
-                                            },
-                                            {
-                                                events: pendingMeetingsEvents,
-                                                color: '#ffc107',
-                                                textColor: 'black'
-                                            },
-                                            {
-                                                events: organizedEvents.map(event => ({
-                                                    ...event,
-                                                    color: event.backgroundColor // Usar el color definido en el evento
-                                                }))
-                                            }
-                                        ]}
-                                        eventDidMount={(info) => {
-                                            console.log("Evento montado en el calendario:", {
-                                                id: info.event.id,
-                                                title: info.event.title,
-                                                start: info.event.start,
-                                                end: info.event.end,
-                                                source: info.event.source?.id
-                                            });
-                                        }}
-                                        eventClick={handleEventClick}
-                                        selectable={true}
-                                    />
-                                </div>
-                            </div> */}
                             {/* Pop-up de detalles del evento */}
                             {isEventDetailPopupOpen && selectedEvent && (
                             <Modal
@@ -1563,8 +1534,8 @@ const CalendarComponent = () => {
                                         <View style={styles['AdminCalendar-input-group']}>
                                             <Text style={styles['label']}>Lista de Invitados:</Text>
                                             <View>
-                                                {invitees.map((invitee) => (
-                                                    <Text key={invitee.id} style={styles['value']}>
+                                                {invitees.map((invitee, index) => (
+                                                    <Text key={index} style={styles['value']}>
                                                         {invitee.userName} - {invitee.status}
                                                     </Text>
                                                 ))}
@@ -1688,7 +1659,7 @@ const CalendarComponent = () => {
                                                     <View style={styles['work-schedules']}>
                                                         {workSchedules.length > 0 ? (
                                                             workSchedules.map((schedule, index) => (
-                                                                <View key={schedule.startingTime + schedule.endingTime} style={styles['work-schedule-item']}>
+                                                                <View key={index} style={styles['work-schedule-item']}>
                                                                     <Text>
                                                                         Bloque {index + 1}: {schedule.startingTime.slice(0, -3)} - {schedule.endingTime.slice(0, -3)}
                                                                     </Text>
@@ -1905,10 +1876,49 @@ const CalendarComponent = () => {
                         style={styles.menuButtonIcon}
                     />
                 </TouchableOpacity>
+                {/* Botón de Notificaciones */}
+                <TouchableOpacity
+                    style={styles.notificationIconContainer}
+                    onPress={() => setShowNotificaciones(true)}
+                >
+                    <Image
+                        source={require("../media/notification_icon.png")}
+                        style={styles.notificationIcon}
+                    />
+                    {/* Indicador de notificaciones no leídas */}
+                    {hasUnreadNotificaciones && (
+                        <View style={styles.notificationBadge}></View>
+                    )}
+                </TouchableOpacity>
             </View>
 
+            {/* Pop-up de Notificaciones */}
+            <Modal
+                visible={showNotificaciones}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowNotificaciones(false)}
+            >
+                <View style={styles.overlay}>
+                    <View style={styles.popupContainer}>
+                        {/* Componente de Notificaciones */}
+                        <NotificacionesComponent onUnreadStatusChange={handleUnreadStatusChange} />
 
+                        {/* Botón para cerrar el modal */}
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setShowNotificaciones(false)}
+                        >
+                            <Image
+                                source={require("../media/close_icon.png")}
+                                style={styles.closeIcon}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </>
+
     );
 };
 
@@ -2480,6 +2490,50 @@ const styles = StyleSheet.create({
         left: '10%',
     },
 
+    //NOTIFICACIONES
+    notificationIconContainer: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 10, // Ajusta para que encaje mejor en el menú
+    },
+    notificationIcon: {
+        width: 30,
+        height: 30,
+        resizeMode: 'contain',
+    },
+    notificationBadge: {
+        position: 'absolute',
+        top: 5,
+        right: 5,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: 'red',
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    popupContainer: {
+        width: '90%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 20,
+        elevation: 5,
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+    },
+    closeIcon: {
+        width: 20,
+        height: 20,
+    },
 
 
     eventButton: {
