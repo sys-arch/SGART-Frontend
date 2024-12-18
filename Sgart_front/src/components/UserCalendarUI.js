@@ -66,6 +66,7 @@ const UserCalendarUI = () => {
     // Cargar invitados de una reunión
     const loadInvitees = useCallback(async (meetingId) => {
         try {
+
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/invitados`, {
                 method: 'POST',
                 headers: {
@@ -74,8 +75,6 @@ const UserCalendarUI = () => {
                 },
                 body: JSON.stringify({ meetingId }),
             });
-
-
 
             if (!response.ok) {
                 throw new Error(`Error al cargar los invitados: ${response.statusText}`);
@@ -157,7 +156,6 @@ const UserCalendarUI = () => {
                 // Cargar invitados para esta reunión
                 const invitados = await loadInvitees(meeting.meetingId);
 
-                
 
                 const transformedMeeting = {
                     id: meeting.meetingId,
@@ -179,16 +177,12 @@ const UserCalendarUI = () => {
                 });
 
                 if (currentUserInvitation) {
-                    console.log(`Estado de invitación encontrado: "${currentUserInvitation.status}"`);
                     if (currentUserInvitation.status.trim() === 'Aceptada') {
-                        console.log(`Reunión ${meeting.meetingId} clasificada como ACEPTADA`);
                         acceptedMeetings.push(transformedMeeting);
                     } else if (currentUserInvitation.status.trim() === 'Pendiente') {
-                        console.log(`Reunión ${meeting.meetingId} clasificada como PENDIENTE`);
                         pendingMeetings.push(transformedMeeting);
                     }
                 } else {
-                    console.log(`No se encontró invitación para el usuario actual (${currentUserId}) en la reunión ${meeting.meetingId}`);
                 }
             }
 
@@ -220,7 +214,6 @@ const UserCalendarUI = () => {
     // Modificar la función loadOrganizedMeetings
     const loadOrganizedMeetings = useCallback(async () => {
         try {
-            console.log("Iniciando carga de reuniones organizadas...");
             const response = await fetch(`${config.BACKEND_URL}/usuarios/calendarios/organized-meetings`, {
                 credentials: 'include',
                 headers: {
@@ -234,13 +227,11 @@ const UserCalendarUI = () => {
             }
 
             const backendMeetings = await response.json();
-            console.log("Reuniones organizadas recibidas del backend:", backendMeetings);
 
             const transformedMeetings = await Promise.all(backendMeetings.map(async (meeting, index) => {
                 
 
                 const invitados = await loadInvitees(meeting.meetingId);
-                console.log(`Invitados cargados para reunión ${meeting.meetingId}:`, invitados);
 
                 const allRejected = areAllInvitationsRejected(invitados);
 
@@ -264,8 +255,7 @@ const UserCalendarUI = () => {
                 return transformedMeeting;
             }));
 
-            console.log("Total de reuniones organizadas transformadas:", transformedMeetings.length);
-            console.log("Reuniones organizadas transformadas:", transformedMeetings);
+
 
             setOrganizedEvents(transformedMeetings);
             setReunionesOrganizadas(transformedMeetings);
@@ -613,10 +603,7 @@ const UserCalendarUI = () => {
                     },
                     body: JSON.stringify(userIds),
                 });
-            
 
-                
-    
 
                 if (!inviteResponse.ok) {
                     alert('Error al enviar las invitaciones');
@@ -721,31 +708,34 @@ const UserCalendarUI = () => {
         setLocations(transformedLocations);
     })
 
-    const loadAbsences = (async () => {
-        const response = await fetch(`${config.BACKEND_URL}/administrador/ausencias/loadAbsences`, {
-            headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
-            },
-        });
-        if (response.status === 204) {
-            console.log('No hay datos de ausencias');
-            return []; // Maneja el caso de lista vacía
-        }
+    const loadAbsences = async () => {
+    console.log("Ejecutando loadAbsences...");
+    const response = await fetch(`${config.BACKEND_URL}/administrador/ausencias/loadAbsences`, {
+        headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+        },
+    });
+    console.log("Estado de la respuesta:", response.status);
+    if (response.status === 204) {
+        console.log("No hay datos de ausencias.");
+        return []; // Maneja el caso de lista vacía
+    }
+    const backendAbsences = await response.json();
+    console.log("Datos de ausencias desde el backend:", backendAbsences);
+    const transformedAbsences = backendAbsences.map(ausencia => ({
+        absenceId: ausencia.absenceId,
+        userId: ausencia.userId,
+        absenceStartDate: ausencia.absenceStartDate,
+        absenceEndDate: ausencia.absenceEndDate,
+        absenceAllDay: ausencia.absenceAllDay,
+        absenceStartTime: ausencia.absenceStartTime,
+        absenceEndTime: ausencia.absenceEndTime,
+        absenceReason: ausencia.absenceReason
+    }));
+    setAusencias(transformedAbsences);
+    console.log("Ausencias transformadas:", transformedAbsences);
+};
 
-        const backendAbsences = await response.json();
-        const transformedAbsences = backendAbsences.map(ausencia => ({
-            absenceId: ausencia.absenceId,
-            userId: ausencia.userId,
-            absenceStartDate: ausencia.absenceStartDate,
-            absenceEndDate: ausencia.absenceEndDate,
-            absenceAllDay: ausencia.absenceAllDay,
-            absenceStartTime: ausencia.absenceStartTime,
-            absenceEndTime: ausencia.absenceEndTime,
-            absenceReason: ausencia.absenceReason
-        }));
-        setAusencias(transformedAbsences);
-        console.log(transformedAbsences);
-    })
 
     const checkUserAbsence = (participant) => {
         return ausencias.some((ausencia) => {
