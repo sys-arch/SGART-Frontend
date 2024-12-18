@@ -66,10 +66,6 @@ const UserCalendarUI = () => {
     // Cargar invitados de una reunión
     const loadInvitees = useCallback(async (meetingId) => {
         try {
-            console.log(`Cargando invitados para la reunión ID: ${meetingId}`);
-            console.log("Id del usuario actual:", currentUserId);   
-            
-
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/invitados`, {
                 method: 'POST',
                 headers: {
@@ -87,7 +83,6 @@ const UserCalendarUI = () => {
             // Leer el cuerpo de la respuesta SOLO UNA VEZ
             const responseBody = await response.json();
 
-            console.log("Texto de respuesta (JSON):", JSON.stringify(responseBody, null, 2));
             return responseBody;
 
         } catch (error) {
@@ -120,7 +115,6 @@ const UserCalendarUI = () => {
                 return null;
             }
     
-            console.log("ID del usuario extraído del token:", userId);
             return userId;
     
         } catch (error) {
@@ -136,11 +130,9 @@ const UserCalendarUI = () => {
     const loadMeetings = useCallback(async () => {
         try {
             setIsLoading(true);
-            console.log("Iniciando carga de meetings...");
 
             // Obtener el userId del backend
             const currentUserId = await getUserId();
-            console.log("ID del usuario actual:", currentUserId, "Tipo:", typeof currentUserId);
 
             if (!currentUserId) {
                 throw new Error('No se pudo obtener el ID del usuario');
@@ -155,23 +147,17 @@ const UserCalendarUI = () => {
             }
     
             const backendMeetings = await response.json();
-            console.log("Total de reuniones recibidas:", backendMeetings.length);
 
             const acceptedMeetings = [];
             const pendingMeetings = [];
 
             // Procesar cada reunión y sus invitados
             for (const meeting of backendMeetings) {
-                console.log(`\n--- Procesando reunión ID: ${meeting.meetingId} ---`);
 
                 // Cargar invitados para esta reunión
                 const invitados = await loadInvitees(meeting.meetingId);
-                console.log(`Invitados recibidos para reunión ${meeting.meetingId}:`, invitados);
 
-                // Imprimir cada invitado y su estado
-                invitados.forEach(invitee => {
-                    console.log(`Invitado ID: ${invitee.userId} (${typeof invitee.userId}), Estado: "${invitee.status}"`);
-                });
+                
 
                 const transformedMeeting = {
                     id: meeting.meetingId,
@@ -189,7 +175,6 @@ const UserCalendarUI = () => {
 
                 // Buscar la invitación del usuario actual por userId
                 const currentUserInvitation = invitados.find(invitee => {
-                    console.log(`Comparando: invitado.userId=${invitee.userId} con currentUserId=${currentUserId}`);
                     return invitee.userId.toString() === currentUserId.toString(); // Convertir ambos a string para comparar
                 });
 
@@ -276,7 +261,6 @@ const UserCalendarUI = () => {
                     }
                 };
 
-                console.log(`Reunión ${index + 1} transformada:`, transformedMeeting);
                 return transformedMeeting;
             }));
 
@@ -467,15 +451,12 @@ const UserCalendarUI = () => {
 
     const isTimeWithinWorkSchedule = (hour, minute) => {
         if (!workSchedules.length) {
-            console.log('No hay horarios laborales definidos, permitiendo cualquier hora');
             return true;
         }
 
         const timeInMinutes = hour * 60 + parseInt(minute);
-        console.log(`\nValidando tiempo: ${hour}:${minute} (${timeInMinutes} minutos)`);
         
         for (const schedule of workSchedules) {
-            console.log(`\nComprobando bloque horario: ${schedule.startingTime} - ${schedule.endingTime}`);
             
             const startTime = schedule.startingTime.split(':').slice(0, 2).join(':');
             const endTime = schedule.endingTime.split(':').slice(0, 2).join(':');
@@ -486,16 +467,12 @@ const UserCalendarUI = () => {
             const scheduleStartMinutes = startHour * 60 + startMinute;
             const scheduleEndMinutes = endHour * 60 + endMinute;
             
-            console.log(`Bloque en minutos: ${scheduleStartMinutes} - ${scheduleEndMinutes}`);
-            console.log(`Tiempo a validar en minutos: ${timeInMinutes}`);
             
             if (timeInMinutes >= scheduleStartMinutes && timeInMinutes <= scheduleEndMinutes) {
-                console.log('¡Tiempo válido! Está dentro de este bloque horario');
                 return true;
             }
         }
 
-        console.log('Tiempo no válido: No está dentro de ningún bloque horario');
         return false;
     };
 
@@ -587,7 +564,7 @@ const UserCalendarUI = () => {
                         return;
                     }
                 }
-                console.log("Datos enviados:", newEvent);
+            
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/${eventIdToEdit}/modify`, {
                     method: 'POST',
                     headers: {
@@ -605,7 +582,7 @@ const UserCalendarUI = () => {
 
                 alert("Se ha modificado el evento de manera exitosa.");
             } else {
-                console.log("Datos enviados:", newEvent);
+                
 
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/create`, {
                     method: 'POST',
@@ -636,10 +613,7 @@ const UserCalendarUI = () => {
                     },
                     body: JSON.stringify(userIds),
                 });
-                console.log("Datos enviados como JSON:", JSON.stringify(newEvent, null, 2));
-                console.log("Usuarios invitados (IDs):", userIds);
-console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invitations/${meetingId}/invite`);
-
+            
 
                 
     
@@ -697,7 +671,6 @@ console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invita
         try {
             // Obtener el ID del usuario actual
             const currentUserId = await getUserId();
-            console.log('ID del usuario actual:', currentUserId);
             
             const response = await fetch(`${config.BACKEND_URL}/api/meetings/available-users`, {
                 headers: {
@@ -707,14 +680,12 @@ console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invita
     
             
             const backendUsers = await response.json();
-            console.log('Usuarios recibidos del backend:', backendUsers);
             const userId=await getUserId();
 
             // Filtrar excluyendo al usuario actual
             const transformedUsers = backendUsers
                 .filter(user => {
                     const isCurrentUser = user.id === currentUserId;
-                    console.log(`Comparando usuario ${user.name} (${user.id}) con usuario actual (${currentUserId}): ${isCurrentUser ? 'Es el mismo' : 'Es diferente'}`);
                     return user.id !== userId;
                 })
                 .map(user => ({
@@ -722,7 +693,6 @@ console.log("URL de la solicitud de invitación:", `${config.BACKEND_URL}/invita
                     nombre: `${user.name} ${user.lastName}`
                 }));
                 
-            console.log('Usuarios transformados (sin usuario actual):', transformedUsers);
             
             // Actualizar estados
             setAvailableUsers(transformedUsers);
