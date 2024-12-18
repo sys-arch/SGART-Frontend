@@ -92,7 +92,6 @@ const GoogleAuth = ({navigation}) => {
             const data = await response.json();
             if (data.status === 'valid' ) {
                 if(!isAdmin){
-                    //await registrarUsuario();
                     setMessage("Autenticación exitosa. Redirigiendo...");
                     navigation.navigate('Calendar');
                 }else{

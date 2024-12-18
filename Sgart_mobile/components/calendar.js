@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Modal, Switch, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Modal, Switch, SafeAreaView, ScrollView, FlatList } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Calendar } from 'react-native-calendars';
 import { useNavigation } from '@react-navigation/native';
@@ -40,6 +40,9 @@ const CalendarComponent = () => {
     const [filteredParticipants, setFilteredParticipants] = useState([]);
     const [errorEvent, setErrorEvent] = useState('');
 
+    // Añadir estos estados adicionales junto a los otros estados
+    const [popupHourError, setPopupHourError] = useState(false);
+    const [popupMinuteError, setPopupMinuteError] = useState(false);
 
     // Añadir nuevo estado para reuniones organizadas
     const [organizedEvents, setOrganizedEvents] = useState([]);
@@ -59,6 +62,12 @@ const CalendarComponent = () => {
     const [activeContent, setActiveContent] = useState('calendar');
 
     const navigation = useNavigation();
+
+    const [selectedEvents, setSelectedEvents] = useState([]); // Estado para almacenar eventos del día
+    const [modalVisible, setModalVisible] = useState(false); // Estado para controlar el modal
+    const [selectedMeeting, setSelectedMeeting] = useState(null);
+
+    const [selectedDay, setSelectedDay] = useState('');
 
 
     // ! CARGAR INVITADOS	
@@ -965,12 +974,78 @@ const CalendarComponent = () => {
                     organizerName: "María Domínguez",
                 },
             },
+            {
+                id: "mock-event-3",
+                title: "Reunión de Prueba 2",
+                start: "2024-12-09T15:00:00",
+                end: "2024-12-09T16:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Conferencias",
+                    observations: "Segunda reunión de prueba.",
+                    organizerName: "María Domínguez",
+                },
+            },
+            {
+                id: "mock-event-4",
+                title: "Reunión de Prueba 3",
+                start: "2024-12-09T15:00:00",
+                end: "2024-12-09T16:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Conferencias",
+                    observations: "Segunda reunión de prueba.",
+                    organizerName: "María Domínguez",
+                },
+            },
+            {
+                id: "mock-event-5",
+                title: "Reunión de Prueba 3",
+                start: "2024-12-18T15:00:00",
+                end: "2024-12-18T16:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Conferencias",
+                    observations: "Tercera reunión de prueba.",
+                    organizerName: "María Domínguez",
+                },
+            },
+            {
+                id: "mock-event-6",
+                title: "Reunión de Prueba 4",
+                start: "2024-12-18T18:00:00",
+                end: "2024-12-18T20:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Conferencias",
+                    observations: "Tercera reunión de prueba.",
+                    organizerName: "María Domínguez",
+                },
+            },
+        
+        ];
+
+        const mocky = [
+            {
+                id: "mock-event-8",
+                title: "Reunión de Prueba 10",
+                start: "2024-12-08T8:00:00",
+                end: "2024-12-08T9:00:00",
+                allDay: false,
+                extendedProps: {
+                    locationName: "Sala de Juntas 1",
+                    observations: "Primera reunión de prueba.",
+                    organizerName: "Luis Fernández",
+                },
+            },
+        
         ];
         
     
        
         setRegularEvents(mockEvents);
         setReunionesAceptadas(mockEvents);
+        setReunionesOrganizadas(mocky);
         //setReunionesPendientes(mockEvents);
         //setPendingMeetingsEvents(mockEvents);
     }, []);
@@ -993,23 +1068,28 @@ const CalendarComponent = () => {
     const transformEvents = (events, color) => {
         const transformedEvents = {};
         events.forEach((event) => {
-        const dateKey = event.start.split('T')[0]; // Extraer fecha en formato YYYY-MM-DD
-        if (!transformedEvents[dateKey]) {
-            transformedEvents[dateKey] = { marked: true, dots: [] };
-        }
-        transformedEvents[dateKey].dots.push({
-            color, // Color personalizado por tipo de evento
-            key: event.id, // Identificador único
-        });
+            const dateKey = event.start.split('T')[0]; // Extraer fecha en formato YYYY-MM-DD
+            if (!transformedEvents[dateKey]) {
+                transformedEvents[dateKey] = { marked: true, dots: [] };
+            }
+            transformedEvents[dateKey].dots.push({
+                color, // Color personalizado por tipo de evento
+                key: event.id, // Identificador único
+                event, // Almacena el evento completo
+            });
         });
         return transformedEvents;
     };
   
     // Generar markedDates combinando todos los eventos
-    const markedDates = {
-        ...transformEvents(regularEvents, '#00aced'), // Azul para regularEvents
-        ...transformEvents(pendingMeetingsEvents, '#ffc107'), // Amarillo para pendingMeetingsEvents
-        ...transformEvents(organizedEvents, '#28a745'), // Verde para organizedEvents
+    const markedDates = {   // cambiar esto a morado organizador y asistente en verde
+
+        //organizadas, aceptadas y pendientes,   usar reunionesOrganizadas, reunionePendientes y reunionesAceptadas
+        //...transformEvents(regularEvents, '#00aced'), // Azul para regularEvents
+        ...transformEvents(reunionesAceptadas, '#28a745'),
+        //...transformEvents(pendingMeetingsEvents, '#ffc107'), // Amarillo para pendingMeetingsEvents
+        ...transformEvents(reunionesOrganizadas, '#6f42c1'),
+        //...transformEvents(organizedEvents, '#28a745'), // Verde para organizedEvents
     };
     /*
 
@@ -1019,22 +1099,39 @@ const CalendarComponent = () => {
         }`);
     }; */
     const handleDayPress = (day) => {
-        // Obtener los eventos para el día seleccionado
-       const eventos = markedDates[day.dateString]?.dots.map(dot => dot.key).join(', ') || 'Ninguno';
-    
-        // Crear un mensaje amigable
-        const mensaje = `Has seleccionado el día: ${day.dateString}\n Eventos: ${eventos}
-        `;
-        alert(mensaje);
-    }
+        // Obtener los eventos únicos para el día seleccionado
+        setSelectedDay(day.dateString); 
+        const eventos = markedDates[day.dateString]?.dots.map((dot) => ({
+            ...dot.event, 
+            color: dot.color, // Asignar el color del evento
+        })) || [];
+        console.log(eventos);
+        // Actualizar el estado asegurando que no haya duplicados
+        const eventosUnicos = Array.from(new Set(eventos.map((event) => event.id))) // Filtrar por ID único
+          .map((id) => eventos.find((event) => event.id === id));
+      
+        setSelectedEvents(eventosUnicos);
+    };
+
+    const handleEventPress = (event) => {
+        //setSelectedMeeting(event); // Establecer la reunión seleccionada
+        //setModalVisible(true); // Mostrar el modal con los detalles
+        const isOrganizedEvent = reunionesOrganizadas.some(reunion => reunion.id === event.id);
+       
+        if (isOrganizedEvent) {
+            // Si es una reunión organizada, permite la edición
+            handleModifyEvent(event);
+        } else {
+            // Si no, solo muestra la información
+            setSelectedMeeting(event);
+            setModalVisible(true);
+        }
+    };
 
 
     return (
         <>
-            {/* <NavBar isAdmin={false} /> */}
-            {isLoading ? (
-                <LoadingSpinner />
-            ) : (
+            
                 <ScrollView 
                     style={styles.scrollContainer} 
                     contentContainerStyle={styles.scrollContent}
@@ -1073,7 +1170,58 @@ const CalendarComponent = () => {
                                     textDayHeaderFontWeight: '300',
                                 }}
                             />
-                        </SafeAreaView>
+                            {/* Lista de eventos seleccionados */}
+                            {selectedEvents.length > 0 && (
+                                 <>
+                                <Text style={styles.headerText}>Reuniones del día {selectedDay}</Text>
+                            <FlatList
+                                data={selectedEvents}
+                                keyExtractor={(item) =>  item.id.toString()} // Manejo seguro
+                                scrollEnabled={false}
+                                renderItem={({ item }) => (
+                                <TouchableOpacity
+                                style={[styles.eventButton, { backgroundColor: item.color || '#fffff'} ]}
+                                        onPress={() => handleEventPress(item)}
+                                    >
+                                    <Text style={styles.eventText}>{item.title || 'Información no encontrada'}</Text>
+                                </TouchableOpacity>
+                                )}
+                                ListEmptyComponent={
+                                <Text style={styles.noEventsText}>No hay eventos para este día</Text>
+                                }
+                            />
+                            </>
+                            )}
+                           
+
+                                {/* Modal para mostrar detalles de la reunión */}
+                                <Modal
+                                    visible={modalVisible}
+                                    animationType="slide"
+                                    transparent={true}
+                                    onRequestClose={() => setModalVisible(false)}
+                                >
+                                    <View style={styles.modalContainer}>
+                                        <View style={styles.modalContent}>
+                                            <Text style={styles.modalTitle}>Detalles de la reunión</Text>
+                                            {selectedMeeting && (
+                                                <>
+                                                    <Text>Título: {selectedMeeting.title}</Text>
+                                                    <Text>Fecha: {selectedMeeting.start}</Text>
+                                                    <Text>Descripción: {selectedMeeting.description}</Text>
+                                                    {/* Agrega otros detalles según sea necesario */}
+                                                </>
+                                            )}
+                                            <TouchableOpacity
+                                                style={styles.closeButton}
+                                                onPress={() => setModalVisible(false)}
+                                            >
+                                                <Text style={styles.closeButtonText}>Cerrar</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                </Modal>
+                            </SafeAreaView>
                     )}
 
 
@@ -1415,8 +1563,8 @@ const CalendarComponent = () => {
                                         <View style={styles['AdminCalendar-input-group']}>
                                             <Text style={styles['label']}>Lista de Invitados:</Text>
                                             <View>
-                                                {invitees.map((invitee, index) => (
-                                                    <Text key={index} style={styles['value']}>
+                                                {invitees.map((invitee) => (
+                                                    <Text key={invitee.id} style={styles['value']}>
                                                         {invitee.userName} - {invitee.status}
                                                     </Text>
                                                 ))}
@@ -1540,7 +1688,7 @@ const CalendarComponent = () => {
                                                     <View style={styles['work-schedules']}>
                                                         {workSchedules.length > 0 ? (
                                                             workSchedules.map((schedule, index) => (
-                                                                <View key={index} style={styles['work-schedule-item']}>
+                                                                <View key={schedule.startingTime + schedule.endingTime} style={styles['work-schedule-item']}>
                                                                     <Text>
                                                                         Bloque {index + 1}: {schedule.startingTime.slice(0, -3)} - {schedule.endingTime.slice(0, -3)}
                                                                     </Text>
@@ -1672,35 +1820,39 @@ const CalendarComponent = () => {
                                             </View>
 
                                             {/* Lista de participantes disponibles */}
-                                            <View style={styles['participant-list-available']}>
-                                                {filteredParticipants.map((participant) => (
-                                                    <TouchableOpacity
-                                                        key={participant.id}
-                                                        style={styles['participant-item']}
-                                                        onPress={() => handleSelectParticipant(participant)}
-                                                    >
-                                                        <Text style={styles['participant-text']}>{participant.nombre}</Text>
-                                                    </TouchableOpacity>
-                                                ))}
+                                            <View style={{ maxHeight: 150 }}>
+                                                <ScrollView style={styles['scroll-list']}>
+                                                    {filteredParticipants.map((participant) => (
+                                                        <TouchableOpacity
+                                                            key={participant.id}
+                                                            style={styles['participant-item']}
+                                                            onPress={() => handleSelectParticipant(participant)}
+                                                        >
+                                                            <Text style={styles['participant-text']}>{participant.nombre}</Text>
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </ScrollView>
                                             </View>
 
                                             {/* Lista de participantes seleccionados */}
-                                            <View style={styles['selected-participants']}>
-                                                <Text style={styles['selected-participants-title']}>Participantes Seleccionados:</Text>
-                                                {selectedUsers.map((user) => (
-                                                    <View
-                                                        key={user.id}
-                                                        style={[
-                                                            styles['selected-participant'],
-                                                            user.enAusencia && styles['selected-participant-absent']
-                                                        ]}
-                                                    >
-                                                        <Text>{user.nombre}</Text>
-                                                        <TouchableOpacity onPress={() => handleRemoveUser(user)}>
-                                                            <Text style={styles['remove-button']}>X</Text>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                ))}
+                                            <View style={{ maxHeight: 150, marginTop: 10 }}>
+                                                <Text style={styles['selected-title']}>Participantes Seleccionados:</Text>
+                                                <ScrollView style={styles['scroll-list']}>
+                                                    {selectedUsers.map((user) => (
+                                                        <View
+                                                            key={user.id}
+                                                            style={[
+                                                                styles['selected-participant'],
+                                                                user.enAusencia && styles['selected-participant-absent'],
+                                                            ]}
+                                                        >
+                                                            <Text>{user.nombre}</Text>
+                                                            <TouchableOpacity onPress={() => handleRemoveUser(user)}>
+                                                                <Text style={styles['remove-button']}>X</Text>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    ))}
+                                                </ScrollView>
                                             </View>
 
                                             {/* Botones */}
@@ -1723,7 +1875,7 @@ const CalendarComponent = () => {
                     )}
                     </View>
                 </ScrollView>
-            )}
+            )
             {/* Menú flotante */}
             <View style={styles.floatingMenu}>
                 <TouchableOpacity
@@ -2010,7 +2162,7 @@ const styles = StyleSheet.create({
     'popup-scroll-content': {
         flexGrow: 1,
         justifyContent: 'flex-start',
-        paddingBottom: 20,
+        paddingBottom: 20, 
     },
     'AdminCalendar-input-group': {
         marginBottom: 15,
@@ -2111,6 +2263,13 @@ const styles = StyleSheet.create({
         textAlignVertical: 'top',
         minHeight: 80,
     },
+    'scroll-list': {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        padding: 5,
+        backgroundColor: '#f9f9f9',
+    },
     'search-participants-container': {
         marginBottom: 15,
     },
@@ -2119,14 +2278,19 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     'participant-item': {
-        padding: 10,
+        padding: 8,
         borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
+        borderBottomColor: '#e0e0e0',
     },
     'participant-text': {
         fontSize: 14,
         color: '#333',
     },
+    'selected-title': {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 5,
+        },
     'selected-participants': {
         marginBottom: 15,
     },
@@ -2138,14 +2302,13 @@ const styles = StyleSheet.create({
     'selected-participant': {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 10,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 4,
-        marginBottom: 5,
+        padding: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        backgroundColor: '#f0f8ff',
     },
     'selected-participant-absent': {
-        backgroundColor: '#ffe5e5',
+        backgroundColor: '#ffe6e6',
     },
     'remove-button': {
         color: '#dc3545',
@@ -2314,6 +2477,58 @@ const styles = StyleSheet.create({
         //marginBottom: 10,
         //top: 55,
         fontWeight: 'bold',
-        left: 50,
+        left: '10%',
     },
+
+
+
+    eventButton: {
+        backgroundColor: '#ffffff',
+        padding: 10,
+        marginVertical: 5,
+        borderRadius: 5,
+    },
+    eventText: {
+        color: '#000000',
+        fontWeight: 'bold',
+    },
+    noEventsText: {
+        textAlign: 'center',
+        marginTop: 10,
+        color: '#888',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        padding: 20,
+        borderRadius: 10,
+        width: '80%',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    closeButton: {
+        marginTop: 20,
+        backgroundColor: '#00aced',
+        padding: 10,
+        borderRadius: 5,
+    },
+    closeButtonText: {
+        color: '#fff',
+        textAlign: 'center',
+    },
+    headerText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginVertical: 10,
+        textAlign: 'center',
+        color: '#00aced',
+      },
 });

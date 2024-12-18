@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import config from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const UserEdit = ({ navigation }) => {
     const [id, setId] = useState('');
@@ -55,7 +56,7 @@ const UserEdit = ({ navigation }) => {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const updatedUser = {
             id:id,
             name:name,
@@ -70,6 +71,7 @@ const UserEdit = ({ navigation }) => {
         console.log(updatedUser);
 
         // Realizar la solicitud al backend
+        const token = await AsyncStorage.getItem('authToken');
         fetch(`${config.BACKEND_URL}/users/modificar`, {
             method: 'POST',
                 headers: {
