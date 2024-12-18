@@ -6,8 +6,10 @@ import { useNavigation } from '@react-navigation/native';
 import config from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CalendarComponent = () => {
+/*Notificaciones*/
+import NotificacionesComponent from "./Notificaciones";
 
+const CalendarComponent = () => {
     // Estados esenciales para reuniones
     const [isLoading, setIsLoading] = useState(false);
     const [regularEvents, setRegularEvents] = useState([]);
@@ -62,6 +64,10 @@ const CalendarComponent = () => {
 
     const [activeContent, setActiveContent] = useState('calendar');
 
+    //Notificaciones
+    const [showNotificaciones, setShowNotificaciones] = useState(false);
+    const [hasUnreadNotificaciones, setHasUnreadNotificaciones] = useState(false);
+
     const navigation = useNavigation();
 
     const [selectedEvents, setSelectedEvents] = useState([]); // Estado para almacenar eventos del día
@@ -77,11 +83,12 @@ const CalendarComponent = () => {
     const loadInvitees = useCallback(async (meetingId) => {
         try {
             console.log(`Cargando invitados para la reunión ID: ${meetingId}`);
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/invitados`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ meetingId }),
             });
@@ -103,10 +110,11 @@ const CalendarComponent = () => {
     // ! OBTENER USER ID ACTUAL	
     const getUserId = async () => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/users/current/userId`, {
                 credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             if (!response.ok) {
@@ -135,9 +143,10 @@ const CalendarComponent = () => {
                 throw new Error('No se pudo obtener el ID del usuario');
             }
 
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/administrador/calendarios/loadMeetings`, {
                 headers: {
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
 
@@ -221,10 +230,11 @@ const CalendarComponent = () => {
     const loadOrganizedMeetings = useCallback(async () => {
         try {
             console.log("Iniciando carga de reuniones organizadas...");
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/usuarios/calendarios/organized-meetings`, {
                 credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
 
@@ -279,10 +289,11 @@ const CalendarComponent = () => {
     // ! OBTENER ASISTENCIAS
     const checkAttendanceStatus = async (meetingId) => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/invitations/${meetingId}/attendance`, {
                 credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
 
@@ -332,6 +343,7 @@ const CalendarComponent = () => {
             console.log('Iniciando actualización de estado para evento:', selectedEvent);
             console.log('Acción seleccionada:', confirmationAction);
 
+            const token = await AsyncStorage.getItem('authToken');
             const url = `${config.BACKEND_URL}/invitations/${selectedEvent.id}/status`;
             console.log('URL de la petición:', url);
 
@@ -346,7 +358,7 @@ const CalendarComponent = () => {
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(requestBody),
             });
@@ -436,9 +448,10 @@ const CalendarComponent = () => {
 	// * NO SE ESTÁ USANDO
     const loadWorkSchedules = async () => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/administrador/horarios`, {
                 headers: {
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             if (!response.ok) {
@@ -576,11 +589,12 @@ const CalendarComponent = () => {
                         return;
                     }
                 }
+                const token = await AsyncStorage.getItem('authToken');
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/${eventIdToEdit}/modify`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(newEvent),
                 });
@@ -593,11 +607,12 @@ const CalendarComponent = () => {
 
                 alert("Se ha modificado el evento de manera exitosa.");
             } else { // ! AQUI SE CREA LA REUNIÓN
+                const token = await AsyncStorage.getItem('authToken');
                 response = await fetch(`${config.BACKEND_URL}/api/meetings/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(newEvent),
                     
@@ -613,7 +628,7 @@ const CalendarComponent = () => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(userIds),
                 });
@@ -673,10 +688,10 @@ const CalendarComponent = () => {
             const currentUserId = await getUserId();
             console.log('ID del usuario actual:', currentUserId);
             
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/api/meetings/available-users`, {
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             
@@ -710,10 +725,10 @@ const CalendarComponent = () => {
 	// Función para cargar localizaciones
 	// ? VAYA MIERDA DE MÉTODO
     const loadLocations = (async() => {
+        const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${config.BACKEND_URL}/api/meetings/locations`, {
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                'Authorization': `Bearer ${token}`
             },
         });
         if (!response.ok) {
@@ -730,10 +745,10 @@ const CalendarComponent = () => {
 
 	// ! CARGAR AUSENCIAS
     const loadAbsences = (async () => {
+        const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${config.BACKEND_URL}/administrador/ausencias/loadAbsences`, {
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                'Authorization': `Bearer ${token}`
             },
         });
         if (!response.ok) {
@@ -838,11 +853,11 @@ const CalendarComponent = () => {
     // Add this new function near other handler functions
     const handleAttendanceUpdate = async (meetingId) => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/invitations/${meetingId}/attendance`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
+                    'Authorization': `Bearer ${token}`,
                 },
             });
 
@@ -910,11 +925,11 @@ const CalendarComponent = () => {
             }
     
             // Hacer una petición DELETE al backend para eliminar la reunión
+            const token = await AsyncStorage.getItem('authToken');
             const response = await fetch(`${config.BACKEND_URL}/api/meetings/${reunion.id}/cancel`, {
                 method: 'DELETE',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
+                    'Authorization': `Bearer ${token}`,
                 },
             });
     
@@ -935,6 +950,47 @@ const CalendarComponent = () => {
     };
 
 
+//items INTRODUCIR POR ANTONIO BORRAR LUEGO???????
+    // Transforma los eventos del formato de FullCalendar al formato de Agenda
+    const transformEventsForAgenda = (eventSources) => {
+        const agendaItems = {};
+        eventSources.forEach((source) => {
+          source.events.forEach((event) => {
+            const dateKey = new Date(event.start).toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
+            if (!agendaItems[dateKey]) {
+              agendaItems[dateKey] = [];
+            }
+            agendaItems[dateKey].push({
+              id: event.id,
+              name: event.title,
+              data: `Desde: ${new Date(event.start).toLocaleTimeString()} - Hasta: ${new Date(event.end).toLocaleTimeString()}`,
+              color: source.color || 'lightblue',
+            });
+          });
+        });
+        return agendaItems;
+      };
+
+  
+  // Usar los datos de eventSources
+    const items = transformEventsForAgenda([
+        {
+        events: regularEvents,
+        color: '#28a745',
+        },
+        {
+        events: pendingMeetingsEvents,
+        color: '#ffc107',
+        },
+        {
+        events: organizedEvents.map((event) => ({
+            ...event,
+            color: event.backgroundColor,
+        })),
+        },
+    ]);
+
+    /* Efectos
     useEffect(() => {
         const userId = getUserId();
         if (userId) {
@@ -977,7 +1033,7 @@ const CalendarComponent = () => {
         });
         return transformedEvents;
     };
-
+  
     // Generar markedDates combinando todos los eventos
     const markedDates = {   // cambiar esto a morado organizador y asistente en verde
 
@@ -1005,8 +1061,8 @@ const CalendarComponent = () => {
         console.log(eventos);
         // Actualizar el estado asegurando que no haya duplicados
         const eventosUnicos = Array.from(new Set(eventos.map((event) => event.id))) // Filtrar por ID único
-            .map((id) => eventos.find((event) => event.id === id));
-
+          .map((id) => eventos.find((event) => event.id === id));
+      
         setSelectedEvents(eventosUnicos);
     };
 
@@ -1014,7 +1070,7 @@ const CalendarComponent = () => {
         //setSelectedMeeting(event); // Establecer la reunión seleccionada
         //setModalVisible(true); // Mostrar el modal con los detalles
         const isOrganizedEvent = reunionesOrganizadas.some(reunion => reunion.id === event.id);
-
+       
         if (isOrganizedEvent) {
             // Si es una reunión organizada, permite la edición
             handleModifyEvent(event);
@@ -1025,11 +1081,15 @@ const CalendarComponent = () => {
         }
     };
 
+    //Notificaciones
+    const handleUnreadStatusChange = (hasUnread) => {
+        setHasUnreadNotificaciones(hasUnread);
+    };
 
     return (
         <>
-            
-                <ScrollView 
+
+<ScrollView 
                     style={styles.scrollContainer} 
                     contentContainerStyle={styles.scrollContent}
                 >
@@ -1754,10 +1814,49 @@ const CalendarComponent = () => {
                         style={styles.menuButtonIcon}
                     />
                 </TouchableOpacity>
+                {/* Botón de Notificaciones */}
+                <TouchableOpacity
+                    style={styles.notificationIconContainer}
+                    onPress={() => setShowNotificaciones(true)}
+                >
+                    <Image
+                        source={require("../media/notification_icon.png")}
+                        style={styles.notificationIcon}
+                    />
+                    {/* Indicador de notificaciones no leídas */}
+                    {hasUnreadNotificaciones && (
+                        <View style={styles.notificationBadge}></View>
+                    )}
+                </TouchableOpacity>
             </View>
 
+            {/* Pop-up de Notificaciones */}
+            <Modal
+                visible={showNotificaciones}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowNotificaciones(false)}
+            >
+                <View style={styles.overlay}>
+                    <View style={styles.popupContainer}>
+                        {/* Componente de Notificaciones */}
+                        <NotificacionesComponent onUnreadStatusChange={handleUnreadStatusChange} />
 
+                        {/* Botón para cerrar el modal */}
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setShowNotificaciones(false)}
+                        >
+                            <Image
+                                source={require("../media/close_icon.png")}
+                                style={styles.closeIcon}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </>
+
     );
 };
 
@@ -2275,6 +2374,13 @@ const styles = StyleSheet.create({
         color: '#1e3a8a',
         fontWeight: 'bold',
     }, 
+    'calendarContainer': {
+        flex: 1, // Asegura que el contenedor ocupe todo el espacio disponible
+        backgroundColor: 'white', // Fondo blanco para claridad
+        width: '100%', // Usa todo el ancho disponible
+        //height: '40%', // Ajusta la altura del calendario (puedes personalizar este valor)
+        top: -100,
+    },
     'item': {
         backgroundColor: 'lightblue',
         borderRadius: 5,
@@ -2292,26 +2398,26 @@ const styles = StyleSheet.create({
     },
 
     calendarContainer: {
-        flex: 0,
-        backgroundColor: 'white',
-        width: '120%',
-        marginTop: -300,
-        padding: 10,
-        alignSelf: 'center',
-        borderRadius: 15,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2, 
-        shadowRadius: 5,
-        elevation: 3,
+        flex: 0, // Ajusta el tamaño según el contenido
+        backgroundColor: 'white', // Fondo blanco para claridad
+        width: '120%', // Ajusta el ancho para que no ocupe todo el espacio
+        marginTop: -520, // Ajusta el margen superior para separarlo del encabezado
+        padding: 10, // Añade espaciado interno
+        alignSelf: 'center', // Centra el contenedor horizontalmente
+        borderRadius: 15, // Bordes redondeados para un diseño más moderno
+        shadowColor: '#000', // Sombra para darle profundidad
+        shadowOffset: { width: 0, height: 2 }, // Desplazamiento de la sombra
+        shadowOpacity: 0.2, // Opacidad de la sombra
+        shadowRadius: 5, // Difuminado de la sombra
+        elevation: 3, // Elevación para dispositivos Android
     },
     calendar: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 10,
-        padding: 10,
-        fontSize: 16,
-        height: 350,
+        borderWidth: 1, // Borde del calendario
+        borderColor: '#ddd', // Color del borde
+        borderRadius: 10, // Bordes redondeados
+        padding: 10, // Espaciado interno
+        fontSize: 16, // Tamaño del texto
+        height: 350, // Ajusta la altura del calendario
     },
     subtitleCalend: {
         //fontSize: 16,
@@ -2322,6 +2428,50 @@ const styles = StyleSheet.create({
         left: '10%',
     },
 
+    //NOTIFICACIONES
+    notificationIconContainer: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 10, // Ajusta para que encaje mejor en el menú
+    },
+    notificationIcon: {
+        width: 30,
+        height: 30,
+        resizeMode: 'contain',
+    },
+    notificationBadge: {
+        position: 'absolute',
+        top: 5,
+        right: 5,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: 'red',
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    popupContainer: {
+        width: '90%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 20,
+        elevation: 5,
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+    },
+    closeIcon: {
+        width: 20,
+        height: 20,
+    },
 
 
     eventButton: {
@@ -2372,5 +2522,5 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         textAlign: 'center',
         color: '#00aced',
-    },
+      },
 });
