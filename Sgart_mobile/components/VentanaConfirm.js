@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import PropTypes from 'prop-types';
+import React from 'react';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
     const getTitle = () => {

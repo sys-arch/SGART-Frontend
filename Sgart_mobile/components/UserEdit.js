@@ -1,252 +1,140 @@
-import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    Alert,
-    ScrollView,
-} from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import config from '../config';
+import React from 'react';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const UserEdit = ({ navigation }) => {
-    const [id, setId] = useState('');
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [profile, setProfile] = useState('');
-    const [department, setDepartment] = useState('');
-    const [hiringDate, setHiringDate] = useState('');
-    const [center, setCenter] = useState('');
-
-    useEffect(() => {
-        loadUser();
-    }, []);
-
-    const loadUser = async () => {
-        try {
-            const response = await fetch(`${config.BACKEND_URL}/users/current/user`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-            if (!response.ok) {
-                throw new Error('No se pudo obtener el usuario');
-            }
-            const data = await response.json();
-            setId(data.id);
-            setName(data.name);
-            setEmail(data.email);
-            setLastName(data.lastName);
-            setDepartment(data.department);
-            setProfile(data.profile);
-            setHiringDate(data.hiringDate);
-            setCenter(data.center);
-        } catch (error) {
-            Alert.alert('Error', 'Error al obtener los datos del usuario');
-            console.error(error);
+const VentanaConfirm = ({ onConfirm, onCancel, action }) => {
+    const getTitle = () => {
+        switch (action) {
+            case 'save':
+                return 'Confirmar Cambios';
+            case 'edit':
+                return 'Confirmar Cambios';
+            case 'delete':
+                return 'Confirmar Eliminación';
+            case 'add':
+                return 'Confirmar Ausencia';
+            case 'logout':
+                return 'Cerrar Sesión';
+            case 'accept':
+                return 'Confirmar Asistencia';
+            case 'reject':
+                return 'Rechazar Reunión';
+            default:
+                return '';
         }
     };
 
-    const handleSave = () => {
-        const updatedUser = {
-            id:id,
-            name:name,
-            lastName:lastName,
-            profile:profile,
-            department:department,
-            hiringDate:hiringDate,
-            center:center,
-            email:email
-        };
-
-        console.log(updatedUser);
-
-        // Realizar la solicitud al backend
-        fetch(`${config.BACKEND_URL}/users/modificar`, {
-            method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${AsyncStorage.getItem('authToken')}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updatedUser)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    alert('Error al modificar los datos del usuario');
-                    return;
-                }
-                Alert.alert('Exito', 'Datos modificados correctamente');
-            })
-            navigation.goBack();
-    };
-
-    const handleCancel = () => {
-        Alert.alert('Cancelar', 'Edición cancelada');
-        navigation.goBack();
+    const getMessage = () => {
+        switch (action) {
+            case 'save':
+                return '¿Está seguro de que desea guardar los cambios?';
+            case 'edit':
+                return '¿Está seguro de que desea guardar los cambios?';
+            case 'delete':
+                return '¿Está seguro de que desea eliminar este usuario?';
+            case 'add':
+                return '¿Está seguro de que desea añadir esta ausencia?';
+            case 'accept':
+                return '¿Está seguro de que desea asistir?';
+            case 'reject':
+                return '¿Está seguro de que desea rechazar esta reunión?';
+            case 'logout':
+                return '¿Está seguro de que desea cerrar sesión?';
+            default:
+                return '';
+        }
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>Perfil Usuario</Text>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Nombre:</Text>
-                <TextInput
-                    style={styles.input}
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="Ingrese su nombre"
-                />
+        <Modal
+            transparent={true}
+            visible={true}
+            animationType="fade"
+            onRequestClose={onCancel}
+        >
+            <View style={styles.overlay}>
+                <View style={styles.container}>
+                    <Text style={styles.title}>{getTitle()}</Text>
+                    <Text style={styles.message}>{getMessage()}</Text>
+                    <View style={styles.buttons}>
+                        <TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
+                            <Text style={styles.confirmButtonText}>Confirmar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+                            <Text style={styles.cancelButtonText}>Cancelar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Apellidos:</Text>
-                <TextInput
-                    style={styles.input}
-                    value={lastName}
-                    onChangeText={setLastName}
-                    placeholder="Ingrese sus apellidos"
-                />
-            </View>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Perfil:</Text>
-                <Picker
-                    selectedValue={profile}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => setProfile(itemValue)}
-                >
-                    <Picker.Item label="Seleccione..." value="" />
-                    <Picker.Item label="Desarrollador" value="Desarrollador" />
-                    <Picker.Item label="Tester" value="Tester" />
-                    <Picker.Item label="Becario" value="Becario" />
-                    <Picker.Item label="RRHH" value="RRHH" />
-                    <Picker.Item label="Contabilidad" value="Contabilidad" />
-                </Picker>
-            </View>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Departamento:</Text>
-                <TextInput
-                    style={styles.input}
-                    value={department}
-                    onChangeText={setDepartment}
-                    placeholder="Ingrese su departamento"
-                />
-            </View>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Fecha de Alta:</Text>
-                <TextInput
-                    style={styles.input}
-                    value={hiringDate}
-                    onChangeText={setHiringDate}
-                    placeholder="YYYY-MM-DD"
-                />
-            </View>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Centro:</Text>
-                <TextInput
-                    style={styles.input}
-                    value={center}
-                    onChangeText={setCenter}
-                    placeholder="Ingrese su centro"
-                />
-            </View>
-
-            <View style={styles.buttonGroup}>
-                <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                    <Text style={styles.saveButtonText}>Modificar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-                    <Text style={styles.cancelButtonText}>Cerrar</Text>
-                </TouchableOpacity>
-            </View>
-        </ScrollView>
+        </Modal>
     );
 };
-UserEdit.propTypes = {
-    navigation: PropTypes.shape({
-        goBack: PropTypes.func.isRequired,
-    }).isRequired,
+
+VentanaConfirm.propTypes = {
+    onConfirm: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
+    action: PropTypes.string.isRequired,
 };
 
-export default UserEdit;
+export default VentanaConfirm;
 
 const styles = StyleSheet.create({
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     container: {
-        flexGrow: 1,
+        width: '80%',
+        backgroundColor: 'white',
         padding: 20,
-        backgroundColor: '#f9f9f9',
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
     },
     title: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 20,
+        marginBottom: 15,
         textAlign: 'center',
         color: '#333',
     },
-    inputGroup: {
-        marginBottom: 15,
-    },
-    label: {
-        fontSize: 14,
-        marginBottom: 5,
+    message: {
+        fontSize: 16,
+        marginBottom: 20,
+        textAlign: 'center',
         color: '#555',
     },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        fontSize: 14,
-        backgroundColor: '#fff',
-    },
-    picker: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        fontSize: 14,
-        backgroundColor: '#fff',
-    },
-    buttonGroup: {
+    buttons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 20,
     },
-    saveButton: {
-        width: '35%',
+    confirmButton: {
+        flex: 1,
         backgroundColor: '#28a745',
-        borderRadius: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginRight: 5,
     },
-    saveButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        textAlign: 'center',
+    confirmButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
     },
     cancelButton: {
-        width: '35%',
+        flex: 1,
         backgroundColor: '#dc3545',
-        borderRadius: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginLeft: 5,
     },
     cancelButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        textAlign: 'center',
+        color: 'white',
+        fontWeight: 'bold',
     },
 });

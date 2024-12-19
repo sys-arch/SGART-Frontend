@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { 
-    View, 
-    Text, 
-    FlatList, 
-    TouchableOpacity, 
-    ActivityIndicator, 
-    StyleSheet 
-} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from "react-native";
 import config from "../config";
 
 const NotificacionesComponent = ({ onUnreadStatusChange }) => {

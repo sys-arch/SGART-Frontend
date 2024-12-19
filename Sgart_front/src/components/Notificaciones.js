@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useState } from "react";
 import config from "../config";
 
 const Notificaciones = () => {

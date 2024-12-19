@@ -1,16 +1,16 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import config from '../config';
-import PropTypes from 'prop-types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const LoginForm = ({ navigation }) => {
@@ -88,7 +88,7 @@ const LoginForm = ({ navigation }) => {
             console.log('Login exitoso:', data);
             // Guardar token y email usando AsyncStorage
             await storeData(data.token, email);
-            navigation.navigate('Calendar', { state: { data: data, email: email } });
+            navigation.navigate('GoogleAuthLogin', { state: { data: data, email: email } });
             //navigation.navigate('Calendar', { state: { data: data, email: email } });
           } else {
             throw new Error(data.message || 'Error al iniciar sesión.');
