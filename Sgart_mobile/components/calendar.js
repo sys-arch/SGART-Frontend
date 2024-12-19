@@ -64,10 +64,6 @@ const CalendarComponent = () => {
 
     const [activeContent, setActiveContent] = useState('calendar');
 
-    //Notificaciones
-    const [showNotificaciones, setShowNotificaciones] = useState(false);
-    const [hasUnreadNotificaciones, setHasUnreadNotificaciones] = useState(false);
-
     const navigation = useNavigation();
 
     const [selectedEvents, setSelectedEvents] = useState([]); // Estado para almacenar eventos del día
@@ -76,8 +72,16 @@ const CalendarComponent = () => {
 
     const [selectedDay, setSelectedDay] = useState('');
 
-    const [currentUserId, setCurrentUserId] = useState(null);
+    //NOTIFICACIONES
+    const [showNotificaciones, setShowNotificaciones] = useState(false); // Controla el modal de notificaciones
+    const [hasUnreadNotificaciones, setHasUnreadNotificaciones] = useState(false); // Indicador de notificaciones no leídas
 
+    // Callback que recibe el estado de las notificaciones desde NotificacionesComponent
+    const handleUnreadStatusChange = (hasUnread) => {
+        setHasUnreadNotificaciones(hasUnread);
+    };
+
+    const [currentUserId, setCurrentUserId] = useState(null);
 
     // ! CARGAR INVITADOS	
     const loadInvitees = useCallback(async (meetingId) => {
@@ -1143,11 +1147,6 @@ const CalendarComponent = () => {
         }
     };
 
-    //Notificaciones
-    const handleUnreadStatusChange = (hasUnread) => {
-        setHasUnreadNotificaciones(hasUnread);
-    };
-
     return (
         <>
 
@@ -1879,46 +1878,17 @@ const CalendarComponent = () => {
                 {/* Botón de Notificaciones */}
                 <TouchableOpacity
                     style={styles.notificationIconContainer}
-                    onPress={() => setShowNotificaciones(true)}
+                    onPress={() => navigation.navigate('Notificaciones')}
                 >
                     <Image
                         source={require("../media/notification_icon.png")}
                         style={styles.notificationIcon}
                     />
-                    {/* Indicador de notificaciones no leídas */}
-                    {hasUnreadNotificaciones && (
-                        <View style={styles.notificationBadge}></View>
-                    )}
+                    {/* Indicador visual de notificaciones no leídas */}
+                    {hasUnreadNotificaciones && <View style={styles.notificationBadge}></View>}
                 </TouchableOpacity>
             </View>
-
-            {/* Pop-up de Notificaciones */}
-            <Modal
-                visible={showNotificaciones}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowNotificaciones(false)}
-            >
-                <View style={styles.overlay}>
-                    <View style={styles.popupContainer}>
-                        {/* Componente de Notificaciones */}
-                        <NotificacionesComponent onUnreadStatusChange={handleUnreadStatusChange} />
-
-                        {/* Botón para cerrar el modal */}
-                        <TouchableOpacity
-                            style={styles.closeButton}
-                            onPress={() => setShowNotificaciones(false)}
-                        >
-                            <Image
-                                source={require("../media/close_icon.png")}
-                                style={styles.closeIcon}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
         </>
-
     );
 };
 
@@ -2489,100 +2459,42 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         left: '10%',
     },
+    // Botón de notificaciones
+notificationIconContainer: {
+    flexDirection: 'row', // Para alinear el icono y el badge
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative', // Necesario para posicionar el badge
+    width: 50, // Tamaño consistente con otros botones
+    height: 50,
+    backgroundColor: '#ffffff', // Fondo blanco para mantener coherencia
+    borderRadius: 10, // Bordes redondeados
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+    marginHorizontal: 5, // Espaciado horizontal
+},
 
-    //NOTIFICACIONES
-    notificationIconContainer: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginHorizontal: 10, // Ajusta para que encaje mejor en el menú
-    },
-    notificationIcon: {
-        width: 30,
-        height: 30,
-        resizeMode: 'contain',
-    },
-    notificationBadge: {
-        position: 'absolute',
-        top: 5,
-        right: 5,
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: 'red',
-    },
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    popupContainer: {
-        width: '90%',
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 20,
-        elevation: 5,
-    },
-    closeButton: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-    },
-    closeIcon: {
-        width: 20,
-        height: 20,
-    },
+// Icono del botón de notificaciones
+notificationIcon: {
+    width: 30, // Tamaño del icono
+    height: 30,
+    resizeMode: 'contain',
+},
 
+// Badge de notificaciones no leídas
+notificationBadge: {
+    position: 'absolute',
+    top: 5, // Posición vertical del badge
+    right: 5, // Posición horizontal del badge
+    width: 12, // Tamaño del badge
+    height: 12,
+    backgroundColor: 'red', // Color del badge
+    borderRadius: 6, // Hace que sea circular
+    borderWidth: 2, // Borde para destacar sobre el fondo
+    borderColor: '#ffffff', // Color del borde del badge
+},
 
-    eventButton: {
-        backgroundColor: '#ffffff',
-        padding: 10,
-        marginVertical: 5,
-        borderRadius: 5,
-    },
-    eventText: {
-        color: '#000000',
-        fontWeight: 'bold',
-    },
-    noEventsText: {
-        textAlign: 'center',
-        marginTop: 10,
-        color: '#888',
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalContent: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 10,
-        width: '80%',
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    closeButton: {
-        marginTop: 20,
-        backgroundColor: '#00aced',
-        padding: 10,
-        borderRadius: 5,
-    },
-    closeButtonText: {
-        color: '#fff',
-        textAlign: 'center',
-    },
-    headerText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginVertical: 10,
-        textAlign: 'center',
-        color: '#00aced',
-      },
 });

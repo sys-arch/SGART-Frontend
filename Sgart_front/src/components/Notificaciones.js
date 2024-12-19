@@ -9,13 +9,11 @@ const Notificaciones = () => {
     // Obtener usuarioId del token JWT
     const getUsuarioIdFromToken = () => {
         const token = sessionStorage.getItem("authToken");
-        console.log("Token recuperado:", token); // Log para depuración
-        console.log("Token length:", token.length);
 
         if (token) {
             const decodedToken = jwtDecode(token);
             console.log("Token decodificado:", decodedToken);
-            return decodedToken.userId; // Ajusta "usuarioId" según la clave en tu JWT
+            return decodedToken.userId;
         }
         return null;
     };
@@ -41,7 +39,7 @@ const Notificaciones = () => {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`, // Token JWT en el encabezado
+                    "Authorization": `Bearer ${token}`,
                 },
             });
 
@@ -63,7 +61,7 @@ const Notificaciones = () => {
         const token = getAuthToken();
 
         try {
-            const response = await fetch(`http://localhost:9000/notificaciones/${id}`, {
+            const response = await fetch(`${config.BACKEND_URL}/notificaciones/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -89,7 +87,7 @@ const Notificaciones = () => {
         if (!userId || !token) return;
 
         try {
-            const response = await fetch(`http://localhost:9000/notificaciones?usuarioId=${userId}`, {
+            const response = await fetch(`${config.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
