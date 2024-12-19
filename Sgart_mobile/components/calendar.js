@@ -1097,22 +1097,14 @@ const CalendarComponent = () => {
     };
   
     // Generar markedDates combinando todos los eventos
-    const markedDates = {   // cambiar esto a morado organizador y asistente en verde
+    const markedDates = {   
 
-        //organizadas, aceptadas y pendientes,   usar reunionesOrganizadas, reunionePendientes y reunionesAceptadas
-        //...transformEvents(regularEvents, '#00aced'), // Azul para regularEvents
         ...transformEvents(reunionesAceptadas, '#28a745'),
-        //...transformEvents(pendingMeetingsEvents, '#ffc107'), // Amarillo para pendingMeetingsEvents
         ...transformEvents(reunionesOrganizadas, '#6f42c1'),
-        //...transformEvents(organizedEvents, '#28a745'), // Verde para organizedEvents
+        ...transformEvents(reunionesPendientes, '#FF8000')
     };
-    /*
+    
 
-  const handleDayPress = (day) => {
-        alert(`Has seleccionado el día: ${day.dateString}\nEventos: ${
-            markedDates[day.dateString]?.dots.map(dot => dot.key).join(', ') || 'Ninguno'
-        }`);
-    }; */
     const handleDayPress = (day) => {
         // Obtener los eventos únicos para el día seleccionado
         setSelectedDay(day.dateString); 
@@ -1120,8 +1112,6 @@ const CalendarComponent = () => {
             ...dot.event, 
             color: dot.color, // Asignar el color del evento
         })) || [];
-        console.log(eventos);
-        // Actualizar el estado asegurando que no haya duplicados
         const eventosUnicos = Array.from(new Set(eventos.map((event) => event.id))) // Filtrar por ID único
           .map((id) => eventos.find((event) => event.id === id));
       
@@ -1129,17 +1119,27 @@ const CalendarComponent = () => {
     };
 
     const handleEventPress = (event) => {
-        //setSelectedMeeting(event); // Establecer la reunión seleccionada
-        //setModalVisible(true); // Mostrar el modal con los detalles
         const isOrganizedEvent = reunionesOrganizadas.some(reunion => reunion.id === event.id);
        
         if (isOrganizedEvent) {
             // Si es una reunión organizada, permite la edición
             handleModifyEvent(event);
         } else {
-            // Si no, solo muestra la información
-            setSelectedMeeting(event);
-            setModalVisible(true);
+            const transformedMeeting = {
+                id: event.id,
+                title: event.title || "Título no especificado",
+                start: event.start,
+                end: event.end || event.start,
+                allDay: event.allDay || false,
+                extendedProps: {
+                    locationName: event.extendedProps?.locationName || "No especificada",
+                    organizerName: event.extendedProps?.organizerName || "Desconocido",
+                    observations: event.extendedProps?.observations || "Ninguna",
+                    invitees: "6 invitados"
+                },
+            };
+            setSelectedMeeting(transformedMeeting); // Actualizar el estado
+            setModalVisible(true); // Mostrar el modal
         }
     };
 
@@ -1151,7 +1151,7 @@ const CalendarComponent = () => {
     return (
         <>
 
-<ScrollView 
+                <ScrollView 
                     style={styles.scrollContainer} 
                     contentContainerStyle={styles.scrollContent}
                 >
@@ -1224,9 +1224,42 @@ const CalendarComponent = () => {
                                             <Text style={styles.modalTitle}>Detalles de la reunión</Text>
                                             {selectedMeeting && (
                                                 <>
-                                                    <Text>Título: {selectedMeeting.title}</Text>
-                                                    <Text>Fecha: {selectedMeeting.start}</Text>
-                                                    <Text>Descripción: {selectedMeeting.description}</Text>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Título</Text>
+                                                        <Text>{selectedMeeting.title}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Fecha</Text>
+                                                        <Text>{selectedMeeting.start.split('T')[0]}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Hora de inicio</Text>
+                                                        <Text>{selectedMeeting.start.split('T')[1]}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Hora de fin</Text>
+                                                        <Text>{selectedMeeting.end.split('T')[1]}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Todo el día</Text>
+                                                        <Text>{selectedMeeting.allDay ? 'Sí' : 'No'}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Ubicación</Text>
+                                                        <Text>{selectedMeeting.extendedProps.locationName}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Organizador</Text>
+                                                        <Text>{selectedMeeting.extendedProps.organizerName}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Observaciones</Text>
+                                                        <Text>{selectedMeeting.extendedProps.observations}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Invitados</Text>
+                                                        <Text>{selectedMeeting.extendedProps.invitees}</Text>
+                                                    </View>
                                                     {/* Agrega otros detalles según sea necesario */}
                                                 </>
                                             )}
@@ -2585,4 +2618,26 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#00aced',
       },
+
+      modalDetail: {
+        fontSize: 16,
+        marginBottom: 5,
+        color: '#333',
+    },
+    boldText: {
+        fontWeight: 'bold',
+        color: '#555',
+    },
+    infoBox: {
+        backgroundColor: '#f9f9f9',
+        paddingVertical: 12, // Aumentar padding vertical
+        paddingHorizontal: 15,
+        borderRadius: 8,
+        marginBottom: 15, // Más espacio entre tarjetas
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
 });

@@ -76,6 +76,8 @@ const GoogleAuthLogin = ( { navigation } ) => {
                 value={inputCode}
                 onChangeText={handleInputChange}
                 keyboardType="numeric"
+                returnKeyType="done" // Añade el botón "Done" al teclado
+                onSubmitEditing={Keyboard.dismiss} // Oculta el teclado al confirmar
             />
             <TouchableOpacity style={styles['login-btn']} onPress={handleButtonClick}>
                 <Text style={styles['login-btn-text']}>Comprobar código</Text>
