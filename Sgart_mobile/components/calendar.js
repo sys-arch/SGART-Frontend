@@ -72,16 +72,16 @@ const CalendarComponent = () => {
 
     const [selectedDay, setSelectedDay] = useState('');
 
-    const [currentUserId, setCurrentUserId] = useState(null);
-
     //NOTIFICACIONES
-    const [showNotificaciones, setShowNotificaciones] = useState(false);
-    const [hasUnreadNotificaciones, setHasUnreadNotificaciones] = useState(false); 
+    const [showNotificaciones, setShowNotificaciones] = useState(false); // Controla el modal de notificaciones
+    const [hasUnreadNotificaciones, setHasUnreadNotificaciones] = useState(false); // Indicador de notificaciones no leídas
 
     // Callback que recibe el estado de las notificaciones desde NotificacionesComponent
     const handleUnreadStatusChange = (hasUnread) => {
         setHasUnreadNotificaciones(hasUnread);
     };
+
+    const [currentUserId, setCurrentUserId] = useState(null);
 
     // ! CARGAR INVITADOS	
     const loadInvitees = useCallback(async (meetingId) => {
@@ -1888,10 +1888,7 @@ const CalendarComponent = () => {
                     {hasUnreadNotificaciones && <View style={styles.notificationBadge}></View>}
                 </TouchableOpacity>
             </View>
-
-        
         </>
-
     );
 };
 

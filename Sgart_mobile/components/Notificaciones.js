@@ -55,6 +55,7 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
+
                 },
             });
 
@@ -84,7 +85,7 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
             const response = await fetch(`${config.BACKEND_URL}/notificaciones/${id}`, {
                 method: "DELETE",
                 headers: {
-                    "Authorization": "Bearer ${token}",
+                    "Authorization": `Bearer ${token}`,
                 },
             });
 

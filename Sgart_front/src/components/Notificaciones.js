@@ -87,7 +87,7 @@ const Notificaciones = () => {
         if (!userId || !token) return;
 
         try {
-            const response = await fetch(`${CONFIG.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
+            const response = await fetch(`${config.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
