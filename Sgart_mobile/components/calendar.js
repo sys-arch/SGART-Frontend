@@ -2535,7 +2535,7 @@ modalContainer: {
 },
 modalContent: {
     backgroundColor: '#fff',
-    padding: 20,
+    padding: 15,
     borderRadius: 10,
     width: '80%',
 },
