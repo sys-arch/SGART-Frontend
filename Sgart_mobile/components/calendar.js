@@ -1050,22 +1050,14 @@ const CalendarComponent = () => {
     };
   
     // Generar markedDates combinando todos los eventos
-    const markedDates = {   // cambiar esto a morado organizador y asistente en verde
+    const markedDates = {   
 
-        //organizadas, aceptadas y pendientes,   usar reunionesOrganizadas, reunionePendientes y reunionesAceptadas
-        //...transformEvents(regularEvents, '#00aced'), // Azul para regularEvents
         ...transformEvents(reunionesAceptadas, '#28a745'),
-        //...transformEvents(pendingMeetingsEvents, '#ffc107'), // Amarillo para pendingMeetingsEvents
         ...transformEvents(reunionesOrganizadas, '#6f42c1'),
-        //...transformEvents(organizedEvents, '#28a745'), // Verde para organizedEvents
+        ...transformEvents(reunionesPendientes, '#FF8000')
     };
-    /*
+    
 
-  const handleDayPress = (day) => {
-        alert(`Has seleccionado el día: ${day.dateString}\nEventos: ${
-            markedDates[day.dateString]?.dots.map(dot => dot.key).join(', ') || 'Ninguno'
-        }`);
-    }; */
     const handleDayPress = (day) => {
         // Obtener los eventos únicos para el día seleccionado
         setSelectedDay(day.dateString); 
@@ -1073,8 +1065,6 @@ const CalendarComponent = () => {
             ...dot.event, 
             color: dot.color, // Asignar el color del evento
         })) || [];
-        console.log(eventos);
-        // Actualizar el estado asegurando que no haya duplicados
         const eventosUnicos = Array.from(new Set(eventos.map((event) => event.id))) // Filtrar por ID único
           .map((id) => eventos.find((event) => event.id === id));
       
@@ -1082,8 +1072,6 @@ const CalendarComponent = () => {
     };
 
     const handleEventPress = (event) => {
-        //setSelectedMeeting(event); // Establecer la reunión seleccionada
-        //setModalVisible(true); // Mostrar el modal con los detalles
         const isOrganizedEvent = reunionesOrganizadas.some(reunion => reunion.id === event.id);
        
         if (isOrganizedEvent) {
@@ -1099,7 +1087,7 @@ const CalendarComponent = () => {
     return (
         <>
 
-<ScrollView 
+                <ScrollView 
                     style={styles.scrollContainer} 
                     contentContainerStyle={styles.scrollContent}
                 >
@@ -1172,9 +1160,42 @@ const CalendarComponent = () => {
                                             <Text style={styles.modalTitle}>Detalles de la reunión</Text>
                                             {selectedMeeting && (
                                                 <>
-                                                    <Text>Título: {selectedMeeting.title}</Text>
-                                                    <Text>Fecha: {selectedMeeting.start}</Text>
-                                                    <Text>Descripción: {selectedMeeting.description}</Text>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Título</Text>
+                                                        <Text>{selectedMeeting.title}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Fecha</Text>
+                                                        <Text>{selectedMeeting.start.split('T')[0]}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Hora de inicio</Text>
+                                                        <Text>{selectedMeeting.start.split('T')[1]}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Hora de fin</Text>
+                                                        <Text>{selectedMeeting.end.split('T')[1]}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Todo el día</Text>
+                                                        <Text>{selectedMeeting.allDay ? 'Sí' : 'No'}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Ubicación</Text>
+                                                        <Text>{selectedMeeting.extendedProps.locationName}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Organizador</Text>
+                                                        <Text>{selectedMeeting.extendedProps.organizerName}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Observaciones</Text>
+                                                        <Text>{selectedMeeting.extendedProps.observations}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Invitados</Text>
+                                                        <Text>{selectedMeeting.extendedProps.invitees}</Text>
+                                                    </View>
                                                     {/* Agrega otros detalles según sea necesario */}
                                                 </>
                                             )}
