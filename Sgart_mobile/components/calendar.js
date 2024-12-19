@@ -1082,17 +1082,27 @@ const CalendarComponent = () => {
     };
 
     const handleEventPress = (event) => {
-        //setSelectedMeeting(event); // Establecer la reunión seleccionada
-        //setModalVisible(true); // Mostrar el modal con los detalles
         const isOrganizedEvent = reunionesOrganizadas.some(reunion => reunion.id === event.id);
-       
+
         if (isOrganizedEvent) {
             // Si es una reunión organizada, permite la edición
             handleModifyEvent(event);
         } else {
-            // Si no, solo muestra la información
-            setSelectedMeeting(event);
-            setModalVisible(true);
+            const transformedMeeting = {
+                id: event.id,
+                title: event.title || "Título no especificado",
+                start: event.start,
+                end: event.end || event.start,
+                allDay: event.allDay || false,
+                extendedProps: {
+                    locationName: event.extendedProps?.locationName || "No especificada",
+                    organizerName: event.extendedProps?.organizerName || "Desconocido",
+                    observations: event.extendedProps?.observations || "Ninguna",
+                    invitees: "6 invitados"
+                },
+            };
+            setSelectedMeeting(transformedMeeting); // Actualizar el estado
+            setModalVisible(true); // Mostrar el modal
         }
     };
 
@@ -1172,9 +1182,42 @@ const CalendarComponent = () => {
                                             <Text style={styles.modalTitle}>Detalles de la reunión</Text>
                                             {selectedMeeting && (
                                                 <>
-                                                    <Text>Título: {selectedMeeting.title}</Text>
-                                                    <Text>Fecha: {selectedMeeting.start}</Text>
-                                                    <Text>Descripción: {selectedMeeting.description}</Text>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Título</Text>
+                                                        <Text>{selectedMeeting.title}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Fecha</Text>
+                                                        <Text>{selectedMeeting.start.split('T')[0]}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Hora de inicio</Text>
+                                                        <Text>{selectedMeeting.start.split('T')[1]}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Hora de fin</Text>
+                                                        <Text>{selectedMeeting.end.split('T')[1]}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Todo el día</Text>
+                                                        <Text>{selectedMeeting.allDay ? 'Sí' : 'No'}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Ubicación</Text>
+                                                        <Text>{selectedMeeting.extendedProps.locationName}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Organizador</Text>
+                                                        <Text>{selectedMeeting.extendedProps.organizerName}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Observaciones</Text>
+                                                        <Text>{selectedMeeting.extendedProps.observations}</Text>
+                                                    </View>
+                                                    <View style={styles.infoBox}>
+                                                        <Text style={styles.boldText}>Invitados</Text>
+                                                        <Text>{selectedMeeting.extendedProps.invitees}</Text>
+                                                    </View>
                                                     {/* Agrega otros detalles según sea necesario */}
                                                 </>
                                             )}
@@ -2444,6 +2487,101 @@ notificationBadge: {
     borderRadius: 6, // Hace que sea circular
     borderWidth: 2, // Borde para destacar sobre el fondo
     borderColor: '#ffffff', // Color del borde del badge
+},
+overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+},
+popupContainer: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    elevation: 5,
+},
+closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+},
+closeIcon: {
+    width: 20,
+    height: 20,
+},
+
+
+eventButton: {
+    backgroundColor: '#ffffff',
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 5,
+},
+eventText: {
+    color: '#000000',
+    fontWeight: 'bold',
+},
+noEventsText: {
+    textAlign: 'center',
+    marginTop: 10,
+    color: '#888',
+},
+modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+},
+modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+},
+modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+},
+closeButton: {
+    marginTop: 20,
+    backgroundColor: '#00aced',
+    padding: 10,
+    borderRadius: 5,
+},
+closeButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+},
+headerText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginVertical: 10,
+    textAlign: 'center',
+    color: '#00aced',
+  },
+
+  modalDetail: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#333',
+},
+boldText: {
+    fontWeight: 'bold',
+    color: '#555',
+},
+infoBox: {
+    backgroundColor: '#f9f9f9',
+    paddingVertical: 12, // Aumentar padding vertical
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginBottom: 15, // Más espacio entre tarjetas
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
 },
 
 });
