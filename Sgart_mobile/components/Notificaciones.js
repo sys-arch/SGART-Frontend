@@ -10,72 +10,66 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import config from "../config";
 
-const NotificacionesComponent = () => {
+const NotificacionesComponent = ({ onUnreadStatusChange }) => {
     const [notificaciones, setNotificaciones] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Obtener usuarioId del token JWT
-    //const getUsuarioIdFromToken = () => {
-        //const token = AsyncStorage.getItem("authToken");
-
-        //if (token) {
-            //const decodedToken = jwtDecode(token);
-            //console.log("Token decodificado:", decodedToken);
-            //return decodedToken.userId;
-        //}
-        //return null;
-    //};
-
+    // Obtener el ID del usuario desde el backend
     const getUserId = async () => {
         try {
+            const token = await AsyncStorage.getItem("authToken");
             const response = await fetch(`${config.BACKEND_URL}/users/current/userId`, {
-                credentials: 'include',
+                credentials: "include",
                 headers: {
-                    'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`
+                    "Authorization": `Bearer ${token}`
                 },
             });
+
             if (!response.ok) {
-                throw new Error('No se pudo obtener el ID del usuario');
+                throw new Error("No se pudo obtener el ID del usuario.");
             }
+
             const data = await response.json();
             console.log("ID de usuario obtenido:", data.userId);
             return data.userId;
         } catch (error) {
-            console.error('Error al obtener el ID del usuario:', error);
+            console.error("Error al obtener el ID del usuario:", error);
             return null;
         }
     };
 
-    // Obtener el token 
-    //const getAuthToken = () => {
-        //return AsyncStorage.getItem("authToken");
-    //};
-
     // Cargar notificaciones desde el backend
     const loadNotificaciones = async () => {
-        const userId = getUserId();
-
-        if (!userId || !token) {
-            console.error("Token JWT o usuarioId no encontrado.");
-            return;
-        }
-
         try {
             setIsLoading(true);
+
+            const userId = await getUserId();
+            if (!userId) {
+                console.error("No se pudo obtener el ID del usuario.");
+                return;
+            }
+
+            const token = await AsyncStorage.getItem("authToken");
             const response = await fetch(`${config.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${AsyncStorage.getItem("authToken")}`,
+                    "Authorization": `Bearer ${token}`,
                 },
             });
 
             if (!response.ok) {
-                throw new Error("Error al cargar las notificaciones");
+                throw new Error("Error al cargar las notificaciones.");
             }
 
             const data = await response.json();
             setNotificaciones(data);
+
+            // Notificar al componente padre sobre el estado de notificaciones no leídas
+            if (onUnreadStatusChange) {
+                const hasUnread = data.some((notif) => !notif.leida);
+                onUnreadStatusChange(hasUnread);
+            }
         } catch (error) {
             console.error("Error cargando notificaciones:", error);
         } finally {
@@ -85,43 +79,44 @@ const NotificacionesComponent = () => {
 
     // Eliminar una notificación individual
     const deleteNotificacion = async (id) => {
-
         try {
+            const token = await AsyncStorage.getItem("authToken");
             const response = await fetch(`${config.BACKEND_URL}/notificaciones/${id}`, {
                 method: "DELETE",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${AsyncStorage.getItem("authToken")}`,
+                    "Authorization": "Bearer ${token}",
                 },
             });
 
             if (!response.ok) {
-                throw new Error("Error al eliminar la notificación");
+                throw new Error("Error al eliminar la notificación.");
             }
 
-            setNotificaciones((prev) => prev.filter((n) => n.id !== id));
+            setNotificaciones((prev) => prev.filter((notif) => notif.id !== id));
         } catch (error) {
-            console.error(`Error al eliminar la notificación ${id}:`, error);
+            console.error("Error al eliminar la notificación ${id}:", error);
         }
     };
 
     // Eliminar todas las notificaciones
     const deleteAllNotificaciones = async () => {
-        const userId = getUserId();
-
-        //if (!userId || !token) return;
-
         try {
+            const userId = await getUserId();
+            if (!userId) {
+                console.error("No se pudo obtener el ID del usuario.");
+                return;
+            }
+
+            const token = await AsyncStorage.getItem("authToken");
             const response = await fetch(`${config.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
                 method: "DELETE",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${AsyncStorage.getItem("authToken")}`,
+                    "Authorization": `Bearer ${token}`,
                 },
             });
 
             if (!response.ok) {
-                throw new Error("Error al eliminar todas las notificaciones");
+                throw new Error("Error al eliminar todas las notificaciones.");
             }
 
             setNotificaciones([]);
@@ -154,10 +149,10 @@ const NotificacionesComponent = () => {
                         data={notificaciones}
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={({ item }) => (
-                            <View 
+                            <View
                                 style={[
                                     styles.notificacion,
-                                    item.leida ? styles.leida : styles.noLeida
+                                    item.leida ? styles.leida : styles.noLeida,
                                 ]}
                             >
                                 <Text style={styles.title}>{item.titulo}</Text>
