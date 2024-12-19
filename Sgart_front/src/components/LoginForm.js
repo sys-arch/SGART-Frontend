@@ -9,9 +9,6 @@ import LoadingSpinner from './LoadingSpinner';
 import RecuperarPwdForm from './RecuperarPwdForm';
 import RegisterForm from './RegisterForm';
 
-
-
-
 const LoginForm = () => {
     const navigate = useNavigate();
 

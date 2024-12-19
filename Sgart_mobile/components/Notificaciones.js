@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { 
-    View, 
-    Text, 
-    FlatList, 
-    TouchableOpacity, 
-    ActivityIndicator, 
-    StyleSheet 
-} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from "react-native";
 import config from "../config";
 
 const NotificacionesComponent = ({ onUnreadStatusChange }) => {
@@ -21,7 +21,7 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
             const response = await fetch(`${config.BACKEND_URL}/users/current/userId`, {
                 credentials: "include",
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    "Authorization": `Bearer ${token}`
                 },
             });
 
@@ -54,7 +54,8 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    "Authorization": `Bearer ${token}`,
+
                 },
             });
 
@@ -84,7 +85,7 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
             const response = await fetch(`${config.BACKEND_URL}/notificaciones/${id}`, {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    "Authorization": `Bearer ${token}`,
                 },
             });
 
@@ -94,7 +95,7 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
 
             setNotificaciones((prev) => prev.filter((notif) => notif.id !== id));
         } catch (error) {
-            console.error(`Error al eliminar la notificación ${id}:`, error);
+            console.error("Error al eliminar la notificación ${id}:", error);
         }
     };
 
@@ -111,7 +112,7 @@ const NotificacionesComponent = ({ onUnreadStatusChange }) => {
             const response = await fetch(`${config.BACKEND_URL}/notificaciones?usuarioId=${userId}`, {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    "Authorization": `Bearer ${token}`,
                 },
             });
 

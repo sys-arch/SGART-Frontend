@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { Text, TextInput, TouchableOpacity, View, Image , StyleSheet, ScrollView} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import LoginForm from './LoginForm';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const RegisterForm = () => {
     const navigation = useNavigation();
-
     const [nombre, setNombre] = useState('');
     const [apellidos, setApellidos] = useState('');
     const [email, setEmail] = useState('');
@@ -19,7 +17,6 @@ const RegisterForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showRepeatPassword, setShowRepeatPassword] = useState(false);
     const [isLoged, setIsLoged] = useState(false);
-
     const [errorNombre, setErrorNombre] = useState('');
     const [errorApellidos, setErrorApellidos] = useState('');
     const [errorDepartamento, setErrorDepartamento] = useState('');
@@ -154,7 +151,14 @@ const RegisterForm = () => {
             twoFactorAuthCode: '',
         };
     
-        navigation.navigate('GoogleAuth', { state: { usuario, esAdmin: false } });
+        if (usuario) { // Verifica que usuario no sea null o undefined
+          navigation.navigate('GoogleAuth', {
+              state: { usuario }
+          });
+        } else {
+            console.error("Error: El objeto usuario no está definido.");
+        }
+
     };
 
     const togglePasswordVisibility = () => {
@@ -168,10 +172,6 @@ const RegisterForm = () => {
     const handleToggleForm = () => {
         setIsLoged(true);
     };
-
-    if (isLoged) {
-        return <LoginForm />;
-    }
 
     return (
         <>

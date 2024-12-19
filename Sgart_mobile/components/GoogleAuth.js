@@ -1,71 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import config from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import config from '../config';
 
-const GoogleAuth = ({navigation}) => {
-    const [usuario, setUsuario] = useState({});
-    const [isAdmin, setIsAdmin] = useState(false);
+const GoogleAuth = ({ navigation, route }) => {
+    const usuario = route?.params?.state?.usuario || {}; // Fallback en caso de datos faltantes
     const [inputCode, setInputCode] = useState('');
     const [message, setMessage] = useState('');
     const [qrCode, setQrCode] = useState('');
     const [secretKey, setSecretKey] = useState('');
 
     useEffect(() => {
-        const fetchCurrentUser = async () => {
-            try {
-                
-        
-                // Obtener el objeto User desde el backend
-                const response = await fetch(`${config.BACKEND_URL}/users/current/user`, {
-                    method: 'GET',
+        if (usuario.email) {
+            fetchQRCode(usuario.email);
+        } else {
+            setMessage('Error: No se recibió un usuario válido.');
+            console.error('Error: usuario no tiene un email válido.', usuario);
+        }
+    }, [usuario]);
+
+    const fetchQRCode = async (email) => {
+        try {
+            const response = await fetch(
+                `${config.BACKEND_URL}/auth/generate-qr?email=${email}`,
+                {
                     headers: {
                         'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
-                        'Content-Type': 'application/json',
                     },
-                    credentials: 'include',
-                });
-        
-                if (!response.ok) throw new Error('Error al obtener los datos del usuario');
-        
-                const userData = await response.json();
-                setUsuario(userData);
-                setIsAdmin(userData.profile === 'admin');
-            } catch (error) {
-                console.error('Error al obtener el usuario:', error.message);
-                setMessage('Error al cargar los datos del usuario.');
-            }
-        };
-    
-        fetchCurrentUser();
-    }, []);
+                }
+            );
 
-    useEffect(() => {
-        const fetchQRCode = async () => {
-            try {
-                const response = await fetch(
-                    `${config.BACKEND_URL}/auth/generate-qr?email=${usuario.email}`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${await AsyncStorage.getItem('authToken')}`,
-                        },
-                    }
-                );
+            if (!response.ok) throw new Error('Error al generar el código QR');
 
-                if (!response.ok) throw new Error('Error al generar el código QR');
-
-                const data = await response.json();
-                setQrCode(data.qrCode);
-                setSecretKey(data.secretKey);
-            } catch (error) {
-                setMessage('Error al generar el código QR');
-                console.error('Error al generar el código QR:', error);
-            }
-        };
-
-        if (usuario.email) fetchQRCode();
-    }, [usuario.email]);
+            const data = await response.json();
+            setQrCode(data.qrCode);
+            setSecretKey(data.secretKey);
+        } catch (error) {
+            setMessage('Error al generar el código QR');
+            console.error('Error al generar el código QR:', error);
+        }
+    };
 
     const handleInputChange = (value) => {
         setInputCode(value);
@@ -82,29 +57,23 @@ const GoogleAuth = ({navigation}) => {
                 body: JSON.stringify({ mail: usuario.email, code: inputCode }),
             });
 
-            if (!response.ok) {
-                throw new Error('Código de autenticación incorrecto');
-            }
+            if (!response.ok) throw new Error('Código de autenticación incorrecto');
 
             const data = await response.json();
-            if (data.status === 'valid' ) {
-                if(!isAdmin){
-                    setMessage("Autenticación exitosa. Redirigiendo...");
-                    navigation.navigate('Calendar');
-                }else{
-                    // Si es admin, no puede usar la aplicación.
-                    setMessage("Usuario no válido.");
-                }
+            if (data.status === 'valid') {
+                setMessage('Autenticación exitosa. Redirigiendo...');
+                await registrarUsuario();
+                navigation.navigate('Calendar');
             } else {
-                setMessage("Código inválido. Por favor, intenta nuevamente.");
+                setMessage('Código inválido. Intenta nuevamente.');
             }
         } catch (error) {
-            setMessage("Error al validar el código.");
-            console.error("Error en la autenticación:", error);
+            setMessage('Error al validar el código.');
+            console.error('Error en la autenticación:', error);
         }
     };
 
-    const registrarUsuario = async (email) => {
+    const registrarUsuario = async () => {
         try {
             const usuarioActualizado = {
                 ...usuario,
@@ -120,23 +89,11 @@ const GoogleAuth = ({navigation}) => {
                 body: JSON.stringify(usuarioActualizado),
             });
 
-            if (!response.ok) {
-                throw new Error('Error al registrar el usuario');
-            }
+            if (!response.ok) throw new Error('Error al registrar el usuario');
 
-            let result;
-            const contentType = response.headers.get('Content-Type');
-            if (contentType?.includes('application/json')) {
-                result = await response.json();
-            } else {
-                result = await response.text(); // Maneja texto plano
-            }
-
-            console.log('Usuario registrado:', result);
-            setMessage("Usuario registrado con éxito.");
+            console.log('Usuario registrado con éxito');
         } catch (error) {
-            setMessage("Error al registrar al usuario.");
-            console.error("Error en el registro:", error);
+            console.error('Error al registrar el usuario:', error);
         }
     };
 
@@ -178,9 +135,11 @@ const GoogleAuth = ({navigation}) => {
 
 GoogleAuth.propTypes = {
     navigation: PropTypes.shape({
-    navigate: PropTypes.func.isRequired,
+        navigate: PropTypes.func.isRequired,
     }).isRequired,
+    route: PropTypes.object.isRequired,
 };
+
 export default GoogleAuth;
 
 const styles = StyleSheet.create({

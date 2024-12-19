@@ -1,151 +1,178 @@
-import { jwtDecode } from 'jwt-decode';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native';
+import {
+    Alert,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import config from '../config';
 
+const GoogleAuthLogin = ({ navigation, route }) => {
+  const { data, email } = route.params.state;
 
-const GoogleAuthLogin = ( { navigation } ) => {
-    const navigate = useNavigate();
+  const [inputCode, setInputCode] = useState('');
+  const [message, setMessage] = useState('');
 
-    const location = useLocation();
-    const email = location.state?.email || '';
-    const dataLogin = location.state?.data || '';
+  const handleInputChange = (value) => {
+    setInputCode(value);
+  };
 
-    const [inputCode, setInputCode] = useState('');
-    const [error, setError] = useState('');
+  const handleButtonClick = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Token no encontrado. Por favor, inicia sesión nuevamente.');
+      }
+  
+      // Validar que email no sea null o vacío
+      if (!email) {
+        throw new Error('Email no proporcionado. Por favor, intenta nuevamente.');
+      }
+  
+      const request = {
+        mail: email,
+        code: inputCode,
+      };
+  
+      const response = await fetch(`${config.BACKEND_URL}/auth/validate-totp-db`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+  
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage || 'Error al validar el código.');
+      }
+  
+      const validation = await response.json();
+  
+      if (validation.status === 'valid') {
+        setMessage('Autenticación exitosa. Redirigiendo...');
+        navigation.navigate('Calendar', { state: { data, email } });
+      } else {
+        setMessage('Código inválido. Por favor, intenta nuevamente.');
+      }
+    } catch (error) {
+      console.error('Error en la autenticación:', error);
+      Alert.alert('Error', error.message || 'Error al validar el código.');
+      setMessage('Error al validar el código.');
+    }
+  };
+  
 
-    const handleInputChange = (event) => {
-        setInputCode(event.target.value); // Actualiza el código ingresado
-    };
-    const getToken = () => {
-        return sessionStorage.getItem('authToken');
-    };
-
-    const handleButtonClick = () => {
-        const request = {
-            mail: email,
-            code: inputCode,
-        }
-
-        fetch(`${config.BACKEND_URL}/auth/validate-totp-db`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(request),
-        })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error('Error al validar el código de doble factor');
-            }
-            return response.json();
-        })
-        .then((data) => {
-            alert('Doble factor autenticado con éxito');
-            setError(''); // Limpiar cualquier mensaje de error
-            const token = getToken(); // Obtener el token de sesión
-            const decodedToken = jwtDecode(token); // Decodificar el token
-            const userRole = decodedToken.role;
-            console.log('userRole:', userRole);
-            console.log('Token:', token);
-            if (userRole === 'admin') {
-                setError('Usuario no válido'); // Si admin
-            } else if (userRole === 'employee') {
-                navigation.navigate('calendar'); // Si es empleado
-            } else {
-                setError('Rol de usuario no reconocido');
-            }
-        })
-        .catch((error) => {
-            console.error('Hubo un error:', error);
-            setError('Error al validar el código de doble factor');
-        });
-};
-
-    return (
-        <View style={styles['login-container']}>
-        <View style={styles['login-box']}>
-            <Text style={styles['login-title']}>Bienvenido al Sistema</Text>
-            <Text style={styles['login-text']}>Por favor, verifica tu identidad con Google Authenticator.</Text>
-            <Text style={styles['login-text']}>Introduzca su código de seguridad:</Text>
-            <TextInput
-                style={styles['code-input']}
-                placeholder="Introduce el código"
-                value={inputCode}
-                onChangeText={handleInputChange}
-                keyboardType="numeric"
-                returnKeyType="done" // Añade el botón "Done" al teclado
-                onSubmitEditing={Keyboard.dismiss} // Oculta el teclado al confirmar
-            />
-            <TouchableOpacity style={styles['login-btn']} onPress={handleButtonClick}>
-                <Text style={styles['login-btn-text']}>Comprobar código</Text>
-            </TouchableOpacity>
-        </View>
+  return (
+<View style={styles.background}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Bienvenido al Sistema</Text>
+        <Text style={styles.subtitle}>
+          Por favor, verifica tu identidad con Google Authenticator.
+        </Text>
+        <Text style={styles.label}>Introduzca su código de seguridad:</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Introduce el código"
+          placeholderTextColor="#aaa"
+          value={inputCode}
+          onChangeText={handleInputChange}
+          keyboardType="numeric"
+        />
+        <TouchableOpacity style={styles.button} onPress={handleButtonClick}>
+          <Text style={styles.buttonText}>Comprobar código</Text>
+        </TouchableOpacity>
+        {message ? <Text style={styles.message}>{message}</Text> : null}
+      </View>
     </View>
-    );
+  );
+};
 
-};
 GoogleAuthLogin.propTypes = {
-    navigation: PropTypes.shape({
-        navigate: PropTypes.func.isRequired,
-    }).isRequired,
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      state: PropTypes.shape({
+        data: PropTypes.object.isRequired,
+        email: PropTypes.string.isRequired,
+      }),
+    }),
+  }).isRequired,
 };
+
 export default GoogleAuthLogin;
 
 const styles = StyleSheet.create({
-    'login-container': {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f9f9f9',
-        paddingHorizontal: 20,
-    },
-    'login-box': {
-        width: '100%',
-        maxWidth: 400,
-        padding: 20,
-        backgroundColor: 'white',
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    'login-title': {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        color: '#333',
-        textAlign: 'center',
-    },
-    'login-text': {
-        fontSize: 16,
-        marginBottom: 15,
-        color: '#555',
-        textAlign: 'center',
-    },
-    'code-input': {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 10,
-        fontSize: 16,
-        marginBottom: 20,
-        textAlign: 'center',
-        backgroundColor: 'white',
-    },
-    'login-btn': {
-        backgroundColor: '#007bff',
-        padding: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    'login-btn-text': {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#3b82f6', // Fondo azul
+  },
+  container: {
+    width: '90%',
+    maxWidth: 400,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 15,
+    color: '#555',
+    textAlign: 'center',
+  },
+  label: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 16,
+    marginBottom: 15,
+    backgroundColor: '#f9f9f9',
+    color: '#333',
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  message: {
+    marginTop: 15,
+    fontSize: 14,
+    color: '#ff3333',
+    textAlign: 'center',
+  },
 });
